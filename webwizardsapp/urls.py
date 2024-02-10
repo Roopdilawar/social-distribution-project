@@ -1,7 +1,7 @@
 from django.urls import path
-
-from . import views # . referes to the current module we are in
+from .views import LoginAPIView, RegisterView
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path('api/login/', LoginAPIView.as_view(), name='api_login'),
+    path('api/signup/', RegisterView.as_view(), name='signup')
 ]
