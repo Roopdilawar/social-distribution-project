@@ -1,13 +1,13 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Create your models here.
 
-class User(models.Model):
+class User(AbstractUser):
     user_email = models.EmailField()
-    user_name = models.CharField(max_length=50)
-    password = models.CharField(max_length=200)
-    profile_picture = models.ImageField()
-    bio = models.CharField(max_length=200)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', default='default_profile_pic.jpg')
+    bio = models.CharField(max_length=200, blank=True)
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['user_email']
 
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
