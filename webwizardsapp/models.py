@@ -3,8 +3,9 @@ from django.db import models
 
 
 class User(AbstractUser):
+    # Need to add a few more fields (github, url, host, id)
     user_email = models.EmailField()
-    profile_picture = models.ImageField(upload_to='profile_pictures/', default='default_profile_pic.jpg')
+    profile_picture = models.URLField(max_length=200, blank=True, default='https://imgur.com/a/i9xknax')
     bio = models.CharField(max_length=200, blank=True)
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['user_email']
