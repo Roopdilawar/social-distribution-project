@@ -33,3 +33,24 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(default='author', read_only=True)
+    id = serializers.CharField(source='username')
+    url = serializers.CharField(default='url', read_only=True) # Need to update
+    host = serializers.CharField(default='host', read_only=True) # Need to update
+    displayName = serializers.CharField(source='username')
+    github = serializers.URLField(source='user_email') # Need to update
+    profileImage = serializers.URLField(source='profile_picture')
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.save()
+        return instance
+    
+    class Meta:
+        model = User
+        fields = ('type', 'id', 'url', 'host', 'displayName', 'github', 'profileImage')
