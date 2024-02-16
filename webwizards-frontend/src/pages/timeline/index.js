@@ -1,11 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import TimelinePost from "../../components/timeline-post";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faBell, faHeart, faUser, faComment } from '@fortawesome/free-solid-svg-icons';
+import { Button } from "@mui/material";
+import NewPost from '../postcreation/index.js';
 import "./styles.css";
 
-export default class TimelinePage extends React.Component {
-    fakePostArray = [
+export default function TimelinePage() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
+
+    const fakePostArray = [
         {
             title:"A post title about a post about web dev",
             id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
@@ -72,18 +80,31 @@ export default class TimelinePage extends React.Component {
                 profileImage: "https://i.imgur.com/k7XVwpB.jpeg"
             },
         }
-    ]
+    ];
 
-    render() {
-        return (
-            <div className="timeline-page">
-                <h1>
-                    Welcome to your timeline.
-                </h1>
-                {this.fakePostArray.map((arrayItem) => (
-                    <TimelinePost className="timeline-element" title={arrayItem.title} description={arrayItem.description} author={arrayItem.author.displayName} key={arrayItem.id}/>
-                ))}
-            </div>
-        )
-    }
+    return (
+        <div className="timeline-page">
+            <h1>
+                Welcome to your timeline.
+            </h1>
+            <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={toggleModal}
+                style={{ marginBottom: '20px' }} 
+            >
+                Create New Post
+            </Button>
+            <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
+            {fakePostArray.map((arrayItem) => (
+                <TimelinePost 
+                    className="timeline-element" 
+                    title={arrayItem.title} 
+                    description={arrayItem.description} 
+                    author={arrayItem.author.displayName} 
+                    key={arrayItem.id}
+                />
+            ))}
+        </div>
+    );
 }
