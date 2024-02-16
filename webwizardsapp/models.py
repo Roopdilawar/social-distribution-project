@@ -11,6 +11,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['user_email']
 
 class Post(models.Model):
+    postID = models.IntegerField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.CharField(max_length=200)
     image = models.ImageField()
