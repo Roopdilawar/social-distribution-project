@@ -40,7 +40,6 @@ export default function TimelinePost (props) {
                 onClose={() => setIsModalOpen(false)}
                 displayName={props.displayName}
                 description={props.description}
-
             />
         </div>
     )

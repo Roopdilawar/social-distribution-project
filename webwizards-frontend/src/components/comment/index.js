@@ -5,13 +5,11 @@ export default function Comment (props) {
     return(
         <div className="comment-container">
             <div className="comment-header">
-                <img src="" alt="profile" className="profile-pic" />
+                <img src="" alt="profile" className="comment-profile-pic" />
                 <div className="post-info">
-                    <span className="username">{props.displayName}</span>
-                    <span>
-                        <Typography>
-                            {props.description}
-                        </Typography>
+                    <span className="comment-username">{props.displayName}</span>
+                    <span className="comment-description">
+                        {props.description}
                     </span>
                 </div>
             </div>

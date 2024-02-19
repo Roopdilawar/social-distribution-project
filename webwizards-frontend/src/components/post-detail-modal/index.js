@@ -1,5 +1,5 @@
-import React from "react";
-import { Modal, Typography, Box } from '@mui/material';
+import {React, useState} from "react";
+import { Modal, Typography, Box, Pagination } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faBell, faHeart, faUser, faComment } from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
@@ -28,7 +28,70 @@ export default function PostDetailModal (props) {
             description: "Wow what an incredible post!",
             id: '3'
         },
+        {
+            author: {
+                displayName: "Fourth commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '4'
+        },
+        {
+            author: {
+                displayName: "Fifth commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '5'
+        },
+        {
+            author: {
+                displayName: "Sixth commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '6'
+        },
+        {
+            author: {
+                displayName: "Seventh commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '7'
+        },
+        {
+            author: {
+                displayName: "Eight commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '8'
+        },
+        {
+            author: {
+                displayName: "Ninth commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '9'
+        },
+        {
+            author: {
+                displayName: "Tenth commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '10'
+        },
+        {
+            author: {
+                displayName: "Eleventh commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '11'
+        },
     ]
+
+    const [commentsPage, setCommentsPage] = useState(0);
+
+    // const handlePageChange = (event, page) => {
+    //     setCommentsPage(page);
+    // }
+
     return(
         <div className="post-detail-modal">
             <Modal 
@@ -54,7 +117,7 @@ export default function PostDetailModal (props) {
                         </span>
                         <span className="comments-count">
                             <Typography>
-                                1000 comments
+                                {fakeCommentsArray.length} comments
                             </Typography>
                         </span>
                     </div>
@@ -67,13 +130,21 @@ export default function PostDetailModal (props) {
                         </span>
                     </div>
                     <div className="all-comments-container">
-                        {fakeCommentsArray.map((comment) => (
+                        {fakeCommentsArray.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
                             <Comment
                                 displayName={comment.author.displayName}
                                 description={comment.description}
                                 key={comment.id}
                             />
                         ))}
+                        <Pagination
+                            count={(Math.floor(fakeCommentsArray.length / 10)) + 1}
+                            onChange={(event, page) => {
+                                console.log(page)
+                                setCommentsPage(page - 1);
+                                console.log(commentsPage * 10);
+                            }}
+                        />
                     </div>
                 </Box>
             </Modal>
