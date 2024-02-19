@@ -3,21 +3,32 @@ import { Modal, Typography, Box } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faBell, faHeart, faUser, faComment } from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
+import Comment from "../comment";
 
 export default function PostDetailModal (props) {
-
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 400,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-      };
-
+    const fakeCommentsArray = [
+        {
+            author: {
+                displayName: "First commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '1'
+        },
+        {
+            author: {
+                displayName: "Second commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '2'
+        },
+        {
+            author: {
+                displayName: "Third commenter"
+            },
+            description: "Wow what an incredible post!",
+            id: '3'
+        },
+    ]
     return(
         <div className="post-detail-modal">
             <Modal 
@@ -54,6 +65,15 @@ export default function PostDetailModal (props) {
                         <span className="comment">
                             <FontAwesomeIcon icon={faComment} />
                         </span>
+                    </div>
+                    <div className="all-comments-container">
+                        {fakeCommentsArray.map((comment) => (
+                            <Comment
+                                displayName={comment.author.displayName}
+                                description={comment.description}
+                                key={comment.id}
+                            />
+                        ))}
                     </div>
                 </Box>
             </Modal>
