@@ -23,3 +23,27 @@
     color: #0056b3;
     font-weight: 500;
 }
+
+.new-comment-container {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+.comment-input {
+    width: 80%;
+}
+
+.comment-info {
+    display: flex;
+    width: 90%;
+    align-items: center;
+}
+
+.submit-button {
+    padding-left: 1em;
+}
+
+.modal-post-content {
+    padding-left: 10px;
+}

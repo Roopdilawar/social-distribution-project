@@ -1,7 +1,7 @@
 import {React, useState} from "react";
-import { Modal, Typography, Box, Pagination } from '@mui/material';
+import { Modal, Typography, Box, Pagination, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faBell, faHeart, faUser, faComment } from '@fortawesome/free-solid-svg-icons';
+import {faBell, faHeart, faUser, faComment, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
 import Comment from "../comment";
 
@@ -87,10 +87,13 @@ export default function PostDetailModal (props) {
     ]
 
     const [commentsPage, setCommentsPage] = useState(0);
+    const [newCommentVisible, setNewCommentVisible] = useState(false);
 
-    // const handlePageChange = (event, page) => {
-    //     setCommentsPage(page);
-    // }
+    const handleCommentSubmit = (event, input) => {
+        // TODO: POST COMMENT
+
+        setNewCommentVisible(false);
+    }
 
     return(
         <div className="post-detail-modal">
@@ -106,7 +109,7 @@ export default function PostDetailModal (props) {
                             <span className="timestamp">2h ago</span>displayName
                         </div>
                     </div>
-                    <div className="post-content">
+                    <div className="modal-post-content">
                         <p>{props.description}</p>
                     </div>
                     <div className="like-and-comment-count">
@@ -126,9 +129,29 @@ export default function PostDetailModal (props) {
                             <FontAwesomeIcon icon={faHeart} />
                         </span> 
                         <span className="comment">
-                            <FontAwesomeIcon icon={faComment} />
+                            <FontAwesomeIcon icon={faComment} onClick={() => setNewCommentVisible(true)}/>
                         </span>
                     </div>
+                    {newCommentVisible ?
+                    <div className="new-comment-container">
+                        <img src="" alt="profile" className="profile-pic" />
+                        <div className="comment-info">
+                            <span className="comment-input">
+                                <FormControl fullWidth>
+                                <InputLabel>New Comment</InputLabel>
+                                <OutlinedInput
+                                    id="outlined-adornment-amount"
+                                    label="New Comment"
+                                />
+                                </FormControl>
+                            </span>
+                            <span>
+                                <FontAwesomeIcon icon={faPaperPlane} className="submit-button" size="lg" onClick={handleCommentSubmit}/>
+                            </span>
+                        </div>
+                    </div>
+                    : ""
+                    }
                     <div className="all-comments-container">
                         {fakeCommentsArray.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
                             <Comment

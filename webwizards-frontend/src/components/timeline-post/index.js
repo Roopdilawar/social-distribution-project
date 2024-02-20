@@ -4,20 +4,14 @@ import "./styles.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faBell, faHeart, faUser, faComment } from '@fortawesome/free-solid-svg-icons';
 import PostDetailModal from "../post-detail-modal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function TimelinePost (props) {
-    // static propTypes = {
-    //     title: PropTypes.string,
-    //     description: PropTypes.string,
-    //     displayName: PropTypes.string,
-    // }
-
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
-        <div className="post-overall" onClick={() => setIsModalOpen(true) }>
-            <div className="post-header">
+        <div className="post-overall">
+            <div className="post-header" onClick={() => setIsModalOpen(!isModalOpen) }>
                 <img src="" alt="profile" className="profile-pic" />
                 <div className="post-info">
                     <span className="username">{props.displayName}</span>
@@ -37,7 +31,10 @@ export default function TimelinePost (props) {
             </div>
             <PostDetailModal 
                 isModalOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    console.log("UGH")
+                }}
                 displayName={props.displayName}
                 description={props.description}
             />
