@@ -106,7 +106,7 @@ export default function PostDetailModal (props) {
                         <img src="" alt="profile" className="profile-pic" />
                         <div className="post-info">
                             <span className="username">{props.displayName}</span>
-                            <span className="timestamp">2h ago</span>displayName
+                            <span className="timestamp">2h ago</span>
                         </div>
                     </div>
                     <div className="modal-post-content">
