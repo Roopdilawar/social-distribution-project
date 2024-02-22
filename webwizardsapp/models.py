@@ -45,6 +45,12 @@ class Post(models.Model):
     def likes(self):
         return self.liked_by.count()
     
+    def update_comments_count(self):
+        print("updating comments count")
+        self.comments_count = self.comments.all().count()
+        print(self.comments_count)
+        self.save()
+    
     
 class Comments(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)

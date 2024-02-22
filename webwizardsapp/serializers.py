@@ -82,7 +82,7 @@ class UserFollowingSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     
     class Meta:
-        
+        print("i am in serialiser post meta function")
         model = Post
         fields= ['type','id','title','source','origin','description','content_type','content','author','Comment_counts','likes','published','visibility']
         extra_kwargs = {
@@ -90,19 +90,15 @@ class PostSerializer(serializers.ModelSerializer):
         }
     
     def to_representation(self, instance):
-        
-        print("to_representation is called")
         representation = super().to_representation(instance)
         author_id = instance.author.id
         post_id = instance.id
         
         representation['id'] = f"http://127.0.0.1:5454/authors/{author_id}/posts/{post_id}"
         representation['author'] = f"http://127.0.0.1:8000/api/authors/{author_id}"
+        representation['Comment_counts'] = instance.comments.all().count()
         
         return representation
-    
-    
-    
     
     
         
@@ -112,4 +108,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'post', 'author', 'content', 'created']
         
         
-    print(author)
+    
+    
+
+    

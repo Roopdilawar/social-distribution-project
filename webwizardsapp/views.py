@@ -10,6 +10,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
 from .serializers import RegisterSerializer, AuthorSerializer,PostSerializer,UserFollowingSerializer,CommentSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListCreateAPIView
+from django.db.models import Count
 
 
 class RegisterView(generics.CreateAPIView):
@@ -26,7 +28,7 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         user.set_password(user.password)
         user.save()
-        Author.objects.create(user=user)
+        
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -98,9 +100,19 @@ class UnfollowUserView(APIView):
 class PostsView(generics.ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-
+    
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            serializer.save(author=temp_user)
+        else:
+            serializer.save(author=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
         response = super(PostsView, self).list(request, *args, **kwargs)
@@ -108,7 +120,9 @@ class PostsView(generics.ListCreateAPIView):
             "type": "posts",
             "items": response.data
         }
+        print(response.data)
         return response
+    
     
     
 class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
@@ -122,6 +136,7 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
+        print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -141,29 +156,116 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-class AddCommentView(CreateAPIView):
+class AddCommentView(generics.CreateAPIView):
     queryset = Comments.objects.all()
     serializer_class = CommentSerializer
-    
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        
+        post = Post.objects.get(id=self.kwargs['post_id'])
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            serializer.save(author=temp_user, post=post)
+        else:
+            serializer.save(author=self.request.user, post=post)
+        
+        
+        
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        print("nothing,",serializer.instance.post)
+        post_instance = serializer.instance.post
+        post_instance.update_comments_count()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        
+        
+        
+        
+               
+        
+class ListCommentsView(generics.ListAPIView):
+    serializer_class = CommentSerializer
 
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        post_comments = Comments.objects.filter(post_id=post_id)
+        return post_comments
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = {
+            "type": "comments",
+            "items": serializer.data
+        }
+        return Response(data)
+    
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comments.objects.all()
+    serializer_class = CommentSerializer
+    # permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        print(self.kwargs)
+        obj = get_object_or_404(queryset, pk=self.kwargs['comment_id'])
+        return obj
+
+    def put(self, request, *args, **kwargs):
+        print("i am in put")
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+    def retrieve(self, request, *args, **kwargs):
+        response = super(CommentDetailView, self).retrieve(request, *args, **kwargs)
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super(CommentDetailView, self).update(request, *args, **kwargs)
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        response = super(CommentDetailView, self).destroy(request, *args, **kwargs)
+        return response
+
+    
 
 class LikePostView(APIView):
     # permission_classes = [IsAuthenticated]
 
     def post(self, request, post_id):
-        try:
-            post = Post.objects.get(id=post_id)
-            if request.user in post.liked_by.all():
-                post.liked_by.remove(request.user)
-            else:
-                post.liked_by.add(request.user)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Post.DoesNotExist:
-            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            try:
+                post = Post.objects.get(id=post_id)
+                if temp_user in post.liked_by.all():
+                    post.liked_by.remove(temp_user)
+                else:
+                    post.liked_by.add(temp_user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Post.DoesNotExist:
+                return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            
+        else:
+            try:
+                post = Post.objects.get(id=post_id)
+                if request.user in post.liked_by.all():
+                    post.liked_by.remove(request.user)
+                else:
+                    post.liked_by.add(request.user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Post.DoesNotExist:
+                return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+                
+        
+        
 
 
 
@@ -171,6 +273,9 @@ class LikePostView(APIView):
 
 
 
+    
+    
+    
 
 
 
