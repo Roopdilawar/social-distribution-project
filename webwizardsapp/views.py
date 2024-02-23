@@ -76,6 +76,7 @@ class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
 
 
 class FollowUserView(CreateAPIView):
+    #not working
     serializer_class = UserFollowingSerializer
     
 
@@ -269,7 +270,7 @@ class LikePostView(APIView):
             except Post.DoesNotExist:
                 return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
                 
-        
+    
         
 
 
