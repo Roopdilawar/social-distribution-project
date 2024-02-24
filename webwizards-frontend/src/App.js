@@ -1,32 +1,39 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import SignIn from './pages/signin/index.js'; 
-import SignUp from './pages/signup/index.js'; 
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import './App.css';
+import SignIn from './pages/signin/index.js';
+import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faBell, faHeart, faUser, faComment } from '@fortawesome/free-solid-svg-icons';
+
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <header className="top-nav">
-          <h1 className="header-title">SocialDistribution</h1>
-          <nav>
-            <button className="nav-button">
-              <FontAwesomeIcon icon={faBell} />
-            </button>
-            <button className="nav-button">
-              <FontAwesomeIcon icon={faUser} />
-            </button>
-          </nav>
-        </header>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              SocialDistribution
+            </Typography>
+            <IconButton color="inherit">
+              <NotificationsIcon />
+            </IconButton>
+            <IconButton color="inherit">
+              <AccountCircle />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
 
         <Routes>
           <Route path="signin" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
-          <Route path="/" element={<TimelinePage />} /> 
+          <Route path="/" element={<TimelinePage />} />
         </Routes>
       </div>
     </Router>
