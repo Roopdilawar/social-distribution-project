@@ -3,16 +3,39 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User, Post
-from .serializers import RegisterSerializer, AuthorSerializer, PostSerializer
+from .models import User,Post ,UserFollowing,Comments
+from rest_framework import generics
+from rest_framework.generics import UpdateAPIView, DestroyAPIView
+from django.shortcuts import get_object_or_404
+from rest_framework.generics import CreateAPIView
+from .serializers import RegisterSerializer, AuthorSerializer,PostSerializer,UserFollowingSerializer,CommentSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListCreateAPIView
+from django.db.models import Count
 
 
-class RegisterView(APIView):
-    def post(self, request, *args, **kwargs):
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        print("Received data:", request.data)  # Debug: Print received data
+        username = request.data.get('username')  # Or change 'username' to the correct key
+        print("Username:", username)
+        return super(RegisterView, self).create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        user.set_password(user.password)
+        user.save()
+        
+
+    def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print("failed")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
@@ -27,87 +50,243 @@ class LoginAPIView(APIView):
             return Response({"token": token.key}, status=status.HTTP_200_OK)
         return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
     
-class AuthorsListView(APIView):
-    def get(self, request, format=None):
-        authors = User.objects.all()
-        serializer = AuthorSerializer(authors, many=True, context={'request': request})
-        return Response({
-            'type': 'authors',
-            'items': serializer.data
-        })
 
-class AuthorDetailView(APIView):
-    def get(self, request, pk, format=None):
-        try:
-            author = User.objects.get(username=pk)
-            serializer = AuthorSerializer(author, context={'request': request})
-            return Response(serializer.data)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+
+class AuthorsListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = AuthorSerializer
+
+    def list(self, request, *args, **kwargs):
+        response = super(AuthorsListView, self).list(request, *args, **kwargs)
+        response.data = {
+            "type": "authors",
+            "items": response.data
+        }
+        return response
     
-    def post(self, request, pk, format=None):
-        try:
-            author = User.objects.get(username=pk)
-            serializer = AuthorSerializer(author, data=request.data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-class PostsView(APIView):
-    def get(self, request, format=None):
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, format=None):
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class SinglePostView(APIView):
-    def get(self, request, post_id, format=None):
-        try:
-            post = Post.objects.get(pk=post_id)
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = PostSerializer(post)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def delete(self, request, post_id, format=None):
-        try:
-            post = Post.objects.get(pk=post_id)
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
     
-    def put(self, request, post_id, format=None):
-        try:
-            post = Post.objects.get(pk=post_id)
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = AuthorSerializer
+    def retrieve(self, request, *args, **kwargs):
+        response = super(AuthorDetailView, self).retrieve(request, *args, **kwargs)
         
-        serializer = PostSerializer(post, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return response
 
-    def patch(self, request, post_id, format=None):
-        try:
-            post = Post.objects.get(pk=post_id)
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class FollowUserView(CreateAPIView):
+    #not working
+    serializer_class = UserFollowingSerializer
+    
+
+    def perform_create(self, serializer):
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            serializer.save(user=temp_user)
+        else:
+            
+            serializer.save(user=self.request.user)
         
-        serializer = PostSerializer(post, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class UnfollowUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, following_user_id):
+        try:
+            following_relationship = UserFollowing.objects.get(user=request.user, following_user_id=following_user_id)
+            following_relationship.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except UserFollowing.DoesNotExist:
+            return Response({'error': 'Not following this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class PostsView(generics.ListCreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    
+    def perform_create(self, serializer):
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            serializer.save(author=temp_user)
+        else:
+            serializer.save(author=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def list(self, request, *args, **kwargs):
+        response = super(PostsView, self).list(request, *args, **kwargs)
+        response.data = {
+            "type": "posts",
+            "items": response.data
+        }
+        print(response.data)
+        return response
+    
+    
+    
+class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    # permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=self.kwargs['post_id'])
+        return obj
+
+    def put(self, request, *args, **kwargs):
+        print("i am in put")
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+    def retrieve(self, request, *args, **kwargs):
+        response = super(DetailPostView, self).retrieve(request, *args, **kwargs)
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super(DetailPostView, self).update(request, *args, **kwargs)
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        response = super(DetailPostView, self).destroy(request, *args, **kwargs)
+        return response
+
+
+
+class AddCommentView(generics.CreateAPIView):
+    queryset = Comments.objects.all()
+    serializer_class = CommentSerializer
+
+    def perform_create(self, serializer):
+        
+        post = Post.objects.get(id=self.kwargs['post_id'])
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            serializer.save(author=temp_user, post=post)
+        else:
+            serializer.save(author=self.request.user, post=post)
+        
+        
+        
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        print("nothing,",serializer.instance.post)
+        post_instance = serializer.instance.post
+        post_instance.update_comments_count()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        
+        
+        
+        
+               
+        
+class ListCommentsView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        post_comments = Comments.objects.filter(post_id=post_id)
+        return post_comments
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = {
+            "type": "comments",
+            "items": serializer.data
+        }
+        return Response(data)
+    
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comments.objects.all()
+    serializer_class = CommentSerializer
+    # permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        print(self.kwargs)
+        obj = get_object_or_404(queryset, pk=self.kwargs['comment_id'])
+        return obj
+
+    def put(self, request, *args, **kwargs):
+        print("i am in put")
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+    def retrieve(self, request, *args, **kwargs):
+        response = super(CommentDetailView, self).retrieve(request, *args, **kwargs)
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super(CommentDetailView, self).update(request, *args, **kwargs)
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        response = super(CommentDetailView, self).destroy(request, *args, **kwargs)
+        return response
+
+    
+
+class LikePostView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        
+        if self.request.user.is_anonymous:
+            temp_user = User.objects.get(id=1)
+            try:
+                post = Post.objects.get(id=post_id)
+                if temp_user in post.liked_by.all():
+                    post.liked_by.remove(temp_user)
+                else:
+                    post.liked_by.add(temp_user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Post.DoesNotExist:
+                return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            
+        else:
+            try:
+                post = Post.objects.get(id=post_id)
+                if request.user in post.liked_by.all():
+                    post.liked_by.remove(request.user)
+                else:
+                    post.liked_by.add(request.user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Post.DoesNotExist:
+                return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+                
+    
+        
+
+
+
+
+
+
+
+    
+    
+    
+
+
+
+
+
+
+
+
