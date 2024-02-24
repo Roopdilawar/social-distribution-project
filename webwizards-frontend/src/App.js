@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import './App.css';
+import UserProfile from './pages/profile/index.js';
 import SignIn from './pages/signin/index.js';
 import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
@@ -32,6 +33,7 @@ function App() {
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="/" element={<TimelinePage />} />
+        <Route path="/profile" element={<UserProfile />} />
       </Routes>
     </div>
   );

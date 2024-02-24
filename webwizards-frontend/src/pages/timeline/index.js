@@ -9,7 +9,7 @@ import NewPost from '../postcreation/index.js';
 import PostDetailModal from "../../components/post-detail-modal";
 
 
-const posts = [
+export const posts = [
     {
         title:"Text Post 1",
         id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
@@ -97,7 +97,7 @@ const TimelinePage = () => {
     );
 };
 
-const Post = ({ post }) => {
+export const Post = ({ post }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 

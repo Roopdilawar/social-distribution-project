@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
+
+import { posts, Post } from  '../timeline/index.js'; 
+
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
-
-
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,18 +20,10 @@ import TextField from '@mui/material/TextField';
 function UserProfile() {
     const [user, setUser] = useState({
         name: 'scorpion',
-        fullName: 'Joe Kennedy',
+        fullName: 'Justin Fuddu',
         followers: 150,
         following: 75,
-        posts: [
-            { imageUrl: 'https://i.pinimg.com/originals/0f/2a/b4/0f2ab4bd80c38d0246eb062e1b49a7a9.jpg', description: 'Post 1' },
-            { imageUrl: 'https://i.pinimg.com/originals/e5/34/04/e53404dd40d5bcea87555af14fd178e0.jpg', description: 'Post 2' },
-            { imageUrl: 'https://i.pinimg.com/originals/06/56/3a/06563aa88fa0934dbd0ce1ec6337f661.jpg', description: 'Post 3' },
-            { imageUrl: 'https://i.pinimg.com/originals/27/04/28/2704281c28b73fe5e71f8a648fff7bb4.jpg', description: 'Post 4' },
-            { imageUrl: 'https://i.pinimg.com/originals/5c/e9/c9/5ce9c9d26480c8c4a84168560752878c.jpg', description: 'Post 5' },
-            { imageUrl: 'https://i.pinimg.com/originals/0f/a2/78/0fa278b48a1dd22c5342354f97dd195f.jpg', description: 'Post 6' },
-            
-        ],
+        posts: [],
         bio: 'The only way out is through.'
     });
     const [open, setOpen] = useState(false);
@@ -174,21 +166,16 @@ function UserProfile() {
                 </Modal>        
 
                 <div style={{ marginTop: '40px' }} />
-                <Box sx={{ marginTop: 2, width: '100%' }}>
-                    <Grid container spacing={4} justifyContent="center">
-                        {user.posts.map((post, index) => (
-                            <Grid item xs={12} sm={6} md={3.5} key={index}>
-                                <Paper elevation={3} sx={{ position: 'relative', paddingBottom: '100%' }}>
-                                    <img src={post.imageUrl} alt={post.description} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }} />
-                                </Paper>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </Box>
+                <div style={{ maxWidth: '600px', margin: 'auto' }}>
+                    {posts.map(post => (
+                        <Post key={post.id} post={post} />
+                    ))}
+                </div>
             </Box>
         </Container>
     </ThemeProvider>
 );
-}
+};
+
 
 export default UserProfile;
