@@ -121,9 +121,24 @@ const Post = ({ post }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleLike = () => {
-        setIsLiked(!isLiked);
-    };
+    const handleLike = async () => {
+        const token = localStorage.getItem('token');
+        const postId = post.id.split('/').pop();
+    
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+    
+        try {
+            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
+            console.log(response.data);
+            setIsLiked(!isLiked); 
+        } catch (error) {
+            console.error("Error liking post: ", error);
+        }
+    };    
 
     const toggleModal = () => {
         console.log("Modal Clicked")
@@ -133,9 +148,9 @@ const Post = ({ post }) => {
     const renderContent = () => {
         switch (post.content_type) {
             case 'text/plain':
-                return <Typography variant="body2">{post.description}</Typography>;
-            case 'text/commonMark':
-                return <ReactMarkdown>{post.description}</ReactMarkdown>;
+                return <Typography variant="body2">{post.content}</Typography>;
+            case 'text/markdown':
+                return <ReactMarkdown>{post.content}</ReactMarkdown>;
             default:
                 return <Typography variant="body2">Unsupported content type</Typography>;
         }
