@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -18,18 +18,25 @@ import NewPost from './pages/postcreation/index.js';
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    
+    if (!token && location.pathname !== '/signin') {
       navigate('/signin');
-    } else {
+    }
+    if (location.pathname === '/signin' && token) {
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleProfileClick = () => {
+    navigate('profile'); 
   };
 
   return (
@@ -46,7 +53,7 @@ function App() {
           <IconButton color="inherit">
             <NotificationsIcon />
           </IconButton>
-          <IconButton color="inherit">
+          <IconButton color="inherit" onClick={handleProfileClick}>
             <AccountCircle />
           </IconButton>
         </Toolbar>
@@ -55,7 +62,7 @@ function App() {
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="/" element={<TimelinePage />} />
-        <Route path="/profile" element={<UserProfile />} />
+        <Route path="profile" element={<UserProfile />} />
       </Routes>
     </div>
   );

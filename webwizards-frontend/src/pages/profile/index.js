@@ -243,7 +243,7 @@ function UserProfile() {
                 </Modal>        
 
                 <div style={{ marginTop: '40px' }} />
-                <div style={{ maxWidth: '600px', margin: 'auto' }}>
+                <div style={{ maxWidth: '1000px', margin: 'auto' }}>
                     {posts.map(post => (
                         <Post key={post.id} post={post} />
                     ))}
