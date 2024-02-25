@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -17,8 +17,19 @@ import NewPost from './pages/postcreation/index.js';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/signin');
+    } else {
+      navigate('/');
+    }
+  }, [navigate]);
+
   const toggleModal = () => {
-      setIsModalOpen(!isModalOpen);
+    setIsModalOpen(!isModalOpen);
   };
 
   return (

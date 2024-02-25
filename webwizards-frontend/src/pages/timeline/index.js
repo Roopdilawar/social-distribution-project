@@ -38,7 +38,7 @@ const TimelinePage = () => {
 };
 
 
-const Post = ({ post }) => {
+export const Post = ({ post }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
