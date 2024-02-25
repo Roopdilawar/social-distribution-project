@@ -11,6 +11,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
+import { useNavigate } from 'react-router-dom';
+
 
 function Copyright(props) {
 	return (
@@ -34,10 +36,11 @@ const defaultTheme = createTheme()
 
 export default function SignIn() {
 	const [error, setError] = useState(''); 
+	const navigate = useNavigate();
 
 	const handleSubmit = async (event) => {
         event.preventDefault();
-		setError(''); // Clear any existing error messages
+		setError(''); 
         const data = new FormData(event.currentTarget);
         
         try {
@@ -46,7 +49,8 @@ export default function SignIn() {
                 password: data.get('password')
             });
             console.log(response.data);
-			localStorage.setItem('token', response.data);
+			localStorage.setItem('token', response.data.token);
+			navigate('/');
         } catch (error) {
             if (error.response && error.response.data && error.response.data.error) {
                 setError(error.response.data.error);

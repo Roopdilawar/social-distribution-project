@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import FavoriteIcon from '@mui/icons-material/Favorite';import ReactMarkdown from 'react-markdown';
 import { Card, CardHeader, Avatar, CardMedia, CardContent, Typography, IconButton, Tooltip, CardActions} from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -88,6 +89,24 @@ const posts = [
 
 
 const TimelinePage = () => {
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/posts/');
+                const orderedPosts = response.data.items.sort((a, b) => new Date(b.published) - new Date(a.published));
+                setPosts(orderedPosts);
+            } catch (error) {
+                console.error("Error fetching posts: ", error);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    console.log(posts)
+
     return (
         <div style={{ maxWidth: '600px', margin: 'auto' }}>
             {posts.map(post => (
@@ -96,6 +115,7 @@ const TimelinePage = () => {
         </div>
     );
 };
+
 
 const Post = ({ post }) => {
     const [isLiked, setIsLiked] = useState(false);
@@ -111,7 +131,7 @@ const Post = ({ post }) => {
     };
 
     const renderContent = () => {
-        switch (post.contentType) {
+        switch (post.content_type) {
             case 'text/plain':
                 return <Typography variant="body2">{post.description}</Typography>;
             case 'text/commonMark':
