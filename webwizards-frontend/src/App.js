@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -43,7 +40,20 @@ function App() {
     <div className="App">
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '1px' }}>
+            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
+        </Box>
+        <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: '800',
+              color: '#FFFFFF',
+              fontFamily: '"Custom Font", sans-serif',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+            }}            
+          >
             SocialDistribution
           </Typography>
           <IconButton color="inherit" onClick={toggleModal}>

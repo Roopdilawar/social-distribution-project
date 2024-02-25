@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,6 +13,7 @@ from .serializers import RegisterSerializer, AuthorSerializer,PostSerializer,Use
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
+import base64
 
 
 class RegisterView(generics.CreateAPIView):
@@ -128,7 +130,25 @@ class PostsView(generics.ListCreateAPIView):
         }
         print(response.data)
         return response
-    
+
+
+class GetImageView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request, post_id, format=None):
+        post = get_object_or_404(Post, id=post_id)
+
+        if not post.content_type=="image/base64":
+            return Response(status=404)
+
+        try:
+            format, imgstr = post.content.split(';base64,') 
+            ext = format.split('/')[-1] 
+            data = base64.b64decode(imgstr)
+
+            return HttpResponse(data, content_type=f'image/{ext}')
+        except (ValueError, base64.binascii.Error):
+            return Response(status=404)
     
     
 class DetailPostView(generics.RetrieveUpdateDestroyAPIView):

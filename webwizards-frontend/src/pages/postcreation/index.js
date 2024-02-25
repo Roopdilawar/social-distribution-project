@@ -10,6 +10,7 @@ function NewPost({ isOpen, handleClose }) {
     const [useMarkdown, setUseMarkdown] = useState(false);
     const [title, setTitle] = useState('');
     const [visibility, setVisibility] = useState('Public');
+    const [base64Image, setBase64Image] = useState('');
 
     const handleInputChange = (event) => {
         setPostContent(event.target.value);
@@ -25,6 +26,17 @@ function NewPost({ isOpen, handleClose }) {
     
     const handleVisibilityChange = (event) => {
         setVisibility(event.target.value);
+    };   
+    
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setBase64Image(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
     };    
 
     const handleSubmit = async () => {
@@ -34,8 +46,8 @@ function NewPost({ isOpen, handleClose }) {
             source: "http://localhost:8000/",
             origin: "http://localhost:8000/", 
             description: "Test Post", 
-            content_type: useMarkdown ? "text/markdown" : "text/plain",
-            content: postContent,
+            content_type: base64Image ? "image/base64" : (useMarkdown ? "text/markdown" : "text/plain"),
+            content: base64Image || postContent,
             comment_counts: 0, 
             published: new Date().toISOString(), 
             visibility: visibility
@@ -109,6 +121,28 @@ function NewPost({ isOpen, handleClose }) {
                 />
                 {useMarkdown && <Typography variant="body2">Preview:</Typography>}
                 {useMarkdown && <ReactMarkdown>{postContent}</ReactMarkdown>}
+                {!useMarkdown && (
+                    <Button
+                        variant="contained"
+                        component="label"
+                        sx={{ mt: 2 }}
+                    >
+                        Upload Image
+                        <input
+                            type="file"
+                            hidden
+                            accept="image/*"
+                            onChange={handleImageChange}
+                        />
+                    </Button>
+                )}
+                {base64Image && (
+                    <img
+                        src={base64Image}
+                        alt="Uploaded"
+                        style={{ maxWidth: '100%', marginTop: '20px' }}
+                    />
+                )}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
