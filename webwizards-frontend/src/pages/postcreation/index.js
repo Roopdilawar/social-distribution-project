@@ -21,7 +21,7 @@ function NewPost({ isOpen, handleClose }) {
     };
 
     const handleSubmit = () => {
-        // Implement your submit logic here
+        // Need to implement logic here
         console.log(postContent, selectedImage);
     };
 
@@ -31,8 +31,8 @@ function NewPost({ isOpen, handleClose }) {
             onClose={handleClose} 
             aria-labelledby="form-dialog-title"
             fullWidth={true}
-            maxWidth="md" // You can change this to 'sm', 'md', 'lg', or 'xl' as needed
-            sx={{ '& .MuiDialog-paper': { minWidth: '80%' } }} // Optional: for more precise control
+            maxWidth="md" 
+            sx={{ '& .MuiDialog-paper': { minWidth: '80%' } }} 
         >
             <DialogTitle id="form-dialog-title">Create a New Post</DialogTitle>
             <DialogContent>
