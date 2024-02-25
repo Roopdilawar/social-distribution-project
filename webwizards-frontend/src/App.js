@@ -16,11 +16,12 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     
-    if (!token && location.pathname !== '/signin') {
+    if (!token && location.pathname !== '/signin' && location.pathname !== '/signup') {
       navigate('/signin');
     }
     if (location.pathname === '/signin' && token) {
@@ -36,36 +37,47 @@ function App() {
     navigate('profile'); 
   };
 
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   return (
     <div className="App">
       <AppBar position="static">
         <Toolbar>
-        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: '1px' }}>
-            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
-        </Box>
-        <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ 
-              flexGrow: 1, 
-              fontWeight: '800',
-              color: '#FFFFFF',
-              fontFamily: '"Custom Font", sans-serif',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-            }}            
+          <Box 
+            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }} 
+            onClick={handleLogoClick}
           >
-            SocialDistribution
-          </Typography>
-          <IconButton color="inherit" onClick={toggleModal}>
-            <AddBoxIcon />
-          </IconButton>
-          <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
-          <IconButton color="inherit">
-            <NotificationsIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={handleProfileClick}>
-            <AccountCircle />
-          </IconButton>
+            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
+            <Typography 
+              variant="h6" 
+              component="div" 
+              sx={{ 
+                marginLeft: '0px', 
+                fontWeight: '800',
+                color: '#FFFFFF',
+                fontFamily: '"Custom Font", sans-serif',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}            
+            >
+              SocialDistribution
+            </Typography>
+          </Box>
+          {!isAuthPage && (
+            <>
+              <IconButton color="inherit" onClick={toggleModal}>
+                <AddBoxIcon />
+              </IconButton>
+              <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
+              <IconButton color="inherit">
+                <NotificationsIcon />
+              </IconButton>
+              <IconButton color="inherit" onClick={handleProfileClick}>
+                <AccountCircle />
+              </IconButton>
+            </>
+          )}
         </Toolbar>
       </AppBar>
       <Routes>
