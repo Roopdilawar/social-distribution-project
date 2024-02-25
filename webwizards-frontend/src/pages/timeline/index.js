@@ -6,7 +6,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import NewPost from '../postcreation/index.js';
 import PostDetailModal from "../../components/post-detail-modal";
 
 
