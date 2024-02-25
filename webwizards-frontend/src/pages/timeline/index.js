@@ -72,32 +72,29 @@ export const Post = ({ post }) => {
                 return <Typography variant="body2">{post.content}</Typography>;
             case 'text/markdown':
                 return <ReactMarkdown>{post.content}</ReactMarkdown>;
+            case 'image/base64':
+                return <img src={post.content} alt="Post" style={{ maxWidth: '100%', marginTop: '20px' }} />;
             default:
                 return <Typography variant="body2">Unsupported content type</Typography>;
         }
-    };
+    };       
 
     return (
         <>
-        <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: 6 } }} >
-            <CardHeader
-                avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
-                title={<Typography variant="subtitle2" color="primary">{post.author.displayName}</Typography>}
-                subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
-                action={
-                    <IconButton>
-                        <MoreVertIcon />
-                    </IconButton>
-                }
-            />
-            {post.imageUrl && <CardMedia component="img" image={post.imageUrl} alt={post.title} />}
-            <CardContent>
-                <Typography variant="h6" color="textPrimary" gutterBottom>
-                    {post.title}
-                </Typography>
-                {renderContent()}
-            </CardContent>
-            <CardActions disableSpacing>
+            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: 6 } }}>
+                <CardHeader
+                    avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
+                    title={<Typography variant="subtitle2" color="primary">{post.author.displayName}</Typography>}
+                    subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
+                    action={<IconButton><MoreVertIcon /></IconButton>}
+                />
+                <CardContent>
+                    <Typography variant="h6" color="textPrimary" gutterBottom>
+                        {post.title}
+                    </Typography>
+                    {renderContent()}
+                </CardContent>
+                <CardActions disableSpacing>
                 <Tooltip title="Like">
                     <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
                         {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
@@ -114,8 +111,8 @@ export const Post = ({ post }) => {
                     </IconButton>
                 </Tooltip>
             </CardActions>
-        </Card>
-        <PostDetailModal isModalOpen={isModalOpen} onClose={toggleModal} post={post} />
+            </Card>
+            <PostDetailModal isModalOpen={isModalOpen} onClose={toggleModal} post={post} />
         </>
     );
 };
