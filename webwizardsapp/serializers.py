@@ -80,25 +80,21 @@ class UserFollowingSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    
+    author = AuthorSerializer(read_only=True)
+
     class Meta:
-        print("i am in serialiser post meta function")
         model = Post
-        fields= ['type','id','title','source','origin','description','content_type','content','author','Comment_counts','likes','published','visibility']
-        extra_kwargs = {
-            'type': {'default': 'post', 'read_only': True},
-        }
-    
+        fields = ['type', 'id', 'title', 'source', 'origin', 'description', 'content_type', 'content', 'author', 'Comment_counts', 'likes', 'published', 'visibility']
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        author_id = instance.author.id
         post_id = instance.id
-        
-        representation['id'] = f"http://127.0.0.1:5454/authors/{author_id}/posts/{post_id}"
-        representation['author'] = f"http://127.0.0.1:8000/api/authors/{author_id}"
+
+        representation['id'] = f"http://127.0.0.1:5454/authors/{instance.author.id}/posts/{post_id}"
         representation['Comment_counts'] = instance.comments.all().count()
-        
+
         return representation
+
     
     
         
