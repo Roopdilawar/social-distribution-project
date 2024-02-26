@@ -13,27 +13,23 @@ export default function PostDetailModal (props) {
     const parsedPost = props.post.id.split("/");
     const postId = parsedPost[parsedPost.length - 1]
 
-    useEffect(() => {
-        console.log("POST ID");
-        console.log(props.post.id.split("/"))
-        console.log(props.post.id);
-
-        const fetchComments = async () => {
-            const config = {
-                headers: {
-                    'Authorization': `Token ${token}`
-                }
-            };
-
-            try {
-                const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
-                const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
-                setComments(orderedComments);
-            } catch (error) {
-                console.error("Errror fetching comments: ", error);
+    const fetchComments = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
             }
         };
 
+        try {
+            const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
+            const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
+            setComments(orderedComments);
+        } catch (error) {
+            console.error("Errror fetching comments: ", error);
+        }
+    };
+
+    useEffect(() => {
         fetchComments();
     }, []);
 
@@ -126,7 +122,8 @@ export default function PostDetailModal (props) {
         const commentData = {
             post: postId,
             content: newCommentInput,
-            created: new Date().toISOString()
+            created: new Date().toISOString(),
+            author: ""
         };
 
         const config = {
@@ -139,6 +136,7 @@ export default function PostDetailModal (props) {
             const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
             console.log(response.data);
             setNewCommentVisible(false);
+            fetchComments();
         } catch (error) {
             console.error("Error submitting post: ", error);
         }
