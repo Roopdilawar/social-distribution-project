@@ -5,8 +5,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
-import { Post } from  '../timeline/index.js'; 
-
+import { TimelinePost } from '../../components/timeline-post/index.js';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
@@ -245,7 +244,7 @@ function UserProfile() {
                 <div style={{ marginTop: '40px' }} />
                 <div style={{ maxWidth: '1000px', margin: 'auto' }}>
                     {posts.map(post => (
-                        <Post key={post.id} post={post} />
+                        <TimelinePost key={post.id} post={post} />
                     ))}
                 </div>
             </Box>
