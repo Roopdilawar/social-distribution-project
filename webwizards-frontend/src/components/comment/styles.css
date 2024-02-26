@@ -4,19 +4,26 @@
     padding: 5px;
 }
 
-.comment-profile-pic {
-    width: 20px;
-    height: 20px;
+.comment-avatar {
+    width: 1.5em !important;
+    height: 1.5em !important;
     border-radius: 50%;
     margin-right: 10px;
 }
 
 .comment-username {
-    font-weight: bold;
     font-size: 0.85em;
+    color: #1976d2;
+    font-weight: 450;
 }
 
 .comment-description {
-    font-size: 0.6em;
+    font-size: 0.8em;
     font-weight:normal;
+}
+
+.comment-time {
+    font-size: 0.4em;
+    font-weight: normal;
+    padding-left: 0.5%;
 }

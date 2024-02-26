@@ -1,15 +1,18 @@
-import { Typography } from "@mui/material"
+import { Avatar } from "@mui/material"
 import "./styles.css"
 
-export default function Comment (props) {
+export default function Comment ({comment}) {
     return(
         <div className="comment-container">
             <div className="comment-header">
-                <img src="" alt="profile" className="comment-profile-pic" />
+                <Avatar src={comment.author.profileImage} alt={comment.author.displayName} className="comment-avatar"/>
                 <div className="post-info">
-                    <span className="comment-username">{props.displayName}</span>
+                    <div className="username-publish">
+                        <span className="comment-username">{comment.author.displayName}</span>
+                        <span className="comment-time">{new Date(comment.created).toLocaleString()}</span>
+                    </div>
                     <span className="comment-description">
-                        {props.description}
+                        {comment.content}
                     </span>
                 </div>
             </div>
