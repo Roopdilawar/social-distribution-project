@@ -25,7 +25,7 @@ const TimelinePage = () => {
     return (
         <div style={{ maxWidth: '1000px', margin: 'auto' }}>
             {posts.map(post => (
-                <TimelinePost key={post.id} post={post} />
+                <TimelinePost key={post.id} post={post} detailedView={false}/>
             ))}
         </div>
     );

@@ -10,7 +10,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PostDetailModal from "../post-detail-modal";
 import { useState, useEffect } from "react";
 
-export const TimelinePost = ({ post }) => {
+export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,8 +34,13 @@ export const TimelinePost = ({ post }) => {
     };    
 
     const toggleModal = () => {
-        console.log("Modal Clicked")
-        setIsModalOpen(!isModalOpen);
+        if (detailedView) {
+            handleCommentClick();
+        }
+        else {
+            console.log("Modal Clicked")
+            setIsModalOpen(!isModalOpen);
+        }
     };
 
     const renderContent = () => {
@@ -53,7 +58,7 @@ export const TimelinePost = ({ post }) => {
 
     return (
         <>
-            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: 6 } }}>
+            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } }}>
                 <CardHeader
                     avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
                     title={<Typography variant="subtitle2" color="primary">{post.author.displayName}</Typography>}

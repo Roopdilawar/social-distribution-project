@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faBell, faHeart, faUser, faComment, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
 import Comment from "../comment";
+import { TimelinePost } from "../timeline-post";
 
 export default function PostDetailModal (props) {
     const token = localStorage.getItem('token');
@@ -149,7 +150,7 @@ export default function PostDetailModal (props) {
                 onClose={props.onClose}
             >
                 <Box className="modal-container">
-                    <div className="post-header">
+                    {/* <div className="post-header">
                     <Avatar src={props.post.author.profileImage} alt={props.post.author.displayName}/>
                     <div className="post-info">
                         <span className="username">{props.post.author.displayName}</span>
@@ -178,10 +179,11 @@ export default function PostDetailModal (props) {
                         <span className="comment">
                             <FontAwesomeIcon icon={faComment} onClick={() => setNewCommentVisible(true)}/>
                         </span>
-                    </div>
+                    </div> */}
+                    <TimelinePost post={props.post} detailedView={true} handleCommentClick={() => setNewCommentVisible(!newCommentVisible)}/>
                     {newCommentVisible ?
                     <div className="new-comment-container">
-                        <img src="" alt="profile" className="profile-pic" />
+                        <Avatar src={props.post.author.profileImage} alt={props.post.author.displayName} />
                         <div className="comment-info">
                             <span className="comment-input">
                                 <FormControl fullWidth>
@@ -203,8 +205,7 @@ export default function PostDetailModal (props) {
                     <div className="all-comments-container">
                         {comments.length >= 1 ? comments.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
                             <Comment
-                                displayName={comment.author.displayName}
-                                description={comment.description}
+                                comment={comment}
                                 key={comment.id}
                             />
                         )):
