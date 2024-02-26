@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, FollowUserView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView
+from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, FollowUserView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView
 
 urlpatterns = [
     path('api/login/', LoginAPIView.as_view(), name='api_login'),
@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/posts/<int:post_id>/like/', LikePostView.as_view(), name='like_post'),
     path('api/posts/<int:post_id>/comments/', ListCommentsView.as_view(), name='list_comments'),
     path('api/posts/<int:post_id>/image', GetImageView.as_view(), name='get_image'),
+    path('api/get-user-id/', GetUserIDView.as_view(), name='get_id'),
 
     
     # path('api/unfollow/<int:following_user_id>/', UnfollowUserView.as_view(), name='unfollow_user'),
