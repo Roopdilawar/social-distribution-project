@@ -1,4 +1,4 @@
-import { Typography, Avatar } from "@mui/material"
+import { Avatar } from "@mui/material"
 import "./styles.css"
 
 export default function Comment ({comment}) {

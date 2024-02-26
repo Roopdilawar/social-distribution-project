@@ -119,7 +119,6 @@ export default function PostDetailModal (props) {
 
     const handleCommentSubmit = async (event) => {
         console.log(token);
-        console.log(newCommentInput);
         const commentData = {
             post: postId,
             content: newCommentInput,
@@ -135,7 +134,6 @@ export default function PostDetailModal (props) {
 
         try {
             const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
-            console.log(response.data);
             setNewCommentVisible(false);
             fetchComments();
         } catch (error) {
@@ -150,36 +148,6 @@ export default function PostDetailModal (props) {
                 onClose={props.onClose}
             >
                 <Box className="modal-container">
-                    {/* <div className="post-header">
-                    <Avatar src={props.post.author.profileImage} alt={props.post.author.displayName}/>
-                    <div className="post-info">
-                        <span className="username">{props.post.author.displayName}</span>
-                        <span className="timestamp">2h ago</span>
-                    </div>
-                    </div>
-                    <div className="modal-post-content">
-                        <p>{props.post.description}</p>
-                    </div>
-                    <div className="like-and-comment-count">
-                        <span className="likes-count">
-                            <Typography>
-                                1000 Likes
-                            </Typography>
-                        </span>
-                        <span className="comments-count">
-                            <Typography>
-                                {comments.length} comments
-                            </Typography>
-                        </span>
-                    </div>
-                    <div className="post-actions">
-                        <span className="like">
-                            <FontAwesomeIcon icon={faHeart} />
-                        </span> 
-                        <span className="comment">
-                            <FontAwesomeIcon icon={faComment} onClick={() => setNewCommentVisible(true)}/>
-                        </span>
-                    </div> */}
                     <TimelinePost post={props.post} detailedView={true} handleCommentClick={() => setNewCommentVisible(!newCommentVisible)}/>
                     {newCommentVisible ?
                     <div className="new-comment-container">
@@ -215,9 +183,7 @@ export default function PostDetailModal (props) {
                         <Pagination
                             count={(Math.floor(comments.length / 10)) + 1}
                             onChange={(event, page) => {
-                                console.log(page)
                                 setCommentsPage(page - 1);
-                                console.log(commentsPage * 10);
                             }}
                         />
                     </div>
