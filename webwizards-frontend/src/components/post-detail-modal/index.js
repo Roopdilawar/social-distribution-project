@@ -1,11 +1,42 @@
-import {React, useState} from "react";
-import { Modal, Typography, Box, Pagination, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment } from '@mui/material';
+import {React, useEffect, useState} from "react";
+import axios from 'axios';
+import { Modal, Typography, Box, Pagination, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, Avatar } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faBell, faHeart, faUser, faComment, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
 import Comment from "../comment";
 
 export default function PostDetailModal (props) {
+    const token = localStorage.getItem('token');
+    const [comments, setComments] = useState([]);
+    const [newCommentInput, setNewCommentInput] = useState([]);
+    const parsedPost = props.post.id.split("/");
+    const postId = parsedPost[parsedPost.length - 1]
+
+    useEffect(() => {
+        console.log("POST ID");
+        console.log(props.post.id.split("/"))
+        console.log(props.post.id);
+
+        const fetchComments = async () => {
+            const config = {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            };
+
+            try {
+                const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
+                const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
+                setComments(orderedComments);
+            } catch (error) {
+                console.error("Errror fetching comments: ", error);
+            }
+        };
+
+        fetchComments();
+    }, []);
+
     const fakeCommentsArray = [
         {
             author: {
@@ -89,10 +120,28 @@ export default function PostDetailModal (props) {
     const [commentsPage, setCommentsPage] = useState(0);
     const [newCommentVisible, setNewCommentVisible] = useState(false);
 
-    const handleCommentSubmit = (event, input) => {
-        // TODO: POST COMMENT
+    const handleCommentSubmit = async (event) => {
+        console.log(token);
+        console.log(newCommentInput);
+        const commentData = {
+            post: postId,
+            content: newCommentInput,
+            created: new Date().toISOString()
+        };
 
-        setNewCommentVisible(false);
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
+            console.log(response.data);
+            setNewCommentVisible(false);
+        } catch (error) {
+            console.error("Error submitting post: ", error);
+        }
     }
 
     return(
@@ -103,14 +152,14 @@ export default function PostDetailModal (props) {
             >
                 <Box className="modal-container">
                     <div className="post-header">
-                        <img src="" alt="profile" className="profile-pic" />
-                        <div className="post-info">
-                            <span className="username">{props.displayName}</span>
-                            <span className="timestamp">2h ago</span>
-                        </div>
+                    <Avatar src={props.post.author.profileImage} alt={props.post.author.displayName}/>
+                    <div className="post-info">
+                        <span className="username">{props.post.author.displayName}</span>
+                        <span className="timestamp">2h ago</span>
+                    </div>
                     </div>
                     <div className="modal-post-content">
-                        <p>{props.description}</p>
+                        <p>{props.post.description}</p>
                     </div>
                     <div className="like-and-comment-count">
                         <span className="likes-count">
@@ -120,7 +169,7 @@ export default function PostDetailModal (props) {
                         </span>
                         <span className="comments-count">
                             <Typography>
-                                {fakeCommentsArray.length} comments
+                                {comments.length} comments
                             </Typography>
                         </span>
                     </div>
@@ -138,11 +187,12 @@ export default function PostDetailModal (props) {
                         <div className="comment-info">
                             <span className="comment-input">
                                 <FormControl fullWidth>
-                                <InputLabel>New Comment</InputLabel>
-                                <OutlinedInput
-                                    id="outlined-adornment-amount"
-                                    label="New Comment"
-                                />
+                                    <InputLabel>New Comment</InputLabel>
+                                    <OutlinedInput
+                                        id="outlined-adornment-amount"
+                                        label="New Comment"
+                                        onChange={(event) => setNewCommentInput(event.target.value)}
+                                    />
                                 </FormControl>
                             </span>
                             <span>
@@ -153,15 +203,18 @@ export default function PostDetailModal (props) {
                     : ""
                     }
                     <div className="all-comments-container">
-                        {fakeCommentsArray.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
+                        {comments.length >= 1 ? comments.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
                             <Comment
                                 displayName={comment.author.displayName}
                                 description={comment.description}
                                 key={comment.id}
                             />
-                        ))}
+                        )):
+                        <Typography>
+                            No comments.
+                        </Typography>}
                         <Pagination
-                            count={(Math.floor(fakeCommentsArray.length / 10)) + 1}
+                            count={(Math.floor(comments.length / 10)) + 1}
                             onChange={(event, page) => {
                                 console.log(page)
                                 setCommentsPage(page - 1);
