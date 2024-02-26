@@ -14,6 +14,21 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
 import base64
+from django.shortcuts import render
+from django.conf import settings
+import os
+
+def index(request):
+    try:
+        with open(os.path.join(settings.REACT_APP_DIR, 'build', 'index.html')) as file:
+            return HttpResponse(file.read())
+    except:
+        return HttpResponse(
+            """
+            index.html not found! Build React app and try again.
+            """,
+            status=501,
+        )
 
 
 class RegisterView(generics.CreateAPIView):

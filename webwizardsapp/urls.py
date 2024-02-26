@@ -1,4 +1,6 @@
 from django.urls import path
+from django.urls import re_path
+from . import views
 from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, FollowUserView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView
 
 urlpatterns = [
@@ -15,6 +17,7 @@ urlpatterns = [
     path('api/posts/<int:post_id>/comments/', ListCommentsView.as_view(), name='list_comments'),
     path('api/posts/<int:post_id>/image', GetImageView.as_view(), name='get_image'),
 
+    re_path(r'^.*$', views.index),  # This should be the last pattern
     
     # path('api/unfollow/<int:following_user_id>/', UnfollowUserView.as_view(), name='unfollow_user'),
 ]
