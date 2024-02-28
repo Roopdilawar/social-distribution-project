@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,6 +13,22 @@ from .serializers import RegisterSerializer, AuthorSerializer,PostSerializer,Use
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
+import base64
+from django.shortcuts import render
+from django.conf import settings
+import os
+
+def index(request):
+    try:
+        with open(os.path.join(settings.REACT_APP_DIR, 'build', 'index.html')) as file:
+            return HttpResponse(file.read())
+    except:
+        return HttpResponse(
+            """
+            index.html not found! Build React app and try again.
+            """,
+            status=501,
+        )
 
 
 class RegisterView(generics.CreateAPIView):
@@ -19,9 +36,9 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        print("Received data:", request.data)  # Debug: Print received data
+        # print("Received data:", request.data)  # Debug: Print received data
         username = request.data.get('username')  # Or change 'username' to the correct key
-        print("Username:", username)
+        # print("Username:", username)
         return super(RegisterView, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
@@ -44,7 +61,7 @@ class LoginAPIView(APIView):
         password = request.data.get('password')
         print(username, password)
         user = authenticate(username=username, password=password)
-        print(user)
+        # print(user)
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({"token": token.key}, status=status.HTTP_200_OK)
@@ -76,6 +93,7 @@ class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
 
 
 class FollowUserView(CreateAPIView):
+    #not working
     serializer_class = UserFollowingSerializer
     
 
@@ -125,9 +143,27 @@ class PostsView(generics.ListCreateAPIView):
             "type": "posts",
             "items": response.data
         }
-        print(response.data)
+        # print(response.data)
         return response
-    
+
+
+class GetImageView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request, post_id, format=None):
+        post = get_object_or_404(Post, id=post_id)
+
+        if not post.content_type=="image/base64":
+            return Response(status=404)
+
+        try:
+            format, imgstr = post.content.split(';base64,') 
+            ext = format.split('/')[-1] 
+            data = base64.b64decode(imgstr)
+
+            return HttpResponse(data, content_type=f'image/{ext}')
+        except (ValueError, base64.binascii.Error):
+            return Response(status=404)
     
     
 class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
@@ -141,7 +177,7 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
-        print("i am in put")
+        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -180,7 +216,7 @@ class AddCommentView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        print("nothing,",serializer.instance.post)
+        # print("nothing,",serializer.instance.post)
         post_instance = serializer.instance.post
         post_instance.update_comments_count()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -215,12 +251,12 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         queryset = self.get_queryset()
-        print(self.kwargs)
+        # print(self.kwargs)
         obj = get_object_or_404(queryset, pk=self.kwargs['comment_id'])
         return obj
 
     def put(self, request, *args, **kwargs):
-        print("i am in put")
+        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -268,8 +304,15 @@ class LikePostView(APIView):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Post.DoesNotExist:
                 return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-                
-        
+
+
+class GetUserIDView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user_id = request.user.id
+        return Response({'user_id': user_id})
+    
         
 
 

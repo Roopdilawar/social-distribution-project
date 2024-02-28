@@ -1,0 +1,9 @@
+.displayed-user {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.users-container {
+    padding-top: 1vw;
+}
