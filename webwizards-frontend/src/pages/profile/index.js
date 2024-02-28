@@ -19,8 +19,8 @@ import TextField from '@mui/material/TextField';
 function UserProfile() {
     const [user, setUser] = useState(null);
     const [authors, setAuthors] = useState([]);
-    const [open, setOpen] = useState(false); // Initialize open state
-    const [bio, setBio] = useState(''); // Initialize bio state
+    const [open, setOpen] = useState(false); 
+    const [bio, setBio] = useState(''); 
     const [userId, setUserId] = useState(null);
     const [posts, setPosts] = useState([]);
 
@@ -69,19 +69,18 @@ function UserProfile() {
                 
                 const allPosts = response.data.items;
     
-                // Filter posts to include only those from the user with userId
                 const userPosts = allPosts.filter(post => {
                     const authorId = post.author.id.split('/').pop();
                     const userIdString = userId.toString();
                     
-                    return authorId === userIdString; // Compare with userId
+                    return authorId === userIdString; 
                 });
     
                 console.log("List length:", userPosts);
 
                 if (userPosts.length === 0) {
                     console.log('No posts found for this user.');
-                    setPosts(null); // Set posts to null if no matching posts are found
+                    setPosts(null); 
                 } else {
                     const orderedPosts = userPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
                     setPosts(orderedPosts);
@@ -92,7 +91,7 @@ function UserProfile() {
         };
     
         fetchPosts();
-    }, ); // Add userId to the dependency array if it's a state/prop
+    }, ); 
     
 
     const handleOpen = () => {
@@ -112,17 +111,14 @@ function UserProfile() {
         setBio(event.target.value);
     };
 
-    // New states for modals
     const [showFollowers, setShowFollowers] = useState(false);
     const [showFollowing, setShowFollowing] = useState(false);
 
-    // Functions to handle modal open/close
     const handleFollowersOpen = () => setShowFollowers(true);
     const handleFollowersClose = () => setShowFollowers(false);
     const handleFollowingOpen = () => setShowFollowing(true);
     const handleFollowingClose = () => setShowFollowing(false);
 
-    // Modal style
     const modalStyle = {
       position: 'absolute',
       top: '50%',
@@ -194,40 +190,35 @@ function UserProfile() {
 
                 <div style={{ marginTop: '40px' }} />
 
-                {/* Followers and Following buttons with onClick handlers */}
                 <Grid container spacing={4} justifyContent="center">
                     <Grid item>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2, '&:hover': { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)', cursor: 'pointer' } }} onClick={handleFollowingOpen}>
-                            following: {'7'}
+                            Following: {'4'}
                         </Typography>
                     </Grid>
                     
                     <Grid item>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2, '&:hover': { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)', cursor: 'pointer' } }} onClick={handleFollowersOpen}>
-                            followers: {'7'}
+                            Followers: {'4'}
                         </Typography>
                     </Grid>
                     
                     <Grid item>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2 }} >
-                            posts: {'7'}
+                            Posts: {posts.length}
                         </Typography>
                     </Grid>
                 </Grid>
 
-                {/* Followers Modal */}
                 <Modal open={showFollowers} onClose={handleFollowersClose}>
                     <Box sx={modalStyle}>
                         <Typography variant="h6">Followers</Typography>
-                        {/* Render followers list here */}
                     </Box>
                 </Modal>
 
-                {/* Following Modal */}
                 <Modal open={showFollowing} onClose={handleFollowingClose}>
                     <Box sx={modalStyle}>
                         <Typography variant="h6">Following</Typography>
-                        {/* Render following list here */}
                     </Box>
                 </Modal>        
 

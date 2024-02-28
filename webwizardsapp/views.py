@@ -36,9 +36,9 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        print("Received data:", request.data)  # Debug: Print received data
+        # print("Received data:", request.data)  # Debug: Print received data
         username = request.data.get('username')  # Or change 'username' to the correct key
-        print("Username:", username)
+        # print("Username:", username)
         return super(RegisterView, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
@@ -61,7 +61,7 @@ class LoginAPIView(APIView):
         password = request.data.get('password')
         print(username, password)
         user = authenticate(username=username, password=password)
-        print(user)
+        # print(user)
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({"token": token.key}, status=status.HTTP_200_OK)
@@ -143,7 +143,7 @@ class PostsView(generics.ListCreateAPIView):
             "type": "posts",
             "items": response.data
         }
-        print(response.data)
+        # print(response.data)
         return response
 
 
@@ -177,7 +177,7 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
-        print("i am in put")
+        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -216,7 +216,7 @@ class AddCommentView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        print("nothing,",serializer.instance.post)
+        # print("nothing,",serializer.instance.post)
         post_instance = serializer.instance.post
         post_instance.update_comments_count()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -251,12 +251,12 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         queryset = self.get_queryset()
-        print(self.kwargs)
+        # print(self.kwargs)
         obj = get_object_or_404(queryset, pk=self.kwargs['comment_id'])
         return obj
 
     def put(self, request, *args, **kwargs):
-        print("i am in put")
+        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):

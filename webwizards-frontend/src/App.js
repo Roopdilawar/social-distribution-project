@@ -4,13 +4,13 @@ import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
 import './App.css';
 import UserProfile from './pages/profile/index.js';
 import SignIn from './pages/signin/index.js';
 import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
 import NewPost from './pages/postcreation/index.js';
-
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,6 +39,11 @@ function App() {
 
   const handleLogoClick = () => {
     navigate('/');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); 
+    navigate('/signin'); 
   };
 
   return (
@@ -75,6 +80,10 @@ function App() {
               </IconButton>
               <IconButton color="inherit" onClick={handleProfileClick}>
                 <AccountCircle />
+              </IconButton>
+              {/* Logout Button */}
+              <IconButton color="inherit" onClick={handleLogout}>
+                <ExitToAppIcon />
               </IconButton>
             </>
           )}
