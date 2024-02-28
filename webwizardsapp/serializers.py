@@ -49,7 +49,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
-        instance.bio = validated_data.get('bio', instance.bio)
+        # instance.bio = validated_data.get('bio', instance.bio)
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.save()
         return instance
@@ -80,6 +80,7 @@ class UserFollowingSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    author=AuthorSerializer()
     
     class Meta:
         print("i am in serialiser post meta function")
@@ -95,7 +96,7 @@ class PostSerializer(serializers.ModelSerializer):
         post_id = instance.id
         
         representation['id'] = f"http://127.0.0.1:5454/authors/{author_id}/posts/{post_id}"
-        representation['author'] = f"http://127.0.0.1:8000/api/authors/{author_id}"
+        # representation['author'] = f"http://127.0.0.1:8000/api/authors/{author_id}"
         representation['Comment_counts'] = instance.comments.all().count()
         
         return representation
