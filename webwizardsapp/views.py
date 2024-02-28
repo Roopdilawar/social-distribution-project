@@ -304,7 +304,14 @@ class LikePostView(APIView):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Post.DoesNotExist:
                 return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-                
+
+
+class GetUserIDView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user_id = request.user.id
+        return Response({'user_id': user_id})
     
         
 

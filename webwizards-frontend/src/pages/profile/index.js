@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-
+import axios from 'axios';
 import { TimelinePost } from '../../components/timeline-post/index.js';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
@@ -16,94 +16,84 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 
-const posts = [
-    {
-        title:"Text Post 1",
-        id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e",
-        source:"http://lastplaceigotthisfrom.com/posts/yyyyy",
-        origin:"http://whereitcamefrom.com/posts/zzzzz",
-        description:"Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan",
-        published:"2024-01-15",
-        contentType:"text/plain",
-        author:{
-            type:"author",
-            // ID of the Author
-            id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-            // the home host of the author
-            host:"http://127.0.0.1:5454/",
-            // the display name of the author
-            displayName:"Lara Croft",
-            // url to the authors profile
-            url:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-            // HATEOS url for Github API
-            github: "http://github.com/laracroft",
-            // Image from a public domain (optional, can be missing)
-            profileImage: "https://i.imgur.com/k7XVwpB.jpeg"
-        },
-    },
-    {
-        title:"Image post 2",
-        id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3b111e",
-        source:"http://lastplaceigotthisfrom.com/posts/yyyyy",
-        origin:"http://whereitcamefrom.com/posts/zzzzz",
-        description:"This post has an image",
-        published:"2024-01-15",
-        contentType:"text/plain",
-        imageUrl:"https://i.imgur.com/P9OOMAn.jpeg",
-        
-        author:{
-            type:"author",
-            // ID of the Author
-            id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40699f",
-            // the home host of the author
-            host:"http://127.0.0.1:5454/",
-            // the display name of the author
-            displayName:"Lara Croft",
-            // url to the authors profile
-            url:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-            // HATEOS url for Github API
-            github: "http://github.com/laracroft",
-            // Image from a public domain (optional, can be missing)
-            profileImage: "https://i.imgur.com/k7XVwpB.jpeg"
-        },
-    },
-    {
-        title:"CommonMark post 3",
-        id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bb88e",
-        source:"http://lastplaceigotthisfrom.com/posts/yyyyy",
-        origin:"http://whereitcamefrom.com/posts/zzzzz",
-        description:"# Welcome to My Blog \n ## This is a Subheader\n Here's some regular text with **bold** and *italic* formatting. \n Image inside text: ![Post image](https://fas.org/wp-content/uploads/2023/06/NASA-Apollo8-Dec24-Earthrise.jpeg)",
-        published:"2024-01-18",
-        contentType:"text/commonMark",
-        author:{
-            type:"author",
-            // ID of the Author
-            id:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-            // the home host of the author
-            host:"http://127.0.0.1:5454/",
-            // the display name of the author
-            displayName:"Lara Croft",
-            // url to the authors profile
-            url:"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-            // HATEOS url for Github API
-            github: "http://github.com/laracroft",
-            // Image from a public domain (optional, can be missing)
-            profileImage: "https://i.imgur.com/k7XVwpB.jpeg"
-        },
-    }
-];
-
 function UserProfile() {
-    const [user, setUser] = useState({
-        name: 'scorpion',
-        fullName: 'Justin Fuddu',
-        followers: 150,
-        following: 75,
-        posts: [],
-        bio: 'The only way out is through.'
-    });
-    const [open, setOpen] = useState(false);
-    const [bio, setBio] = useState(user.bio);
+    const [user, setUser] = useState(null);
+    const [authors, setAuthors] = useState([]);
+    const [open, setOpen] = useState(false); // Initialize open state
+    const [bio, setBio] = useState(''); // Initialize bio state
+    const [userId, setUserId] = useState(null);
+    const [posts, setPosts] = useState([]);
+
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+            });
+            setUserId(response.data.user_id);
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+        };
+
+        fetchUserId();
+    }, []);
+    useEffect(() => {
+        const fetchAuthors = async () => {
+            if (!userId) return; 
+            try {
+                const response = await axios.get('http://localhost:8000/api/authors/' + userId + '/');
+                console.log(response)
+                setAuthors(response.data); 
+            } catch (error) {
+                console.error("Error fetching authors: ", error);
+            }
+        };
+        fetchAuthors();
+    }, [userId]);
+
+    console.log(authors)
+    
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/posts/');
+                
+                const allPosts = response.data.items;
+    
+                // Filter posts to include only those from the user with userId
+                const userPosts = allPosts.filter(post => {
+                    const authorId = post.author.id.split('/').pop();
+                    const userIdString = userId.toString();
+                    
+                    return authorId === userIdString; // Compare with userId
+                });
+    
+                console.log("List length:", userPosts);
+
+                if (userPosts.length === 0) {
+                    console.log('No posts found for this user.');
+                    setPosts(null); // Set posts to null if no matching posts are found
+                } else {
+                    const orderedPosts = userPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                    setPosts(orderedPosts);
+                }
+            } catch (error) {
+                console.error("Error fetching posts: ", error);
+            }
+        };
+    
+        fetchPosts();
+    }, ); // Add userId to the dependency array if it's a state/prop
+    
 
     const handleOpen = () => {
         setOpen(true);
@@ -154,14 +144,14 @@ function UserProfile() {
                 marginTop: 2,
                 marginBottom: 2,
             }}>
-                <Avatar src="https://i.pinimg.com/originals/9c/90/be/9c90be4949b0f0a02b404481f6adc347.jpg" sx={{ width: 200, height: 200, borderRadius: '50%' }} />
+                <Avatar src={authors.profileImage} sx={{ width: 200, height: 200, borderRadius: '50%' }} />
                 <Typography component="h1" variant="h5" sx={{
                     fontSize: '2.25em',
                     marginTop: 1,
-                    fontFamily:'Garamond',
+                    fontFamily:'Georgia',
                     fontWeight: 'bold',
                 }}>
-                    {user.fullName}
+                    {authors.displayName}
                 </Typography>
                 <div style={{ marginTop: '20px' }} />
                 <Box sx={{ marginTop: 1, textAlign: 'center' }}>
@@ -171,7 +161,7 @@ function UserProfile() {
                     fontFamily: 'Futura', 
                     fontWeight: 'italica',
                     }}>
-                        {user.bio}
+                        {"User Bio Here!"}
                     </Typography>
                     <Button variant="outlined" onClick={handleOpen} sx={{ marginTop: 1, marginBottom: 2 }}>
                         Edit Bio
@@ -208,19 +198,19 @@ function UserProfile() {
                 <Grid container spacing={4} justifyContent="center">
                     <Grid item>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2, '&:hover': { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)', cursor: 'pointer' } }} onClick={handleFollowingOpen}>
-                            following: {user.following}
+                            following: {'7'}
                         </Typography>
                     </Grid>
                     
                     <Grid item>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2, '&:hover': { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)', cursor: 'pointer' } }} onClick={handleFollowersOpen}>
-                            followers: {user.followers}
+                            followers: {'7'}
                         </Typography>
                     </Grid>
                     
                     <Grid item>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2 }} >
-                            posts: {user.posts.length}
+                            posts: {'7'}
                         </Typography>
                     </Grid>
                 </Grid>
@@ -242,11 +232,15 @@ function UserProfile() {
                 </Modal>        
 
                 <div style={{ marginTop: '40px' }} />
-                <div style={{ maxWidth: '1000px', margin: 'auto' }}>
-                    {posts.map(post => (
+                <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
+                {posts ? (
+                    posts.map(post => (
                         <TimelinePost key={post.id} post={post} />
-                    ))}
-                </div>
+                    ))
+                ) : (
+                    <p>No posts found.</p>
+                )}
+            </div>
             </Box>
         </Container>
     </ThemeProvider>
