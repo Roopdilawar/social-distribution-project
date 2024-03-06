@@ -41,7 +41,8 @@ export default function SignUp() {
           username: data.get('username'),
           email: data.get('email'),
           password: data.get('password'),
-          password2: data.get('password2')
+          password2: data.get('password2'),
+          github: data.get('github'), 
         };
     
         try {
@@ -129,6 +130,19 @@ export default function SignUp() {
                 helperText={formErrors.password2}
                 />
             </Grid>
+            <Grid item xs={12}>
+            <TextField
+                required
+                fullWidth
+                id="github"
+                label="GitHub Username"
+                name="github"
+                autoComplete="github-username"
+                error={!!formErrors.github}
+                helperText={formErrors.github}
+            />
+        </Grid>
+
             </Grid>
             <Button
               type="submit"
