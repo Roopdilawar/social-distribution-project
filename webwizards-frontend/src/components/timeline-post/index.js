@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./styles.css";
 import axios from "axios";
-import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem } from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box,  } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
@@ -14,6 +14,7 @@ import EditPost from '../edit-post-modal/index.js';
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     const [isLiked, setIsLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(post.likes || 0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null); 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
@@ -30,7 +31,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     };
 
     const handleEdit = () => {
-        setIsEditModalOpen(true); // Open the edit modal
+        setIsEditModalOpen(true); 
         handleMenuClose();
     };
 
@@ -45,7 +46,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
     
         try {
-            // Replace with your actual DELETE request URL
             await axios.delete(`http://localhost:8000/api/posts/${postId}/`, config);
             console.log("Post deleted successfully");
             handleMenuClose();
@@ -53,7 +53,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
             console.error("Error deleting post: ", error);
         }
     };
-    
 
     const handleLike = async () => {
         const token = localStorage.getItem('token');
@@ -67,7 +66,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
 
         try {
             await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
-            setIsLiked(!isLiked); 
+            setIsLiked(true);
         } catch (error) {
             console.error("Error liking post: ", error);
         }
@@ -127,28 +126,42 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                     {renderContent()}
                 </CardContent>
                 <CardActions disableSpacing>
-                    <Tooltip title="Like">
-                        <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
-                            {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Comment">
-                        <IconButton aria-label="comment" onClick={toggleModal}>
-                            <ChatBubbleOutlineIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Share">
-                        <IconButton aria-label="share">
-                            <Share />
-                        </IconButton>
-                    </Tooltip>
+                    <Box display="flex" alignItems="flex-start">
+                        <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                            <Tooltip title="Like">
+                                <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
+                                    {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                </IconButton>
+                            </Tooltip>
+                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
+                                {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                            <Tooltip title="Comment">
+                                <IconButton aria-label="comment" onClick={toggleModal}>
+                                    <ChatBubbleOutlineIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
+                                {post.Comment_counts} {post.Comment_counts === 1 ? 'Comment' : 'Comments'}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center">
+                            <Tooltip title="Share">
+                                <IconButton aria-label="share">
+                                    <Share />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
+                    </Box>
                 </CardActions>
             </Card>
             <PostDetailModal isModalOpen={isModalOpen} onClose={toggleModal} post={post} />
             <EditPost
                 isOpen={isEditModalOpen}
                 handleClose={() => setIsEditModalOpen(false)}
-                post={post} // Pass the current post object for editing
+                post={post} 
             />
         </>
     );

@@ -299,9 +299,7 @@ class LikePostView(APIView):
         else:
             try:
                 post = Post.objects.get(id=post_id)
-                if request.user in post.liked_by.all():
-                    post.liked_by.remove(request.user)
-                else:
+                if request.user not in post.liked_by.all():
                     post.liked_by.add(request.user)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Post.DoesNotExist:

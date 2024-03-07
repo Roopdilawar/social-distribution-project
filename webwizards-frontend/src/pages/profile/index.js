@@ -69,12 +69,11 @@ function UserProfile() {
     
                 const userPosts = allPosts.filter(post => {
                     const authorId = post.author.id.split('/').pop();
-                    const userIdString = userId.toString();
+                    const userIdString = userId ? userId.toString() : ''; 
                     
                     return authorId === userIdString; 
                 });
     
-
                 if (userPosts.length === 0) {
                     console.log('No posts found for this user.');
                     setPosts([]); 
@@ -87,9 +86,10 @@ function UserProfile() {
                 console.error("Error fetching posts: ", error);
             }
         };
-    
         fetchPosts();
-    }, ); 
+        const intervalId = setInterval(fetchPosts, 1000);
+        return () => clearInterval(intervalId);
+    }, [userId]); 
     
 
     const handleOpen = () => {
