@@ -1,23 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import "./styles.css";
 import axios from "axios";
-import FavoriteIcon from '@mui/icons-material/Favorite';import ReactMarkdown from 'react-markdown';
-import { Card, CardHeader, Avatar, CardMedia, CardContent, Typography, IconButton, Tooltip, CardActions} from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PostDetailModal from "../post-detail-modal";
-import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom"; 
+import ReactMarkdown from 'react-markdown';
+import EditPost from '../edit-post-modal/index.js';
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null); 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
 
-    const handleLike = async () => {
-        const token = localStorage.getItem('token');
+    const location = useLocation();
+    const isProfilePage = location.pathname === "/profile";
+
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEdit = () => {
+        setIsEditModalOpen(true); // Open the edit modal
+        handleMenuClose();
+    };
+
+    const handleDelete = async () => {
         const postId = post.id.split('/').pop();
     
+        const token = localStorage.getItem('token');
         const config = {
             headers: {
                 'Authorization': `Token ${token}`
@@ -25,20 +45,38 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
     
         try {
-            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
-            console.log(response.data);
+            // Replace with your actual DELETE request URL
+            await axios.delete(`http://localhost:8000/api/posts/${postId}/`, config);
+            console.log("Post deleted successfully");
+            handleMenuClose();
+        } catch (error) {
+            console.error("Error deleting post: ", error);
+        }
+    };
+    
+
+    const handleLike = async () => {
+        const token = localStorage.getItem('token');
+        const postId = post.id.split('/').pop();
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
             setIsLiked(!isLiked); 
         } catch (error) {
             console.error("Error liking post: ", error);
         }
-    };    
+    };
 
     const toggleModal = () => {
         if (detailedView) {
             handleCommentClick();
-        }
-        else {
-            console.log("Modal Clicked")
+        } else {
             setIsModalOpen(!isModalOpen);
         }
     };
@@ -54,7 +92,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
             default:
                 return <Typography variant="body2">Unsupported content type</Typography>;
         }
-    };       
+    };
 
     return (
         <>
@@ -63,7 +101,24 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                     avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
                     title={<Typography variant="subtitle2" color="primary">{post.author.displayName}</Typography>}
                     subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
-                    action={<IconButton><MoreVertIcon /></IconButton>}
+                    action={
+                        isProfilePage && (
+                            <>
+                                <IconButton onClick={handleMenuClick}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    keepMounted
+                                    open={Boolean(anchorEl)}
+                                    onClose={handleMenuClose}
+                                >
+                                    <MenuItem onClick={handleEdit}>Edit</MenuItem>
+                                    <MenuItem onClick={handleDelete}>Delete</MenuItem>
+                                </Menu>
+                            </>
+                        )
+                    }
                 />
                 <CardContent>
                     <Typography variant="h6" color="textPrimary" gutterBottom>
@@ -72,24 +127,29 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                     {renderContent()}
                 </CardContent>
                 <CardActions disableSpacing>
-                <Tooltip title="Like">
-                    <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
-                        {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                    </IconButton>
-                </Tooltip>
-                <Tooltip title="Comment">
-                    <IconButton aria-label="comment" onClick={toggleModal}>
-                        <ChatBubbleOutlineIcon />
-                    </IconButton>
-                </Tooltip>
-                <Tooltip title="Share">
-                    <IconButton aria-label="share">
-                        <Share />
-                    </IconButton>
-                </Tooltip>
-            </CardActions>
+                    <Tooltip title="Like">
+                        <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
+                            {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Comment">
+                        <IconButton aria-label="comment" onClick={toggleModal}>
+                            <ChatBubbleOutlineIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Share">
+                        <IconButton aria-label="share">
+                            <Share />
+                        </IconButton>
+                    </Tooltip>
+                </CardActions>
             </Card>
             <PostDetailModal isModalOpen={isModalOpen} onClose={toggleModal} post={post} />
+            <EditPost
+                isOpen={isEditModalOpen}
+                handleClose={() => setIsEditModalOpen(false)}
+                post={post} // Pass the current post object for editing
+            />
         </>
     );
 };

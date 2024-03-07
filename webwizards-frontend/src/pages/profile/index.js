@@ -51,7 +51,6 @@ function UserProfile() {
             if (!userId) return; 
             try {
                 const response = await axios.get('http://localhost:8000/api/authors/' + userId + '/');
-                console.log(response)
                 setAuthors(response.data); 
             } catch (error) {
                 console.error("Error fetching authors: ", error);
@@ -60,7 +59,6 @@ function UserProfile() {
         fetchAuthors();
     }, [userId]);
 
-    console.log(authors)
     
     useEffect(() => {
         const fetchPosts = async () => {
@@ -76,15 +74,15 @@ function UserProfile() {
                     return authorId === userIdString; 
                 });
     
-                console.log("List length:", userPosts);
 
                 if (userPosts.length === 0) {
                     console.log('No posts found for this user.');
-                    setPosts(null); 
+                    setPosts([]); 
                 } else {
                     const orderedPosts = userPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
                     setPosts(orderedPosts);
                 }
+                
             } catch (error) {
                 console.error("Error fetching posts: ", error);
             }
@@ -224,14 +222,16 @@ function UserProfile() {
 
                 <div style={{ marginTop: '40px' }} />
                 <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
-                {posts ? (
-                    posts.map(post => (
-                        <TimelinePost key={post.id} post={post} />
-                    ))
-                ) : (
-                    <p>No posts found.</p>
-                )}
-            </div>
+                    {posts.length > 0 ? (
+                        posts.map(post => (
+                            <TimelinePost key={post.id} post={post} />
+                        ))
+                    ) : (
+                        <Typography variant="subtitle1" style={{ textAlign: 'center' }}>
+                            No posts found!
+                        </Typography>
+                    )}
+                </div>
             </Box>
         </Container>
     </ThemeProvider>

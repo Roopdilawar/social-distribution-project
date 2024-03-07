@@ -20,8 +20,6 @@ const TimelinePage = () => {
         fetchPosts();
     }, []);
 
-    console.log(posts)
-
     return (
         <div style={{ maxWidth: '1000px', margin: 'auto' }}>
             {posts.map(post => (
