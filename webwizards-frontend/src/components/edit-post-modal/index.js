@@ -78,7 +78,6 @@ function EditPost({ isOpen, handleClose, post }) {
             const response = await axios.put(`http://localhost:8000/api/posts/${postId}/`, editedPostData, config);
             console.log(response.data);
             handleClose(); 
-            // Optionally trigger a refresh or update of the posts list in the parent component
         } catch (error) {
             console.error("Error updating post: ", error);
         }
