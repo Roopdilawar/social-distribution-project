@@ -17,6 +17,8 @@ import base64
 from django.shortcuts import render
 from django.conf import settings
 import os
+from rest_framework.parsers import JSONParser
+
 
 def index(request):
     try:
@@ -312,6 +314,27 @@ class GetUserIDView(APIView):
     def get(self, request, format=None):
         user_id = request.user.id
         return Response({'user_id': user_id})
+
+class UserBioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user_bio = request.user.bio
+        return Response({'user_bio': user_bio})
+    
+    def put(self, request, format=None):
+        """
+        Update the bio of the authenticated user.
+        """
+        user = request.user
+        data = JSONParser().parse(request)
+        bio = data.get('bio', None)
+
+        if bio is not None:
+            user.bio = bio
+            user.save()
+            return Response({'message': 'Bio updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Bio is required'}, status=status.HTTP_400_BAD_REQUEST)
     
         
 
