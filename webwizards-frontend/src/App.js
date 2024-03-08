@@ -64,46 +64,63 @@ function App() {
     <ThemeProvider theme={theme}>
     <CssBaseline /> 
     <div className="App">
-      <AppBar position="static">
-        <Toolbar>
-          <Box 
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }} 
-            onClick={handleLogoClick}
-          >
-            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
-            <Typography 
-              variant="h6" 
-              component="div" 
-              sx={{ 
-                marginLeft: '0px', 
-                fontWeight: '800',
-                color: '#FFFFFF',
-                fontFamily: 'Lexend',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-              }}            
-            >
-              SocialDistribution
-            </Typography>
-          </Box>
-          {!isAuthPage && (
-            <>
-              <IconButton color="inherit" onClick={toggleModal}>
-                <AddBoxIcon />
-              </IconButton>
-              <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
-              <IconButton color="inherit">
-                <NotificationsIcon />
-              </IconButton>
-              <IconButton color="inherit" onClick={handleProfileClick}>
-                <AccountCircle />
-              </IconButton>
-              <IconButton color="inherit" onClick={handleLogout}>
-                <ExitToAppIcon />
-              </IconButton>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
+      <AppBar position="fixed" sx={{
+        backgroundColor: 'rgba(255,255,255,0.2)', 
+        backdropFilter: 'blur(10px)', 
+        boxShadow: 'none', 
+        color: 'rgba(0, 0, 0, 0.7)', 
+        '&::before': { 
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(25, 118, 210, 0.9)', 
+          borderRadius: '4px', 
+          zIndex: -1,
+        },
+      }}>
+    <Toolbar>
+      <Box 
+        sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }} 
+        onClick={handleLogoClick}
+      >
+        <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            marginLeft: '0px', 
+            fontWeight: '800',
+            color: '#FFFFFF', 
+            fontFamily: 'Lexend',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)' 
+          }}            
+        >
+          SocialDistribution
+        </Typography>
+      </Box>
+      {!isAuthPage && (
+        <>
+          <IconButton color="inherit" onClick={toggleModal}>
+            <AddBoxIcon />
+          </IconButton>
+          <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
+          <IconButton color="inherit">
+            <NotificationsIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={handleProfileClick}>
+            <AccountCircle />
+          </IconButton>
+          <IconButton color="inherit" onClick={handleLogout}>
+            <ExitToAppIcon />
+          </IconButton>
+        </>
+      )}
+    </Toolbar>
+  </AppBar>
+
       <Routes>
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />

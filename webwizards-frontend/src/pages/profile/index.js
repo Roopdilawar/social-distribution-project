@@ -134,6 +134,7 @@ function UserProfile() {
 
     return (
         <ThemeProvider theme={createTheme()}>
+        <Box sx={{ pt: 8 }}>
         <Container component="main">
             <Box sx={{
                 display: 'flex',
@@ -271,6 +272,7 @@ function UserProfile() {
                 </div>
             </Box>
         </Container>
+        </Box>
     </ThemeProvider>
 );
 };
