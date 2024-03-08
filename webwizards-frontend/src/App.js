@@ -12,6 +12,19 @@ import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
 import NewPost from './pages/postcreation/index.js';
 import PostViewPage from './pages/postview/index.js';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline'; 
+
+
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Arial',
+      'sans-serif'
+    ].join(','),
+  },
+});
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,6 +61,8 @@ function App() {
   };
 
   return (
+    <ThemeProvider theme={theme}>
+    <CssBaseline /> 
     <div className="App">
       <AppBar position="static">
         <Toolbar>
@@ -63,7 +78,7 @@ function App() {
                 marginLeft: '0px', 
                 fontWeight: '800',
                 color: '#FFFFFF',
-                fontFamily: '"Custom Font", sans-serif',
+                fontFamily: 'Lexend',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
               }}            
             >
@@ -82,7 +97,6 @@ function App() {
               <IconButton color="inherit" onClick={handleProfileClick}>
                 <AccountCircle />
               </IconButton>
-              {/* Logout Button */}
               <IconButton color="inherit" onClick={handleLogout}>
                 <ExitToAppIcon />
               </IconButton>
@@ -98,6 +112,7 @@ function App() {
         <Route path="profile" element={<UserProfile />} />
       </Routes>
     </div>
+    </ThemeProvider>
   );
 }
 

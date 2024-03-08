@@ -15,6 +15,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import { Paper, ButtonBase } from '@mui/material';
+
 
 function UserProfile() {
     const [user, setUser] = useState(null);
@@ -142,25 +146,24 @@ function UserProfile() {
                 <Typography component="h1" variant="h5" sx={{
                     fontSize: '2.25em',
                     marginTop: 1,
-                    fontFamily:'Georgia',
-                    fontWeight: 'bold',
+                    fontFamily:'roboto',
+                    fontWeight: '1000',
                 }}>
                     {authors.displayName}
                 </Typography>
                 <div style={{ marginTop: '20px' }} />
-                <Box sx={{ marginTop: 1, textAlign: 'center' }}>
-                    <Typography variant="body1" sx={{
+                <Box sx={{ marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
+                <Typography variant="body1" sx={{
                     fontSize: '1em',
-                    marginTop: 1,
-                    fontFamily: 'Futura', 
-                    fontWeight: 'italica',
-                    }}>
-                        {"User Bio Here!"}
-                    </Typography>
-                    <Button variant="outlined" onClick={handleOpen} sx={{ marginTop: 1, marginBottom: 2 }}>
-                        Edit Bio
-                    </Button>
+                    fontFamily: 'Roboto', 
+                }}>
+                    {"User Bio Here!"}
+                </Typography>
+                <IconButton aria-label="edit" size="small" onClick={handleOpen} sx={{ ml: 1 }}>
+                    <EditIcon fontSize="inherit" />
+                </IconButton>
                 </Box>
+
 
                 <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Edit Bio</DialogTitle>
@@ -189,23 +192,57 @@ function UserProfile() {
                 <div style={{ marginTop: '40px' }} />
 
                 <Grid container spacing={4} justifyContent="center">
-                    <Grid item>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2, '&:hover': { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)', cursor: 'pointer' } }} onClick={handleFollowingOpen}>
-                            Following: {'4'}
-                        </Typography>
-                    </Grid>
-                    
-                    <Grid item>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2, '&:hover': { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)', cursor: 'pointer' } }} onClick={handleFollowersOpen}>
-                            Followers: {'4'}
-                        </Typography>
-                    </Grid>
-                    
-                    <Grid item>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mx: 2 }} >
-                            Posts: {posts.length}
-                        </Typography>
-                    </Grid>
+                <Grid item>
+                    <ButtonBase onClick={handleFollowingOpen} style={{ borderRadius: '4px' }}>
+                    <Typography variant="subtitle1" sx={{ 
+                        fontWeight: 'bold', 
+                        mx: 2, 
+                        display: 'inline-block', 
+                        p: 1, 
+                        borderRadius: '4px', 
+                        '&:hover': { 
+                        boxShadow: '0 2px 5px 2px rgba(0, 0, 0, 0.2)', 
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        } 
+                    }}>
+                        Following: {'4'}
+                    </Typography>
+                    </ButtonBase>
+                </Grid>
+                <Grid item>
+                    <ButtonBase onClick={handleFollowersOpen} style={{ borderRadius: '4px' }}>
+                    <Typography variant="subtitle1" sx={{ 
+                        fontWeight: 'bold', 
+                        mx: 2, 
+                        display: 'inline-block', 
+                        p: 1, 
+                        borderRadius: '4px', 
+                        '&:hover': { 
+                        boxShadow: '0 2px 5px 2px rgba(0, 0, 0, 0.2)', 
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        } 
+                    }}>
+                        Followers: {'4'}
+                    </Typography>
+                    </ButtonBase>
+                </Grid>
+                
+                <Grid item>
+                <Typography variant="subtitle1" sx={{ 
+                    fontWeight: 'bold', 
+                    mx: 2, 
+                    display: 'inline-block', 
+                    p: 1, 
+                    borderRadius: '4px', 
+                    backgroundColor: 'rgba(0, 0, 0, 0)', 
+                    boxShadow: 'none', 
+                    '&:hover': { 
+                    boxShadow: 'none', 
+                    } 
+                }}>
+                    Posts: {posts.length}
+                </Typography>
+                </Grid>
                 </Grid>
 
                 <Modal open={showFollowers} onClose={handleFollowersClose}>
