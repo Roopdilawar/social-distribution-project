@@ -9,7 +9,7 @@ function NewPost({ isOpen, handleClose }) {
     const [postContent, setPostContent] = useState('');
     const [useMarkdown, setUseMarkdown] = useState(false);
     const [title, setTitle] = useState('');
-    const [visibility, setVisibility] = useState('Public');
+    const [visibility, setVisibility] = useState('PUBLIC');
     const [base64Image, setBase64Image] = useState('');
 
     const handleInputChange = (event) => {
@@ -98,9 +98,9 @@ function NewPost({ isOpen, handleClose }) {
                         label="Visibility"
                         onChange={handleVisibilityChange}
                     >
-                        <MenuItem value="Public">Public</MenuItem>
-                        <MenuItem value="Private">Private</MenuItem>
-                        <MenuItem value="Friends">Friends</MenuItem>
+                        <MenuItem value="PUBLIC">Public</MenuItem>
+                        <MenuItem value="UNLISTED">Private</MenuItem>
+                        <MenuItem value="FRIENDS">Friends</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControlLabel

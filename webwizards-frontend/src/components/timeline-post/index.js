@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./styles.css";
 import axios from "axios";
-import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box,  } from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
@@ -21,6 +21,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
 
     const location = useLocation();
     const isProfilePage = location.pathname === "/profile";
+
+    const [showCopyConfirmation, setShowCopyConfirmation] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -72,6 +75,22 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         }
     };
 
+    const handleShareClick = async () => {
+        if (post.visibility === 'PUBLIC') {
+            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}`;
+            try {
+                await navigator.clipboard.writeText(postLink);
+                setSnackbarMessage("Link copied to clipboard"); 
+                setShowCopyConfirmation(true); 
+            } catch (error) {
+                console.error("Failed to copy link: ", error);
+            }
+        } else {
+            setSnackbarMessage("Sharing is not allowed for this post");
+            setShowCopyConfirmation(true); 
+        }
+    };    
+    
     const toggleModal = () => {
         if (detailedView) {
             handleCommentClick();
@@ -148,11 +167,11 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                             </Typography>
                         </Box>
                         <Box display="flex" alignItems="center">
-                            <Tooltip title="Share">
-                                <IconButton aria-label="share">
-                                    <Share />
-                                </IconButton>
-                            </Tooltip>
+                        <Tooltip title="Share">
+                            <IconButton aria-label="share" onClick={handleShareClick}>
+                                <Share />
+                            </IconButton>
+                        </Tooltip>
                         </Box>
                     </Box>
                 </CardActions>
@@ -162,6 +181,13 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                 isOpen={isEditModalOpen}
                 handleClose={() => setIsEditModalOpen(false)}
                 post={post} 
+            />
+            <Snackbar
+                open={showCopyConfirmation}
+                autoHideDuration={2000} 
+                onClose={() => setShowCopyConfirmation(false)}
+                message={snackbarMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} 
             />
         </>
     );

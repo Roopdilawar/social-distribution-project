@@ -11,6 +11,7 @@ import SignIn from './pages/signin/index.js';
 import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
 import NewPost from './pages/postcreation/index.js';
+import PostViewPage from './pages/postview/index.js';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,6 +94,7 @@ function App() {
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="/" element={<TimelinePage />} />
+        <Route path="/posts/:postId" element={<PostViewPage/>} />
         <Route path="profile" element={<UserProfile />} />
       </Routes>
     </div>
