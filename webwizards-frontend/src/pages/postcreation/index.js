@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Switch, FormControlLabel, Typography, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Switch, FormControlLabel, Typography, Select, MenuItem, InputLabel, FormControl, Zoom } from '@mui/material';
 
 function NewPost({ isOpen, handleClose }) {
     const token = localStorage.getItem('token');
@@ -76,6 +76,8 @@ function NewPost({ isOpen, handleClose }) {
             fullWidth={true}
             maxWidth="md" 
             sx={{ '& .MuiDialog-paper': { minWidth: '80%' } }} 
+            TransitionComponent={Zoom} 
+            transitionDuration={400}
         >
             <DialogTitle id="form-dialog-title">Create a New Post</DialogTitle>
             <DialogContent>

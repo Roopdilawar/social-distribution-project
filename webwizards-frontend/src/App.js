@@ -15,6 +15,7 @@ import PostViewPage from './pages/postview/index.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from './components/theme-context/index.js'; 
 import Tooltip from '@mui/material/Tooltip';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 
 function App() {
@@ -103,19 +104,26 @@ function App() {
             <ExitToAppIcon />
           </IconButton>
         </Tooltip>
-      </>
-    )}
-  </Toolbar>
-</AppBar>
-
-
-      <Routes>
-        <Route path="signin" element={<SignIn />} />
-        <Route path="signup" element={<SignUp />} />
-        <Route path="/" element={<TimelinePage />} />
-        <Route path="/posts/:postId" element={<PostViewPage/>} />
-        <Route path="profile" element={<UserProfile />} />
-      </Routes>
+          </>
+        )}
+      </Toolbar>
+    </AppBar>
+  
+    <TransitionGroup>
+      <CSSTransition
+        key={location.key}
+        timeout={{ enter: 500, exit: 200 }}
+        classNames="fade"
+      >
+        <Routes>
+          <Route path="signin" element={<SignIn />} />
+          <Route path="signup" element={<SignUp />} />
+          <Route path="/" element={<TimelinePage />} />
+          <Route path="/posts/:postId" element={<PostViewPage/>} />
+          <Route path="profile" element={<UserProfile />} />
+        </Routes>
+        </CSSTransition>
+      </TransitionGroup>
     </div>
   </ThemeProvider>
 );
