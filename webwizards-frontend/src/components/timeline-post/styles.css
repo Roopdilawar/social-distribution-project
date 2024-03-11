@@ -68,3 +68,18 @@
     padding-top: 2%;
     padding-bottom: 2%;
 }
+
+.comment-input {
+    width: 80%;
+}
+
+.submit-button {
+    padding-left: 1em;
+}
+
+.comment-info {
+    display: flex;
+    width: 90%;
+    align-items: center;
+    padding-left: 10px;
+}

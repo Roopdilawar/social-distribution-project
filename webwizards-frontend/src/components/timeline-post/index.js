@@ -7,7 +7,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import PostDetailModal from "../post-detail-modal";
 import { useLocation } from "react-router-dom"; 
 import ReactMarkdown from 'react-markdown';
 import EditPost from '../edit-post-modal/index.js';
