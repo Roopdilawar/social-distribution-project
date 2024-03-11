@@ -34,86 +34,6 @@ export default function PostDetailModal (props) {
         fetchComments();
     }, []);
 
-    const fakeCommentsArray = [
-        {
-            author: {
-                displayName: "First commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '1'
-        },
-        {
-            author: {
-                displayName: "Second commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '2'
-        },
-        {
-            author: {
-                displayName: "Third commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '3'
-        },
-        {
-            author: {
-                displayName: "Fourth commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '4'
-        },
-        {
-            author: {
-                displayName: "Fifth commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '5'
-        },
-        {
-            author: {
-                displayName: "Sixth commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '6'
-        },
-        {
-            author: {
-                displayName: "Seventh commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '7'
-        },
-        {
-            author: {
-                displayName: "Eight commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '8'
-        },
-        {
-            author: {
-                displayName: "Ninth commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '9'
-        },
-        {
-            author: {
-                displayName: "Tenth commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '10'
-        },
-        {
-            author: {
-                displayName: "Eleventh commenter"
-            },
-            description: "Wow what an incredible post!",
-            id: '11'
-        },
-    ]
-
     const [commentsPage, setCommentsPage] = useState(0);
     const [newCommentVisible, setNewCommentVisible] = useState(false);
 
@@ -134,7 +54,6 @@ export default function PostDetailModal (props) {
 
         try {
             const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
-            setNewCommentVisible(false);
             fetchComments();
         } catch (error) {
             console.error("Error submitting post: ", error);
@@ -158,6 +77,7 @@ export default function PostDetailModal (props) {
                                     <InputLabel>New Comment</InputLabel>
                                     <OutlinedInput
                                         id="outlined-adornment-amount"
+                                        value={newCommentInput}
                                         label="New Comment"
                                         onChange={(event) => setNewCommentInput(event.target.value)}
                                     />

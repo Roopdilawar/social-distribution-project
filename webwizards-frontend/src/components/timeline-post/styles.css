@@ -57,3 +57,14 @@
 .post-actions span:hover {
     text-decoration: underline;
 }
+
+.new-comment-avatar {
+    margin-left: 1.2%;
+}
+
+.new-comment-container {
+    display: flex;
+    align-items: center;
+    padding-top: 2%;
+    padding-bottom: 2%;
+}

@@ -26,12 +26,6 @@
     font-weight: 500;
 }
 
-.new-comment-container {
-    display: flex;
-    align-items: center;
-    padding: 5px;
-}
-
 .comment-input {
     width: 80%;
 }

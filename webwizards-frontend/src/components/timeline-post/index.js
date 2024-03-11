@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./styles.css";
 import axios from "axios";
-import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar } from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar, Collapse, Pagination, FormControl, InputLabel, OutlinedInput } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
@@ -11,6 +11,10 @@ import PostDetailModal from "../post-detail-modal";
 import { useLocation } from "react-router-dom"; 
 import ReactMarkdown from 'react-markdown';
 import EditPost from '../edit-post-modal/index.js';
+import Comment from "../comment/index.js";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     const [isLiked, setIsLiked] = useState(false);
@@ -18,12 +22,18 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null); 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
+    const [comments, setComments] = useState([]);
+    const [commentsPage, setCommentsPage] = useState(0);
 
     const location = useLocation();
     const isProfilePage = location.pathname === "/profile";
 
     const [showCopyConfirmation, setShowCopyConfirmation] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const [expanded, setExpanded] = useState(false);
+    const [newCommentVisible, setNewCommentVisible] = useState(false);
+    const [newCommentInput, setNewCommentInput] = useState([]);
 
     const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -37,6 +47,57 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         setIsEditModalOpen(true); 
         handleMenuClose();
     };
+
+    const handleExpandComments = () => {
+        setExpanded(!expanded);
+        setNewCommentVisible(true);
+        fetchComments();
+    }
+
+    const fetchComments = async () => {
+        const postId = post.id.split('/').pop();
+        const token = localStorage.getItem('token');
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
+            const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
+            setComments(orderedComments);
+        } catch (error) {
+            console.error("Errror fetching comments: ", error);
+        }
+    };
+
+    const handleCommentSubmit = async (event) => {
+        const postId = post.id.split('/').pop();
+        const token = localStorage.getItem('token');
+
+        const commentData = {
+            post: postId,
+            content: newCommentInput,
+            created: new Date().toISOString(),
+            author: ""
+        };
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
+            fetchComments();
+            setNewCommentInput("");
+        } catch (error) {
+            console.error("Error submitting post: ", error);
+        }
+    }
 
     const handleDelete = async () => {
         const postId = post.id.split('/').pop();
@@ -88,14 +149,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         } else {
             setSnackbarMessage("Sharing is not allowed for this post");
             setShowCopyConfirmation(true); 
-        }
-    };    
-    
-    const toggleModal = () => {
-        if (detailedView) {
-            handleCommentClick();
-        } else {
-            setIsModalOpen(!isModalOpen);
         }
     };
 
@@ -158,11 +211,11 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                         </Box>
                         <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
                             <Tooltip title="Comment">
-                                <IconButton aria-label="comment" onClick={toggleModal}>
+                                <IconButton aria-label="comment" onClick={handleExpandComments} className="comments-button">
                                     <ChatBubbleOutlineIcon />
                                 </IconButton>
                             </Tooltip>
-                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
+                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem'}}>
                                 {post.Comment_counts} {post.Comment_counts === 1 ? 'Comment' : 'Comments'}
                             </Typography>
                         </Box>
@@ -175,8 +228,49 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                         </Box>
                     </Box>
                 </CardActions>
+                <Collapse in={expanded} timeout="auto" unmountOnExit>
+                    {newCommentVisible ?
+                        <div className="new-comment-container">
+                            <Avatar src={post.author.profileImage} alt={post.author.displayName} className="new-comment-avatar"/>
+                            <div className="comment-info">
+                                <span className="comment-input">
+                                    <FormControl fullWidth>
+                                        <InputLabel>New Comment</InputLabel>
+                                        <OutlinedInput
+                                            id="outlined-adornment-amount"
+                                            label="New Comment"
+                                            onChange={(event) => setNewCommentInput(event.target.value)}
+                                            value={newCommentInput}
+                                        />
+                                    </FormControl>
+                                </span>
+                                <span>
+                                    <FontAwesomeIcon icon={faPaperPlane} className="submit-button" size="lg" onClick={handleCommentSubmit}/>
+                                </span>
+                            </div>
+                        </div>
+                        :
+                        ""
+                    }
+                    <div className="all-comments-container">
+                        {comments.length >= 1 ? comments.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
+                            <Comment
+                                comment={comment}
+                                key={comment.id}
+                            />
+                        )):
+                        <Typography>
+                            No comments.
+                        </Typography>}
+                        <Pagination
+                            count={(Math.floor(comments.length / 10)) + 1}
+                            onChange={(event, page) => {
+                                setCommentsPage(page - 1);
+                            }}
+                        />
+                    </div>
+                </Collapse>
             </Card>
-            <PostDetailModal isModalOpen={isModalOpen} onClose={toggleModal} post={post} />
             <EditPost
                 isOpen={isEditModalOpen}
                 handleClose={() => setIsEditModalOpen(false)}
