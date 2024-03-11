@@ -14,6 +14,7 @@ import NewPost from './pages/postcreation/index.js';
 import PostViewPage from './pages/postview/index.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from './components/theme-context/index.js'; 
+import Tooltip from '@mui/material/Tooltip';
 
 
 function App() {
@@ -55,61 +56,58 @@ function App() {
       <CssBaseline /> 
       <div className="App">
       <AppBar position="fixed" sx={{
-        backgroundColor: 'rgba(255,255,255,0.2)', 
-        backdropFilter: 'blur(10px)', 
-        boxShadow: 'none', 
-        color: 'rgba(0, 0, 0, 0.7)', 
-        '&::before': { 
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(25, 118, 210, 0.9)', 
-          borderRadius: '4px', 
-          zIndex: -1,
-        },
+        backgroundColor: 'rgba(25, 118, 210, 0.9)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: 'none',
+        color: 'rgba(0, 0, 0, 0.7)',
       }}>
-    <Toolbar>
-      <Box 
-        sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }} 
-        onClick={handleLogoClick}
+  <Toolbar>
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }}
+      onClick={handleLogoClick}
+    >
+      <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+      <Typography
+        variant="h6"
+        component="div"
+        sx={{
+          fontWeight: 'bold',
+          color: '#FFFFFF',
+          fontFamily: 'Lexend',
+          textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+        }}
       >
-        <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
-        <Typography 
-          variant="h6" 
-          component="div" 
-          sx={{ 
-            marginLeft: '0px', 
-            fontWeight: '800',
-            color: '#FFFFFF', 
-            fontFamily: 'Lexend',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)' 
-          }}            
-        >
-          SocialDistribution
-        </Typography>
-      </Box>
-      {!isAuthPage && (
-        <>
-          <IconButton color="inherit" onClick={toggleModal}>
+        SocialDistribution
+      </Typography>
+    </Box>
+    {!isAuthPage && (
+      <>
+        <Tooltip title="Add Post">
+          <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
             <AddBoxIcon />
           </IconButton>
-          <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
-          <IconButton color="inherit">
+        </Tooltip>
+        <NewPost isOpen={isModalOpen} className="navbar-icon" handleClose={toggleModal} />
+        <Tooltip title="Notifications">
+          <IconButton color="inherit" className="navbar-icon">
             <NotificationsIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={handleProfileClick}>
+        </Tooltip>
+        <Tooltip title="Profile">
+          <IconButton color="inherit" className="navbar-icon" onClick={handleProfileClick}>
             <AccountCircle />
           </IconButton>
-          <IconButton color="inherit" onClick={handleLogout}>
+        </Tooltip>
+        <Tooltip title="Logout">
+          <IconButton color="inherit" className="navbar-icon" onClick={handleLogout}>
             <ExitToAppIcon />
           </IconButton>
-        </>
-      )}
-    </Toolbar>
-  </AppBar>
+        </Tooltip>
+      </>
+    )}
+  </Toolbar>
+</AppBar>
+
 
       <Routes>
         <Route path="signin" element={<SignIn />} />
