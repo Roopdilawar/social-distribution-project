@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import { TimelinePost } from '../../components/timeline-post/index.js';
@@ -18,7 +17,22 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import { Paper, ButtonBase } from '@mui/material';
+import { useTheme } from '../../components/theme-context/index.js';
+import LightModeIcon from '@mui/icons-material/LightMode'; 
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { styled } from '@mui/system';
 
+
+const ThemeSwitchButton = styled(IconButton)(({ theme }) => ({
+    transition: theme.transitions.create('transform', {
+      duration: theme.transitions.duration.short,
+    }),
+    transform: 'rotate(0deg)',
+    '&:hover': {
+      backgroundColor: 'transparent',
+      transform: 'rotate(360deg)',
+    },
+  }));  
 
 function UserProfile() {
     const [user, setUser] = useState(null);
@@ -27,6 +41,7 @@ function UserProfile() {
     const [bio, setBio] = useState(''); 
     const [userId, setUserId] = useState(null);
     const [posts, setPosts] = useState([]);
+    const { themeMode, toggleTheme } = useTheme();
 
 
     useEffect(() => {
@@ -133,16 +148,20 @@ function UserProfile() {
     };
 
     return (
-        <ThemeProvider theme={createTheme()}>
         <Box sx={{ pt: 8 }}>
-        <Container component="main">
-            <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                marginTop: 2,
-                marginBottom: 2,
-            }}>
+            <Container component="main">
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    marginTop: 2,
+                    marginBottom: 2,
+                }}>
+                <Box sx={{ position: 'fixed', top: 60, right: 0, m: 2, zIndex: 1301 }}>
+                        <ThemeSwitchButton onClick={toggleTheme} color="inherit">
+                            {themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+                        </ThemeSwitchButton>
+                </Box>
                 <Avatar src={authors.profileImage} sx={{ width: 200, height: 200, borderRadius: '50%' }} />
                 <Typography component="h1" variant="h5" sx={{
                     fontSize: '2.25em',
@@ -273,7 +292,6 @@ function UserProfile() {
             </Box>
         </Container>
         </Box>
-    </ThemeProvider>
 );
 };
 

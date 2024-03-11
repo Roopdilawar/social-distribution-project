@@ -11,7 +11,6 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 function Copyright(props) {
   return (
@@ -26,8 +25,6 @@ function Copyright(props) {
   );
 }
 
-
-const defaultTheme = createTheme();
 
 export default function SignUp() {
     const [formErrors, setFormErrors] = useState({});
@@ -61,7 +58,6 @@ export default function SignUp() {
       };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
       <Box sx={{ pt: 9 }}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -165,6 +161,5 @@ export default function SignUp() {
         <Copyright sx={{ mt: 5 }} />
       </Container>
       </Box>
-    </ThemeProvider>
   );
 }

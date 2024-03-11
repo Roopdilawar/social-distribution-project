@@ -12,19 +12,9 @@ import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
 import NewPost from './pages/postcreation/index.js';
 import PostViewPage from './pages/postview/index.js';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline'; 
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from './components/theme-context/index.js'; 
 
-
-const theme = createTheme({
-  typography: {
-    fontFamily: [
-      'Roboto',
-      'Arial',
-      'sans-serif'
-    ].join(','),
-  },
-});
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,9 +51,9 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-    <CssBaseline /> 
-    <div className="App">
+    <ThemeProvider>
+      <CssBaseline /> 
+      <div className="App">
       <AppBar position="fixed" sx={{
         backgroundColor: 'rgba(255,255,255,0.2)', 
         backdropFilter: 'blur(10px)', 
@@ -129,8 +119,8 @@ function App() {
         <Route path="profile" element={<UserProfile />} />
       </Routes>
     </div>
-    </ThemeProvider>
-  );
+  </ThemeProvider>
+);
 }
 
 export default App;
