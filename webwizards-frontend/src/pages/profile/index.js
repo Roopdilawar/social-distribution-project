@@ -38,11 +38,31 @@ function UserProfile() {
     const [user, setUser] = useState(null);
     const [authors, setAuthors] = useState([]);
     const [open, setOpen] = useState(false); 
-    const [bio, setBio] = useState(''); 
+    const [newBio, setNewBio] = useState(''); 
+    const [currentBio, setCurrentBio] = useState('');
     const [userId, setUserId] = useState(null);
     const [posts, setPosts] = useState([]);
     const { themeMode, toggleTheme } = useTheme();
 
+    const fetchUserBio = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/user-bio/', {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+            });
+            setCurrentBio(response.data.user_bio);
+            setNewBio(response.data.user_bio);
+            
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+    };
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -64,21 +84,23 @@ function UserProfile() {
         };
 
         fetchUserId();
+        fetchUserBio();
     }, []);
+
+    const fetchAuthors = async () => {
+        if (!userId) return; 
+        try {
+            const response = await axios.get('http://localhost:8000/api/authors/' + userId + '/');
+            setAuthors(response.data); 
+        } catch (error) {
+            console.error("Error fetching authors: ", error);
+        }
+    };
+
     useEffect(() => {
-        const fetchAuthors = async () => {
-            if (!userId) return; 
-            try {
-                const response = await axios.get('http://localhost:8000/api/authors/' + userId + '/');
-                setAuthors(response.data); 
-            } catch (error) {
-                console.error("Error fetching authors: ", error);
-            }
-        };
         fetchAuthors();
     }, [userId]);
 
-    
     useEffect(() => {
         const fetchPosts = async () => {
             try {
@@ -108,8 +130,7 @@ function UserProfile() {
         fetchPosts();
         const intervalId = setInterval(fetchPosts, 1000);
         return () => clearInterval(intervalId);
-    }, [userId]); 
-    
+    }, [userId]);     
 
     const handleOpen = () => {
         setOpen(true);
@@ -117,16 +138,41 @@ function UserProfile() {
 
     const handleClose = () => {
         setOpen(false);
-    };
-
-    const handleSave = () => {
-        setUser({ ...user, bio: bio });
-        handleClose();
+        setNewBio(currentBio);
     };
 
     const handleBioChange = (event) => {
-        setBio(event.target.value);
+        setNewBio(event.target.value);
     };
+
+    const updateBio = async () => {
+        const updatedUserData = {
+            user_email: authors.user_email,
+            profile_picture: authors.profileImage,
+            github: authors.github,
+            bio: newBio
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.put('http://localhost:8000/api/user-bio/', updatedUserData, config);
+            fetchUserBio();
+            setOpen(false);
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+    }
 
     const [showFollowers, setShowFollowers] = useState(false);
     const [showFollowing, setShowFollowing] = useState(false);
@@ -177,7 +223,7 @@ function UserProfile() {
                     fontSize: '1em',
                     fontFamily: 'Roboto', 
                 }}>
-                    {"User Bio Here!"}
+                    {currentBio}
                 </Typography>
                 <IconButton aria-label="edit" size="small" onClick={handleOpen} sx={{ ml: 1 }}>
                     <EditIcon fontSize="inherit" />
@@ -199,13 +245,13 @@ function UserProfile() {
                         type="text"
                         fullWidth
                         variant="outlined"
-                        value={bio}
+                        value={newBio}
                         onChange={handleBioChange}
                     />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={updateBio}>Save</Button>
                 </DialogActions>
             </Dialog>
 
