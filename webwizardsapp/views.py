@@ -333,6 +333,27 @@ class UserBioView(APIView):
             user.save()
             return Response({'message': 'Bio updated successfully'}, status=status.HTTP_200_OK)
         return Response({'error': 'Bio is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserProfilePictureView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user_profile_picture = request.user.profile_picture
+        return Response({'user_profile_picture': user_profile_picture})
+    
+    def put(self, request, format=None):
+        """
+        Update the bio of the authenticated user.
+        """
+        user = request.user
+        data = JSONParser().parse(request)
+        profile_picture = data.get('profile_picture', None)
+
+        if profile_picture is not None:
+            user.profile_picture = profile_picture
+            user.save()
+            return Response({'message': 'Profile picture updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Profile picture is required'}, status=status.HTTP_400_BAD_REQUEST)
     
         
 

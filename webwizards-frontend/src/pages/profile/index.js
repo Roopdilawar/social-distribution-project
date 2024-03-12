@@ -37,9 +37,12 @@ const ThemeSwitchButton = styled(IconButton)(({ theme }) => ({
 function UserProfile() {
     const [user, setUser] = useState(null);
     const [authors, setAuthors] = useState([]);
-    const [open, setOpen] = useState(false); 
+    const [editBioOpen, setEditBioOpen] = useState(false);
+    const [editProfilePicOpen, setEditProfilePicOpen] = useState(false);
     const [newBio, setNewBio] = useState(''); 
     const [currentBio, setCurrentBio] = useState('');
+    const [currentProfilePic, setCurrentProfilePic] = useState('');
+    const [newProfilePic, setNewProfilePic] = useState('');
     const [userId, setUserId] = useState(null);
     const [posts, setPosts] = useState([]);
     const { themeMode, toggleTheme } = useTheme();
@@ -59,6 +62,24 @@ function UserProfile() {
             setCurrentBio(response.data.user_bio);
             setNewBio(response.data.user_bio);
             
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+    };
+
+    const fetchUserProfilePic = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/user-profile-picture/', {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+            });
+            setCurrentProfilePic(response.data.user_profile_picture);            
         } catch (error) {
             console.error("Error fetching user ID: ", error);
         }
@@ -85,6 +106,7 @@ function UserProfile() {
 
         fetchUserId();
         fetchUserBio();
+        fetchUserProfilePic();
     }, []);
 
     const fetchAuthors = async () => {
@@ -133,23 +155,25 @@ function UserProfile() {
     }, [userId]);     
 
     const handleOpen = () => {
-        setOpen(true);
+        setEditBioOpen(true);
     };
 
     const handleClose = () => {
-        setOpen(false);
+        setEditBioOpen(false);
         setNewBio(currentBio);
     };
+
+    const handleCloseEditProfilePic = () => {
+        setEditProfilePicOpen(false);
+        setNewProfilePic('');
+    }
 
     const handleBioChange = (event) => {
         setNewBio(event.target.value);
     };
 
     const updateBio = async () => {
-        const updatedUserData = {
-            user_email: authors.user_email,
-            profile_picture: authors.profileImage,
-            github: authors.github,
+        const updatedBioData = {
             bio: newBio
         }
 
@@ -166,9 +190,35 @@ function UserProfile() {
         };
 
         try {
-            const response = await axios.put('http://localhost:8000/api/user-bio/', updatedUserData, config);
+            const response = await axios.put('http://localhost:8000/api/user-bio/', updatedBioData, config);
             fetchUserBio();
-            setOpen(false);
+            setEditBioOpen(false);
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+    }
+
+    const updateProfilePic = async () => {
+        const updatedProfilePicData = {
+            profile_picture: newProfilePic
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.put('http://localhost:8000/api/user-profile-picture/', updatedProfilePicData, config);
+            fetchUserProfilePic();
+            setEditProfilePicOpen(false);
         } catch (error) {
             console.error("Error fetching user ID: ", error);
         }
@@ -182,6 +232,17 @@ function UserProfile() {
     const handleFollowingOpen = () => setShowFollowing(true);
     const handleFollowingClose = () => setShowFollowing(false);
 
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewProfilePic(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };    
+    
     const modalStyle = {
       position: 'absolute',
       top: '50%',
@@ -208,7 +269,39 @@ function UserProfile() {
                             {themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
                         </ThemeSwitchButton>
                 </Box>
-                <Avatar src={authors.profileImage} sx={{ width: 200, height: 200, borderRadius: '50%' }} />
+                <Avatar src={currentProfilePic} sx={{ width: 200, height: 200, borderRadius: '50%' }} onClick={() => setEditProfilePicOpen(true)}/>
+                <Dialog open={editProfilePicOpen} onClose={handleCloseEditProfilePic}>
+                    <DialogTitle>Edit Profile Picture</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            You can update your profile picture here.
+                        </DialogContentText>
+                        <Button
+                        variant="contained"
+                        component="label"
+                        sx={{ mt: 2 }}
+                        >
+                            Upload Image
+                        <input
+                            type="file"
+                            hidden
+                            accept="image/*"
+                            onChange={handleImageChange}
+                        />
+                        </Button>
+                        {newProfilePic && (
+                            <img
+                                src={newProfilePic}
+                                alt="Uploaded"
+                                style={{ maxWidth: '100%', marginTop: '20px' }}
+                            />
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseEditProfilePic}>Cancel</Button>
+                        <Button onClick={updateProfilePic}>Save</Button>
+                    </DialogActions>
+                </Dialog>
                 <Typography component="h1" variant="h5" sx={{
                     fontSize: '2.25em',
                     marginTop: 1,
@@ -231,7 +324,7 @@ function UserProfile() {
                 </Box>
 
 
-                <Dialog open={open} onClose={handleClose}>
+                <Dialog open={editBioOpen} onClose={handleClose}>
                 <DialogTitle>Edit Bio</DialogTitle>
                 <DialogContent>
                     <DialogContentText>

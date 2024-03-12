@@ -1,7 +1,7 @@
 from django.urls import path
 from django.urls import re_path
 from . import views
-from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, FollowUserView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, UserBioView
+from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, FollowUserView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, UserBioView, UserProfilePictureView
 
 urlpatterns = [
     path('api/login/', LoginAPIView.as_view(), name='api_login'),
@@ -18,6 +18,7 @@ urlpatterns = [
     path('api/posts/<int:post_id>/image', GetImageView.as_view(), name='get_image'),
     path('api/get-user-id/', GetUserIDView.as_view(), name='get_id'),
     path('api/user-bio/', UserBioView.as_view(), name='get_bio'),
+    path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
 
     re_path(r'^.*$', views.index),  # This should be the last pattern
     
