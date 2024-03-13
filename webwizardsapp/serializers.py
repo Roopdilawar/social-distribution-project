@@ -1,18 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User,Post,Comments,Followers,Inbox
+from .models import User,Post,UserFollowing,Comments,Followers,Inbox
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'password2')
+        fields = ('username', 'email', 'password', 'password2', 'github')
         extra_kwargs = {
             'username': {'required': True},
             'email': {'required': True},
             'password': {'required': True},
             'password2': {'required': True},
+            'github': {'required': False},
         }
 
     def validate(self, data):
@@ -25,9 +28,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        if validated_data['github'] != "":
+            validated_data['github'] = "http://github.com/" + validated_data['github']
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
+            github=validated_data.get('github', ''),
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -40,7 +46,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     url = serializers.CharField(default='url') # Need to update
     host = serializers.CharField(default='host') # Need to update
     displayName = serializers.CharField(source='username')
-    github = serializers.URLField(source='user_email') # Need to update
+    github = serializers.URLField() 
     profileImage = serializers.URLField(source='profile_picture')
     
     def get_id(self, obj):

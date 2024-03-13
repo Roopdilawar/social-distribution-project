@@ -1,23 +1,107 @@
-import React from "react";
+import React, { useState } from "react";
 import "./styles.css";
 import axios from "axios";
-import FavoriteIcon from '@mui/icons-material/Favorite';import ReactMarkdown from 'react-markdown';
-import { Card, CardHeader, Avatar, CardMedia, CardContent, Typography, IconButton, Tooltip, CardActions} from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar, Collapse, Pagination, FormControl, InputLabel, OutlinedInput } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import PostDetailModal from "../post-detail-modal";
-import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom"; 
+import ReactMarkdown from 'react-markdown';
+import EditPost from '../edit-post-modal/index.js';
+import Comment from "../comment/index.js";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
     const [isLiked, setIsLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(post.likes || 0);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null); 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
+    const [comments, setComments] = useState([]);
+    const [commentsPage, setCommentsPage] = useState(0);
 
-    const handleLike = async () => {
+    const location = useLocation();
+    const isProfilePage = location.pathname === "/profile";
+
+    const [showCopyConfirmation, setShowCopyConfirmation] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const [expanded, setExpanded] = useState(false);
+    const [newCommentVisible, setNewCommentVisible] = useState(false);
+    const [newCommentInput, setNewCommentInput] = useState([]);
+
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEdit = () => {
+        setIsEditModalOpen(true); 
+        handleMenuClose();
+    };
+
+    const handleExpandComments = () => {
+        setExpanded(!expanded);
+        setNewCommentVisible(true);
+        fetchComments();
+    }
+
+    const fetchComments = async () => {
+        const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
+            const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
+            setComments(orderedComments);
+        } catch (error) {
+            console.error("Errror fetching comments: ", error);
+        }
+    };
+
+    const handleCommentSubmit = async (event) => {
+        const postId = post.id.split('/').pop();
+        const token = localStorage.getItem('token');
+
+        const commentData = {
+            post: postId,
+            content: newCommentInput,
+            created: new Date().toISOString(),
+            author: ""
+        };
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
+            fetchComments();
+            setNewCommentInput("");
+        } catch (error) {
+            console.error("Error submitting post: ", error);
+        }
+    }
+
+    const handleDelete = async () => {
         const postId = post.id.split('/').pop();
     
+        const token = localStorage.getItem('token');
         const config = {
             headers: {
                 'Authorization': `Token ${token}`
@@ -25,21 +109,45 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
     
         try {
-            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
-            console.log(response.data);
-            setIsLiked(!isLiked); 
+            await axios.delete(`http://localhost:8000/api/posts/${postId}/`, config);
+            console.log("Post deleted successfully");
+            handleMenuClose();
+        } catch (error) {
+            console.error("Error deleting post: ", error);
+        }
+    };
+
+    const handleLike = async () => {
+        const token = localStorage.getItem('token');
+        const postId = post.id.split('/').pop();
+
+        const config = {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        };
+
+        try {
+            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
+            setIsLiked(true);
         } catch (error) {
             console.error("Error liking post: ", error);
         }
-    };    
+    };
 
-    const toggleModal = () => {
-        if (detailedView) {
-            handleCommentClick();
-        }
-        else {
-            console.log("Modal Clicked")
-            setIsModalOpen(!isModalOpen);
+    const handleShareClick = async () => {
+        if (post.visibility === 'PUBLIC') {
+            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}`;
+            try {
+                await navigator.clipboard.writeText(postLink);
+                setSnackbarMessage("Link copied to clipboard"); 
+                setShowCopyConfirmation(true); 
+            } catch (error) {
+                console.error("Failed to copy link: ", error);
+            }
+        } else {
+            setSnackbarMessage("Sharing is not allowed for this post");
+            setShowCopyConfirmation(true); 
         }
     };
 
@@ -54,7 +162,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
             default:
                 return <Typography variant="body2">Unsupported content type</Typography>;
         }
-    };       
+    };
 
     return (
         <>
@@ -63,7 +171,24 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                     avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
                     title={<Typography variant="subtitle2" color="primary">{post.author.displayName}</Typography>}
                     subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
-                    action={<IconButton><MoreVertIcon /></IconButton>}
+                    action={
+                        isProfilePage && (
+                            <>
+                                <IconButton onClick={handleMenuClick}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    keepMounted
+                                    open={Boolean(anchorEl)}
+                                    onClose={handleMenuClose}
+                                >
+                                    <MenuItem onClick={handleEdit}>Edit</MenuItem>
+                                    <MenuItem onClick={handleDelete}>Delete</MenuItem>
+                                </Menu>
+                            </>
+                        )
+                    }
                 />
                 <CardContent>
                     <Typography variant="h6" color="textPrimary" gutterBottom>
@@ -72,24 +197,91 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
                     {renderContent()}
                 </CardContent>
                 <CardActions disableSpacing>
-                <Tooltip title="Like">
-                    <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
-                        {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                    </IconButton>
-                </Tooltip>
-                <Tooltip title="Comment">
-                    <IconButton aria-label="comment" onClick={toggleModal}>
-                        <ChatBubbleOutlineIcon />
-                    </IconButton>
-                </Tooltip>
-                <Tooltip title="Share">
-                    <IconButton aria-label="share">
-                        <Share />
-                    </IconButton>
-                </Tooltip>
-            </CardActions>
+                    <Box display="flex" alignItems="flex-start">
+                        <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                            <Tooltip title="Like">
+                                <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
+                                    {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                </IconButton>
+                            </Tooltip>
+                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
+                                {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                            <Tooltip title="Comment">
+                                <IconButton aria-label="comment" onClick={handleExpandComments} className="comments-button">
+                                    <ChatBubbleOutlineIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem'}}>
+                                {post.Comment_counts} {post.Comment_counts === 1 ? 'Comment' : 'Comments'}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center">
+                        <Tooltip title="Share">
+                            <IconButton aria-label="share" onClick={handleShareClick}>
+                                <Share />
+                            </IconButton>
+                        </Tooltip>
+                        </Box>
+                    </Box>
+                </CardActions>
+                <Collapse in={expanded} timeout="auto" unmountOnExit>
+                    {newCommentVisible ?
+                        <div className="new-comment-container">
+                            <Avatar src={post.author.profileImage} alt={post.author.displayName} className="new-comment-avatar"/>
+                            <div className="comment-info">
+                                <span className="comment-input">
+                                    <FormControl fullWidth>
+                                        <InputLabel>New Comment</InputLabel>
+                                        <OutlinedInput
+                                            id="outlined-adornment-amount"
+                                            label="New Comment"
+                                            onChange={(event) => setNewCommentInput(event.target.value)}
+                                            value={newCommentInput}
+                                        />
+                                    </FormControl>
+                                </span>
+                                <span>
+                                    <FontAwesomeIcon icon={faPaperPlane} className="submit-button" size="lg" onClick={handleCommentSubmit}/>
+                                </span>
+                            </div>
+                        </div>
+                        :
+                        ""
+                    }
+                    <div className="all-comments-container">
+                        {comments.length >= 1 ? comments.slice(commentsPage * 10, ((commentsPage * 10) + 10)).map((comment) => (
+                            <Comment
+                                comment={comment}
+                                key={comment.id}
+                            />
+                        )):
+                        <Typography>
+                            No comments.
+                        </Typography>}
+                        <Pagination
+                            count={(Math.floor(comments.length / 10)) + 1}
+                            onChange={(event, page) => {
+                                setCommentsPage(page - 1);
+                            }}
+                        />
+                    </div>
+                </Collapse>
             </Card>
-            <PostDetailModal isModalOpen={isModalOpen} onClose={toggleModal} post={post} />
+            <EditPost
+                isOpen={isEditModalOpen}
+                handleClose={() => setIsEditModalOpen(false)}
+                post={post} 
+            />
+            <Snackbar
+                open={showCopyConfirmation}
+                autoHideDuration={2000} 
+                onClose={() => setShowCopyConfirmation(false)}
+                message={snackbarMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} 
+            />
         </>
     );
 };

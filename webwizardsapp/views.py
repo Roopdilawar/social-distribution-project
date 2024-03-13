@@ -19,9 +19,7 @@ from django.conf import settings
 import os
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
-
-
-
+from rest_framework.parsers import JSONParser
 
 
 def index(request):
@@ -275,9 +273,7 @@ class LikePostView(APIView):
         else:
             try:
                 post = Post.objects.get(id=post_id)
-                if request.user in post.liked_by.all():
-                    post.liked_by.remove(request.user)
-                else:
+                if request.user not in post.liked_by.all():
                     post.liked_by.add(request.user)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Post.DoesNotExist:
@@ -290,6 +286,48 @@ class GetUserIDView(APIView):
     def get(self, request, format=None):
         user_id = request.user.id
         return Response({'user_id': user_id})
+
+class UserBioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user_bio = request.user.bio
+        return Response({'user_bio': user_bio})
+    
+    def put(self, request, format=None):
+        """
+        Update the bio of the authenticated user.
+        """
+        user = request.user
+        data = JSONParser().parse(request)
+        bio = data.get('bio', None)
+
+        if bio is not None:
+            user.bio = bio
+            user.save()
+            return Response({'message': 'Bio updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Bio is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserProfilePictureView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user_profile_picture = request.user.profile_picture
+        return Response({'user_profile_picture': user_profile_picture})
+    
+    def put(self, request, format=None):
+        """
+        Update the bio of the authenticated user.
+        """
+        user = request.user
+        data = JSONParser().parse(request)
+        profile_picture = data.get('profile_picture', None)
+
+        if profile_picture is not None:
+            user.profile_picture = profile_picture
+            user.save()
+            return Response({'message': 'Profile picture updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Profile picture is required'}, status=status.HTTP_400_BAD_REQUEST)
     
         
 

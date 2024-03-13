@@ -11,6 +11,12 @@ import SignIn from './pages/signin/index.js';
 import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
 import NewPost from './pages/postcreation/index.js';
+import PostViewPage from './pages/postview/index.js';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from './components/theme-context/index.js'; 
+import Tooltip from '@mui/material/Tooltip';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,56 +53,80 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <AppBar position="static">
-        <Toolbar>
-          <Box 
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }} 
-            onClick={handleLogoClick}
-          >
-            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px' }} />
-            <Typography 
-              variant="h6" 
-              component="div" 
-              sx={{ 
-                marginLeft: '0px', 
-                fontWeight: '800',
-                color: '#FFFFFF',
-                fontFamily: '"Custom Font", sans-serif',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-              }}            
-            >
-              SocialDistribution
-            </Typography>
-          </Box>
-          {!isAuthPage && (
-            <>
-              <IconButton color="inherit" onClick={toggleModal}>
-                <AddBoxIcon />
-              </IconButton>
-              <NewPost isOpen={isModalOpen} handleClose={toggleModal} />
-              <IconButton color="inherit">
-                <NotificationsIcon />
-              </IconButton>
-              <IconButton color="inherit" onClick={handleProfileClick}>
-                <AccountCircle />
-              </IconButton>
-              {/* Logout Button */}
-              <IconButton color="inherit" onClick={handleLogout}>
-                <ExitToAppIcon />
-              </IconButton>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Routes>
-        <Route path="signin" element={<SignIn />} />
-        <Route path="signup" element={<SignUp />} />
-        <Route path="/" element={<TimelinePage />} />
-        <Route path="profile" element={<UserProfile />} />
-      </Routes>
+    <ThemeProvider>
+      <CssBaseline /> 
+      <div className="App">
+      <AppBar position="fixed" sx={{
+        backgroundColor: 'rgba(25, 118, 210, 0.9)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: 'none',
+        color: 'rgba(0, 0, 0, 0.7)',
+      }}>
+  <Toolbar>
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }}
+      onClick={handleLogoClick}
+    >
+      <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+      <Typography
+        variant="h6"
+        component="div"
+        sx={{
+          fontWeight: 'bold',
+          color: '#FFFFFF',
+          fontFamily: 'Lexend',
+          textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+        }}
+      >
+        SocialDistribution
+      </Typography>
+    </Box>
+    {!isAuthPage && (
+      <>
+        <Tooltip title="Add Post">
+          <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
+            <AddBoxIcon />
+          </IconButton>
+        </Tooltip>
+        <NewPost isOpen={isModalOpen} className="navbar-icon" handleClose={toggleModal} />
+        <Tooltip title="Notifications">
+          <IconButton color="inherit" className="navbar-icon">
+            <NotificationsIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Profile">
+          <IconButton color="inherit" className="navbar-icon" onClick={handleProfileClick}>
+            <AccountCircle />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Logout">
+          <IconButton color="inherit" className="navbar-icon" onClick={handleLogout}>
+            <ExitToAppIcon />
+          </IconButton>
+        </Tooltip>
+          </>
+        )}
+      </Toolbar>
+    </AppBar>
+  
+    <TransitionGroup>
+      <CSSTransition
+        key={location.key}
+        timeout={{ enter: 500, exit: 200 }}
+        classNames="fade"
+      >
+        <Routes>
+          <Route path="signin" element={<SignIn />} />
+          <Route path="signup" element={<SignUp />} />
+          <Route path="/" element={<TimelinePage />} />
+          <Route path="/posts/:postId" element={<PostViewPage/>} />
+          <Route path="profile" element={<UserProfile />} />
+        </Routes>
+        </CSSTransition>
+      </TransitionGroup>
     </div>
-  );
+  </ThemeProvider>
+);
 }
 
 export default App;

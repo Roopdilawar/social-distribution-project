@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Switch, FormControlLabel, Typography, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Switch, FormControlLabel, Typography, Select, MenuItem, InputLabel, FormControl, Zoom } from '@mui/material';
 
 function NewPost({ isOpen, handleClose }) {
     const token = localStorage.getItem('token');
@@ -9,7 +9,7 @@ function NewPost({ isOpen, handleClose }) {
     const [postContent, setPostContent] = useState('');
     const [useMarkdown, setUseMarkdown] = useState(false);
     const [title, setTitle] = useState('');
-    const [visibility, setVisibility] = useState('Public');
+    const [visibility, setVisibility] = useState('PUBLIC');
     const [base64Image, setBase64Image] = useState('');
 
     const handleInputChange = (event) => {
@@ -76,6 +76,8 @@ function NewPost({ isOpen, handleClose }) {
             fullWidth={true}
             maxWidth="md" 
             sx={{ '& .MuiDialog-paper': { minWidth: '80%' } }} 
+            TransitionComponent={Zoom} 
+            transitionDuration={400}
         >
             <DialogTitle id="form-dialog-title">Create a New Post</DialogTitle>
             <DialogContent>
@@ -98,9 +100,9 @@ function NewPost({ isOpen, handleClose }) {
                         label="Visibility"
                         onChange={handleVisibilityChange}
                     >
-                        <MenuItem value="Public">Public</MenuItem>
-                        <MenuItem value="Private">Private</MenuItem>
-                        <MenuItem value="Friends">Friends</MenuItem>
+                        <MenuItem value="PUBLIC">Public</MenuItem>
+                        <MenuItem value="UNLISTED">Private</MenuItem>
+                        <MenuItem value="FRIENDS">Friends</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControlLabel

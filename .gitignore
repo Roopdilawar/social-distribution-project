@@ -312,4 +312,8 @@ tests/screenshots/
 
 main.min.js
 
-Sekiro_wallpaper.jpg
+
+.vscode/
+.DS_Store
+
+last_github_update.txt

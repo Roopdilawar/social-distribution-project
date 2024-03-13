@@ -1,7 +1,8 @@
 from django.urls import path
 from django.urls import re_path
 from . import views
-from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView,AddFollowerView, ListFollowersView, DetailFollower,InboxViewSet
+from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, AddFollowerView, ListFollowersView, DetailFollower, InboxViewSet, FollowUserView, UserBioView, UserProfilePictureView
+
 
 urlpatterns = [
     path('api/login/', LoginAPIView.as_view(), name='api_login'),
@@ -19,12 +20,14 @@ urlpatterns = [
     path('api/authors/<int:author_id>/addfollower/', AddFollowerView.as_view(), name='add_follower'),
     path('api/authors/<int:author_id>/followers/', ListFollowersView.as_view(), name='list_followers'),
     path('api/authors/<int:author_id>/followers/<int:follower_id>/', DetailFollower.as_view(), name='DetailFollower'),
-   
+  
     path('api/authors/<str:author_id>/inbox/', InboxViewSet.as_view({
         'get': 'list',
         'post': 'create',
     }), name='author-inbox'),
-
+  
+    path('api/user-bio/', UserBioView.as_view(), name='get_bio'),
+    path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
 
     re_path(r'^.*$', views.index),  # This should be the last pattern
     

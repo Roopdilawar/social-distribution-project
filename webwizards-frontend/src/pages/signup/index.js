@@ -11,7 +11,6 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 function Copyright(props) {
   return (
@@ -27,8 +26,6 @@ function Copyright(props) {
 }
 
 
-const defaultTheme = createTheme();
-
 export default function SignUp() {
     const [formErrors, setFormErrors] = useState({});
     const navigate = useNavigate();
@@ -41,7 +38,8 @@ export default function SignUp() {
           username: data.get('username'),
           email: data.get('email'),
           password: data.get('password'),
-          password2: data.get('password2')
+          password2: data.get('password2'),
+          github: data.get('github'), 
         };
     
         try {
@@ -60,7 +58,7 @@ export default function SignUp() {
       };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+      <Box sx={{ pt: 9 }}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -129,6 +127,19 @@ export default function SignUp() {
                 helperText={formErrors.password2}
                 />
             </Grid>
+            <Grid item xs={12}>
+            <TextField
+                required
+                fullWidth
+                id="github"
+                label="GitHub Username"
+                name="github"
+                autoComplete="github-username"
+                error={!!formErrors.github}
+                helperText={formErrors.github}
+            />
+        </Grid>
+
             </Grid>
             <Button
               type="submit"
@@ -149,6 +160,6 @@ export default function SignUp() {
         </Box>
         <Copyright sx={{ mt: 5 }} />
       </Container>
-    </ThemeProvider>
+      </Box>
   );
 }
