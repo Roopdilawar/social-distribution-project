@@ -12,6 +12,7 @@ import SignUp from './pages/signup/index.js';
 import TimelinePage from './pages/timeline';
 import NewPost from './pages/postcreation/index.js';
 import PostViewPage from './pages/postview/index.js';
+import NotificationsPage from './pages/notifications/index.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from './components/theme-context/index.js'; 
 import Tooltip from '@mui/material/Tooltip';
@@ -41,6 +42,10 @@ function App() {
 
   const handleProfileClick = () => {
     navigate('profile'); 
+  };
+
+  const handleNotificationsClick = () => {
+    navigate('inbox'); 
   };
 
   const handleLogoClick = () => {
@@ -90,7 +95,7 @@ function App() {
         </Tooltip>
         <NewPost isOpen={isModalOpen} className="navbar-icon" handleClose={toggleModal} />
         <Tooltip title="Notifications">
-          <IconButton color="inherit" className="navbar-icon">
+          <IconButton color="inherit" className="navbar-icon" onClick={handleNotificationsClick}>
             <NotificationsIcon />
           </IconButton>
         </Tooltip>
@@ -121,6 +126,7 @@ function App() {
           <Route path="/" element={<TimelinePage />} />
           <Route path="/posts/:postId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="inbox" element={<NotificationsPage />} />
         </Routes>
         </CSSTransition>
       </TransitionGroup>
