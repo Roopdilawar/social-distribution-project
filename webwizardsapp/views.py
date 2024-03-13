@@ -4,12 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User,Post ,UserFollowing,Comments
+from .models import User,Post ,Comments,Followers,Inbox
 from rest_framework import generics
 from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer, AuthorSerializer,PostSerializer,UserFollowingSerializer,CommentSerializer
+from .serializers import RegisterSerializer, AuthorSerializer,PostSerializer,CommentSerializer,FollowerSerializer,InboxSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
@@ -17,6 +17,12 @@ import base64
 from django.shortcuts import render
 from django.conf import settings
 import os
+from rest_framework import status, viewsets
+from rest_framework.exceptions import ValidationError
+
+
+
+
 
 def index(request):
     try:
@@ -89,34 +95,6 @@ class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
         response = super(AuthorDetailView, self).retrieve(request, *args, **kwargs)
         
         return response
-
-
-
-class FollowUserView(CreateAPIView):
-    #not working
-    serializer_class = UserFollowingSerializer
-    
-
-    def perform_create(self, serializer):
-        if self.request.user.is_anonymous:
-            temp_user = User.objects.get(id=1)
-            serializer.save(user=temp_user)
-        else:
-            
-            serializer.save(user=self.request.user)
-        
-        
-class UnfollowUserView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, following_user_id):
-        try:
-            following_relationship = UserFollowing.objects.get(user=request.user, following_user_id=following_user_id)
-            following_relationship.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except UserFollowing.DoesNotExist:
-            return Response({'error': 'Not following this user.'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 
@@ -316,16 +294,158 @@ class GetUserIDView(APIView):
         
 
 
+from django.http import JsonResponse
+
+class AddFollowerView(generics.CreateAPIView):
+    queryset = Followers.objects.all()
+    serializer_class = FollowerSerializer
+
+    def perform_create(self, serializer):
+        foreign_author= self.kwargs.get('author_id')
+        author_to_follow = get_object_or_404(User, id=foreign_author)
+        
+        # Determine the current user
+        current_user = self.request.user if not self.request.user.is_anonymous else get_object_or_404(User, id=3)
+        
+        print("current user",current_user)
+        print("author to follow",author_to_follow)
+        
+        # import pdb
+        # pdb.set_trace()
+        # Check for self-following
+        if current_user == author_to_follow:
+            raise ValidationError("You can't follow yourself.")
+
+        # Check for existing following relationship
+        elif Followers.are_friends(current_user, author_to_follow):
+            print("already following")
+            raise ValidationError("You're friends.")
+        
+        elif Followers.objects.filter(author_to_follow=current_user, author=author_to_follow).exists() :
+            print(author_to_follow)
+            print(current_user)
+            raise ValidationError("You're already following this author.")
+        
+        
+        serializer.save(author=author_to_follow, author_to_follow=current_user)
+
+    def create(self, request, *args, **kwargs):
+        # Call the parent class's create method, which handles serialization, validation, and object creation
+        return super().create(request, *args, **kwargs)
+        
+        
+        
+        
+        
+               
+        
+class ListFollowersView(generics.ListAPIView):
+    serializer_class = FollowerSerializer
+
+    def get_queryset(self):
+        author_id = self.kwargs['author_id']
+        author_followers = Followers.objects.filter(author_id=author_id)
+        return author_followers
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = {
+            "type": "followers",
+            "items": serializer.data
+        }
+        return Response(data)
 
 
 
+class DetailFollower(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Followers.objects.all()
+    serializer_class = FollowerSerializer
+    # permission_classes = [IsAuthenticated]
 
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=self.kwargs['follower_id'])
+        return obj
 
+    def put(self, request, *args, **kwargs):
+        # print("i am in put")
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+    def retrieve(self, request, *args, **kwargs):
+        response = super(DetailFollower, self).retrieve(request, *args, **kwargs)
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super(DetailFollower, self).update(request, *args, **kwargs)
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        response = super(DetailFollower, self).destroy(request, *args, **kwargs)
+        return response
     
     
+class InboxViewSet(viewsets.ViewSet):
+    """
+    A viewset for viewing and editing inbox items.
+    """
     
+    def get_queryset(self, author_id):
+        """
+        Helper function to get the combined queryset for posts, comments, and follow requests
+        """
+        followers=Followers.objects.filter(author_to_follow__id=author_id).select_related('author_to_follow')
+        followers=[]
+        posts = Post.objects.filter(author__id=author_id).select_related('author')
+        comments = Comments.objects.filter(post__author__id=author_id).select_related('author', 'post')
+        
+        # follow_requests = FollowRequest.objects.filter(author__id=author_id).select_related('author')
 
+       
+        combined = list(posts) + list(comments) 
+        # + list(follow_requests)
 
+       
+        # combined.sort(key=lambda x: x.created, reverse=True)
+        return combined
+
+    def list(self, request, author_id=None):
+        """
+        List all items in the inbox for a given author
+        """
+        combined_queryset = self.get_queryset(author_id)
+
+        
+        serialized_data = []
+        for item in combined_queryset:
+            if isinstance(item, Post):
+                serialized_data.append(PostSerializer(item).data)
+            elif isinstance(item, Comments):
+                serialized_data.append(CommentSerializer(item).data)
+            elif isinstance(item, FollowRequest):
+                serialized_data.append(FollowRequestSerializer(item).data)
+        
+        return Response(serialized_data)
+
+    def create(self, request):
+        
+        item_type = request.data.get('type')
+        if item_type == 'post':
+            serializer = PostSerializer(data=request.data)
+        elif item_type == 'comment':
+            serializer = CommentSerializer(data=request.data)
+        elif item_type == 'follow':
+            serializer = FollowRequestSerializer(data=request.data)
+       
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+   
 
 
 

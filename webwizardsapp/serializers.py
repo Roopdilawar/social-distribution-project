@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User,Post,UserFollowing,Comments
+from .models import User,Post,Comments,Followers,Inbox
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -64,18 +64,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'user_email', 'profile_picture']       
         
 
-User = User
-class UserFollowingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserFollowing
-        fields = ['user', 'following_user']
-
-    def validate(self, data):
-        if data['user'] == data['following_user']:
-            raise serializers.ValidationError("You cannot follow yourself.")
-        if UserFollowing.objects.filter(user=data['user'], following_user=data['following_user']).exists():
-            raise serializers.ValidationError("You are already following this user.")
-        return data
 
 
 
@@ -99,12 +87,70 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     
+    
     class Meta:
         model = Comments
         fields = ['id', 'post', 'author', 'content', 'created']
         
         
+class FollowerSerializer(serializers.Serializer):
+    type = serializers.SerializerMethodField(method_name='get_author_type')
+    id = serializers.SerializerMethodField(method_name='get_author_id')
+    url = serializers.SerializerMethodField(method_name='get_author_url')
+    host = serializers.SerializerMethodField(method_name='get_author_host')
+    displayName = serializers.SerializerMethodField(method_name='get_author_displayName')
+    github = serializers.SerializerMethodField(method_name='get_author_github')
+    profileImage = serializers.SerializerMethodField(method_name='get_author_profileImage')
+
+    class Meta:
+        model = Followers
+        fields = ('type', 'id', 'url', 'host', 'displayName', 'github', 'profileImage')
+
+    def get_author_type(self, obj):
+        return "author"
+
+    def get_author_id(self, obj):
+        # Assuming you want to show the 'author_to_follow' details
+        return f"http://127.0.0.1:5454/authors/{obj.author_to_follow.pk}"
+
+    def get_author_url(self, obj):
+        return f"http://127.0.0.1:5454/authors/{obj.author_to_follow.pk}"
+
+    def get_author_host(self, obj):
+        return "http://127.0.0.1:5454/"
+
+    def get_author_displayName(self, obj):
+        return obj.author_to_follow.username  # Adjust the field name as necessary based on your User model
+
+    def get_author_github(self, obj):
+        # Adjust the field name as necessary based on your User model
+        # Here assuming 'github_url' is the field in your User model
+        return obj.author_to_follow.github_url if hasattr(obj.author_to_follow, 'github_url') else ""
+
+    def get_author_profileImage(self, obj):
+        # Adjust the field name as necessary based on your User model
+        # Here assuming 'profile_image_url' is the field in your User model
+        return obj.author_to_follow.profile_image_url if hasattr(obj.author_to_follow, 'profile_image_url') else ""
+    
+    def create(self, validated_data):
+        return Followers.objects.create(**validated_data)
     
     
+    
+    
+    
+    
+    
+    
+    
+class InboxSerializer(serializers.ModelSerializer):
+    
+    
+    type=serializers.CharField(default='inbox',read_only=True)  
+    user=AuthorSerializer(read_only=True)
+    
+    class Meta:
+        model = Inbox
+        fields=['type','user','post','comment','liked','messages']
 
     
