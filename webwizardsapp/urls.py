@@ -1,7 +1,11 @@
 from django.urls import path
 from django.urls import re_path
 from . import views
+<<<<<<< Updated upstream
 from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, AddFollowerView, ListFollowersView, DetailFollower, InboxViewSet, UserBioView, UserProfilePictureView
+=======
+from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, ListFollowersView, DetailFollower, InboxView, UserBioView, UserProfilePictureView,FriendRequestView,AcceptFollowRequest
+>>>>>>> Stashed changes
 
 
 urlpatterns = [
@@ -17,17 +21,14 @@ urlpatterns = [
     path('api/posts/<int:post_id>/comments/', ListCommentsView.as_view(), name='list_comments'),
     path('api/posts/<int:post_id>/image', GetImageView.as_view(), name='get_image'),
     path('api/get-user-id/', GetUserIDView.as_view(), name='get_id'),
-    path('api/authors/<int:author_id>/addfollower/', AddFollowerView.as_view(), name='add_follower'),
+    # path('api/authors/<int:author_id>/addfollower/', AddFollowerView.as_view(), name='add_follower'),
     path('api/authors/<int:author_id>/followers/', ListFollowersView.as_view(), name='list_followers'),
     path('api/authors/<int:author_id>/followers/<int:follower_id>/', DetailFollower.as_view(), name='DetailFollower'),
-  
-    path('api/authors/<str:author_id>/inbox/', InboxViewSet.as_view({
-        'get': 'list',
-        'post': 'create',
-    }), name='author-inbox'),
-  
+    path('api/authors/<int:author_id>/inbox/', InboxView.as_view(), name='inbox'),
+    path('send-friend-request/<int:author_id>/', FriendRequestView.as_view(), name='send_friend_request'),
     path('api/user-bio/', UserBioView.as_view(), name='get_bio'),
     path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
+    path('api/authors/<int:author_id>/acceptFollowRequest/', AcceptFollowRequest.as_view(), name='accept_follow_request'),
 
     re_path(r'^.*$', views.index),  # This should be the last pattern 
     

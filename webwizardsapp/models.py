@@ -11,8 +11,19 @@ class User(AbstractUser):
     profile_picture = models.URLField(max_length=200, blank=True, default='https://imgur.com/a/i9xknax')
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
+    
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['user_email']
+    
+    def save(self, *args, **kwargs):
+        # Call the "real" save() method.
+        super().save(*args, **kwargs)
+
+        if not self.inbox:
+            # Create a new portfolio and assign it to the user.
+            inbox= Inbox.objects.create(user=self)
+            self.inbox = inbox
+            self.save()
     
 
     
@@ -81,10 +92,7 @@ class Followers(models.Model):
 
 class Inbox(models.Model):
     user = models.ForeignKey(User, related_name='inbox', on_delete=models.CASCADE)
-    post= models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True)
-    comment= models.ForeignKey(Comments, on_delete=models.CASCADE, blank=True, null=True)
-    liked= models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True,related_name='liked_by')
-    messages= models.TextField(default='This is a message', blank=True,null=True)
+    content=models.JSONField(default=list, blank=True)
     
     
     

@@ -20,6 +20,7 @@ import os
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import JSONParser
+from rest_framework.pagination import PageNumberPagination
 
 
 def index(request):
@@ -334,44 +335,7 @@ class UserProfilePictureView(APIView):
 
 from django.http import JsonResponse
 
-class AddFollowerView(generics.CreateAPIView):
-    queryset = Followers.objects.all()
-    serializer_class = FollowerSerializer
 
-    def perform_create(self, serializer):
-        foreign_author= self.kwargs.get('author_id')
-        author_to_follow = get_object_or_404(User, id=foreign_author)
-        
-        # Determine the current user
-        current_user = self.request.user if not self.request.user.is_anonymous else get_object_or_404(User, id=3)
-        
-        print("current user",current_user)
-        print("author to follow",author_to_follow)
-        
-        # import pdb
-        # pdb.set_trace()
-        # Check for self-following
-        if current_user == author_to_follow:
-            raise ValidationError("You can't follow yourself.")
-
-        # Check for existing following relationship
-        elif Followers.are_friends(current_user, author_to_follow):
-            print("already following")
-            raise ValidationError("You're friends.")
-        
-        elif Followers.objects.filter(author_to_follow=current_user, author=author_to_follow).exists() :
-            print(author_to_follow)
-            print(current_user)
-            raise ValidationError("You're already following this author.")
-        
-        
-        serializer.save(author=author_to_follow, author_to_follow=current_user)
-
-    def create(self, request, *args, **kwargs):
-        # Call the parent class's create method, which handles serialization, validation, and object creation
-        return super().create(request, *args, **kwargs)
-        
-        
         
         
         
@@ -426,67 +390,87 @@ class DetailFollower(generics.RetrieveUpdateDestroyAPIView):
         return response
     
     
-class InboxViewSet(viewsets.ViewSet):
-    """
-    A viewset for viewing and editing inbox items.
-    """
+
+
+
+
+class FriendRequestView(APIView):
+    def post(self, request, author_id, *args, **kwargs):
+        friend = get_object_or_404(User, id=author_id)
+        user = request.user if not request.user.is_anonymous else get_object_or_404(User, id=10)
+        inbox, _ = Inbox.objects.get_or_create(user=friend)
+        if user==friend:
+            return Response({"error": "You can't follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+        elif Followers.are_friends(user, friend):
+            return Response({"error": "You're friends."}, status=status.HTTP_400_BAD_REQUEST)
+        elif Followers.objects.filter(author_to_follow=user, author=friend).exists():
+            return Response({"error": "You're already following this author."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            user_serializer = AuthorSerializer(user)
+            friend_serializer = AuthorSerializer(friend)
+            friend_request_data = {
+                "type": "Follow",
+                "summary": f'{user.username} wants to follow {friend.username}',
+                "actor": user_serializer.data,
+                "object": friend_serializer.data,
+            }
+            inbox.content.append(friend_request_data)
+            inbox.save()
+            return Response({"message": "Friend request sent successfully."}, status=status.HTTP_201_CREATED)
+
+
+
+
+
     
-    def get_queryset(self, author_id):
-        """
-        Helper function to get the combined queryset for posts, comments, and follow requests
-        """
-        followers=Followers.objects.filter(author_to_follow__id=author_id).select_related('author_to_follow')
-        followers=[]
-        posts = Post.objects.filter(author__id=author_id).select_related('author')
-        comments = Comments.objects.filter(post__author__id=author_id).select_related('author', 'post')
+
+
+
+class InboxView(APIView):
+    def get(self, request, author_id, *args, **kwargs):
+        friend = get_object_or_404(User, id=author_id)
+        inbox, _ = Inbox.objects.get_or_create(user=friend)
+        serializer = InboxSerializer(inbox)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    
+
+    
+
+class AcceptFollowRequest(APIView):
+    def post(self, request, author_id, *args, **kwargs):
+        friend = get_object_or_404(User, id=author_id)
+        inbox, _ = Inbox.objects.get_or_create(user=friend)
+
+        data = request.data
+        actor_id = int(data['actor']['id'].split('/')[-1])
+        object_id = int(data['object']['id'].split('/')[-1])
+
+        if actor_id == object_id:
+            return Response({"error": "You can't follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        current_user = get_object_or_404(User, id=actor_id)
+        author_to_follow = get_object_or_404(User, id=object_id)
+
+        if Followers.are_friends(current_user, author_to_follow):
+            return Response({"error": "You're friends."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if Followers.objects.filter(author_to_follow=current_user, author=author_to_follow).exists():
+            return Response({"error": "You're already following this author."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+           
+            Followers.objects.create(author=author_to_follow, author_to_follow=current_user)
+           
+            return Response({"success": "Follow request accepted."}, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
-        # follow_requests = FollowRequest.objects.filter(author__id=author_id).select_related('author')
-
-       
-        combined = list(posts) + list(comments) 
-        # + list(follow_requests)
-
-       
-        # combined.sort(key=lambda x: x.created, reverse=True)
-        return combined
-
-    def list(self, request, author_id=None):
-        """
-        List all items in the inbox for a given author
-        """
-        combined_queryset = self.get_queryset(author_id)
-
         
-        serialized_data = []
-        for item in combined_queryset:
-            if isinstance(item, Post):
-                serialized_data.append(PostSerializer(item).data)
-            elif isinstance(item, Comments):
-                serialized_data.append(CommentSerializer(item).data)
-            elif isinstance(item, FollowRequest):
-                serialized_data.append(FollowRequestSerializer(item).data)
         
-        return Response(serialized_data)
-
-    def create(self, request):
         
-        item_type = request.data.get('type')
-        if item_type == 'post':
-            serializer = PostSerializer(data=request.data)
-        elif item_type == 'comment':
-            serializer = CommentSerializer(data=request.data)
-        elif item_type == 'follow':
-            serializer = FollowRequestSerializer(data=request.data)
-       
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-   
-
-
-
-
-
-
+        
+    
+    
+    

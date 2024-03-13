@@ -150,13 +150,22 @@ class FollowerSerializer(serializers.Serializer):
     
     
 class InboxSerializer(serializers.ModelSerializer):
-    
-    
-    type=serializers.CharField(default='inbox',read_only=True)  
-    user=AuthorSerializer(read_only=True)
+    post=PostSerializer(read_only=True)
+    comment=CommentSerializer(read_only=True)
     
     class Meta:
         model = Inbox
-        fields=['type','user','post','comment','liked','messages']
+        fields = ['post','comment',"content"]
+        
+        
 
-    
+from rest_framework import serializers
+
+class FollowRequestSerializer(serializers.Serializer):
+    author_to_follow_id= serializers.IntegerField()
+    def create(self, validated_data):
+        author_to_follow_id = validated_data.get('author_to_follow_id')
+        return {
+            "type": "friend_request",
+            "author_to_follow_id": author_to_follow_id,
+        }
