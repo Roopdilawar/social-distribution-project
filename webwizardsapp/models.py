@@ -3,6 +3,8 @@ from django.db import models
 from django.utils import timezone
 
 
+
+
 class User(AbstractUser):
     # Need to add a few more fields (github, url, host, id)
     user_email = models.EmailField()
@@ -14,18 +16,7 @@ class User(AbstractUser):
     
 
     
-class UserFollowing(models.Model):
-    user = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
-    following_user = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
-    
-    def are_friends(user1, user2):
-        return FollowRequest.objects.filter(follower=user1, following=user2, accepted=True).exists() and \
-               FollowRequest.objects.filter(follower=user2, following=user1, accepted=True).exists()
 
-    class Meta:
-        unique_together = ('user', 'following_user')
-    
 
 
 class Post(models.Model):
@@ -62,5 +53,38 @@ class Comments(models.Model):
 
     def __str__(self):
         return f'Comment by {self.author.username} on {self.post.title}'
+    
+    
+
+
+class Followers(models.Model):
+    author_to_follow = models.ForeignKey(User, related_name='follower', on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created = models.DateTimeField(default=timezone.now)
+    
+    @staticmethod
+    def are_friends(user1, user2):
+        return Followers.objects.filter(author_to_follow=user1, author=user2).exists() and \
+               Followers.objects.filter(author_to_follow=user2, author=user1).exists()
+               
+    @staticmethod           
+    def follow(user1, user2):
+        if Followers.are_friends(user1, user2):
+            raise ValueError("You can't follow someone you're already following.")
+            
+    
+    class Meta:
+        unique_together = ('author_to_follow', 'author')
+        
+
+
+class Inbox(models.Model):
+    user = models.ForeignKey(User, related_name='inbox', on_delete=models.CASCADE)
+    post= models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True)
+    comment= models.ForeignKey(Comments, on_delete=models.CASCADE, blank=True, null=True)
+    liked= models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True,related_name='liked_by')
+    messages= models.TextField(default='This is a message', blank=True,null=True)
+    
     
     
