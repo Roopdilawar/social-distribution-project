@@ -1,11 +1,9 @@
 from django.urls import path
 from django.urls import re_path
 from . import views
-<<<<<<< Updated upstream
-from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, AddFollowerView, ListFollowersView, DetailFollower, InboxViewSet, UserBioView, UserProfilePictureView
-=======
+
 from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, ListFollowersView, DetailFollower, InboxView, UserBioView, UserProfilePictureView,FriendRequestView,AcceptFollowRequest
->>>>>>> Stashed changes
+
 
 
 urlpatterns = [
