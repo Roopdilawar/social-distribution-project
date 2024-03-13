@@ -1,7 +1,7 @@
 from django.urls import path
 from django.urls import re_path
 from . import views
-from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, AddFollowerView, ListFollowersView, DetailFollower, InboxViewSet, FollowUserView, UserBioView, UserProfilePictureView
+from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, AddFollowerView, ListFollowersView, DetailFollower, InboxViewSet, UserBioView, UserProfilePictureView
 
 
 urlpatterns = [

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User,Post,UserFollowing,Comments,Followers,Inbox
+from .models import User,Post,Comments,Followers,Inbox
 
 
 class RegisterSerializer(serializers.ModelSerializer):
