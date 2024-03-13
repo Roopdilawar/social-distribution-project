@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/user-bio/', UserBioView.as_view(), name='get_bio'),
     path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
 
-    re_path(r'^.*$', views.index),  # This should be the last pattern
+    re_path(r'^.*$', views.index),  # This should be the last pattern 
     
 
 ]
