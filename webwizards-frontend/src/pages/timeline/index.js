@@ -10,7 +10,7 @@ const TimelinePage = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/posts/');
+                const response = await axios.get('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/');
                 const orderedPosts = response.data.items.sort((a, b) => new Date(b.published) - new Date(a.published));
                 setPosts(orderedPosts);
             } catch (error) {

@@ -11,7 +11,7 @@ const PostViewPage = () => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/posts/${postId}/`); 
+                const response = await axios.get(`https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/${postId}/`); 
                 setPost(response.data); 
                 console.log(response.data)
                 console.log(response)

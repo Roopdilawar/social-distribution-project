@@ -60,7 +60,7 @@ function NewPost({ isOpen, handleClose }) {
         };    
 
         try {
-            const response = await axios.post('http://localhost:8000/api/posts/', postData, config);
+            const response = await axios.post('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/', postData, config);
             console.log(response.data);
             handleClose(); 
         } catch (error) {
