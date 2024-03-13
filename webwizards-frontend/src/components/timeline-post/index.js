@@ -13,6 +13,7 @@ import EditPost from '../edit-post-modal/index.js';
 import Comment from "../comment/index.js";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
@@ -164,13 +165,18 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         }
     };
 
+    const timeAgo = (dateString) => {
+        const date = parseISO(dateString);
+        return formatDistanceToNow(date, { addSuffix: true });
+    };
+
     return (
         <>
             <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } }}>
                 <CardHeader
                     avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
                     title={<Typography variant="subtitle2" color="primary">{post.author.displayName}</Typography>}
-                    subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
+                    subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
                     action={
                         isProfilePage && (
                             <>
