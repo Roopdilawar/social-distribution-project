@@ -44,7 +44,7 @@ export default function SignUp() {
     
         try {
             setFormErrors({});
-            const response = await axios.post('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/signup/', userData);
+            const response = await axios.post('http://localhost:8000/api/signup/', userData);
             console.log(response.data);
             navigate('/signin');
         } catch (error) {

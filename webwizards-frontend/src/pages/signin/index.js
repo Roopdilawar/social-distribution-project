@@ -42,7 +42,7 @@ export default function SignIn() {
         const data = new FormData(event.currentTarget);
         
         try {
-            const response = await axios.post('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/login/', {
+            const response = await axios.post('http://localhost:8000/api/login/', {
                 username: data.get('username'),
                 password: data.get('password')
             });

@@ -54,7 +54,7 @@ function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/user-bio/', {
+            const response = await axios.get('http://localhost:8000/api/user-bio/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -74,7 +74,7 @@ function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/user-profile-picture/', {
+            const response = await axios.get('http://localhost:8000/api/user-profile-picture/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -93,7 +93,7 @@ function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/get-user-id/', {
+            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -112,7 +112,7 @@ function UserProfile() {
     const fetchAuthors = async () => {
         if (!userId) return; 
         try {
-            const response = await axios.get('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/authors/' + userId + '/');
+            const response = await axios.get('http://localhost:8000/api/authors/' + userId + '/');
             setAuthors(response.data); 
         } catch (error) {
             console.error("Error fetching authors: ", error);
@@ -126,7 +126,7 @@ function UserProfile() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/');
+                const response = await axios.get('http://localhost:8000/api/posts/');
                 
                 const allPosts = response.data.items;
     
@@ -190,7 +190,7 @@ function UserProfile() {
         };
 
         try {
-            const response = await axios.put('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/user-bio/', updatedBioData, config);
+            const response = await axios.put('http://localhost:8000/api/user-bio/', updatedBioData, config);
             fetchUserBio();
             setEditBioOpen(false);
         } catch (error) {
@@ -216,7 +216,7 @@ function UserProfile() {
         };
 
         try {
-            const response = await axios.put('https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/user-profile-picture/', updatedProfilePicData, config);
+            const response = await axios.put('http://localhost:8000/api/user-profile-picture/', updatedProfilePicData, config);
             fetchUserProfilePic();
             setEditProfilePicOpen(false);
         } catch (error) {

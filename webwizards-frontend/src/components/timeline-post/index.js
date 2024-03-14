@@ -65,7 +65,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
 
         try {
-            const response = await axios.get(`https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/${postId}/comments/`, config);
+            const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
             const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
@@ -91,7 +91,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
 
         try {
-            const response = await axios.post(`https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/${postId}/addcomment/`, commentData, config);
+            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
             fetchComments();
             setNewCommentInput("");
         } catch (error) {
@@ -110,7 +110,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
     
         try {
-            await axios.delete(`https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/${postId}/`, config);
+            await axios.delete(`http://localhost:8000/api/posts/${postId}/`, config);
             console.log("Post deleted successfully");
             handleMenuClose();
         } catch (error) {
@@ -129,7 +129,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick }) => {
         };
 
         try {
-            await axios.post(`https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/${postId}/like/`, {}, config);
+            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
             setIsLiked(true);
         } catch (error) {
             console.error("Error liking post: ", error);

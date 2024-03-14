@@ -75,7 +75,7 @@ function EditPost({ isOpen, handleClose, post }) {
 
         try {
             const postId = post.id.split('/').pop();
-            const response = await axios.put(`https://cmput404-webwizards-2fd7bdbe6ce6.herokuapp.com/api/posts/${postId}/`, editedPostData, config);
+            const response = await axios.put(`http://localhost:8000/api/posts/${postId}/`, editedPostData, config);
             console.log(response.data);
             handleClose(); 
         } catch (error) {
