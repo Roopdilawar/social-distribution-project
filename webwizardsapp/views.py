@@ -98,7 +98,7 @@ class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
 
 
 class PostsView(generics.ListCreateAPIView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.filter(visibility='Public')
     serializer_class = PostSerializer
     
     def perform_create(self, serializer):
@@ -123,6 +123,38 @@ class PostsView(generics.ListCreateAPIView):
         # print(response.data)
         return response
 
+
+class AuthorPostsView(generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        # Always exclude private posts in the queryset
+        author_id = self.kwargs['author_id']
+        # Only show public posts
+        return Post.objects.filter(author_id=author_id, visibility='Public')
+
+    def perform_create(self, serializer):
+        author_id = self.kwargs['author_id']
+        author = User.objects.get(id=author_id)
+        post = serializer.save(author=author)  # Save to get a post instance with an ID
+        
+        if post.visibility == 'Private':
+            # For private posts, send the post data to the inboxes of the author's followers
+            followers = Followers.objects.filter(author=author).values_list('author_to_follow', flat=True)
+            for follower_id in followers:
+                follower_user = User.objects.get(id=follower_id)
+                inbox, _ = Inbox.objects.get_or_create(user=follower_user)
+                
+                # Serialize the post for adding to the inbox
+                post_data = PostSerializer(post).data
+                # Assuming 'content' can store serialized data
+                if not hasattr(inbox, 'content'):
+                    inbox.content = []
+                inbox.content.append(post_data)
+                inbox.save()
+
+
+            
 
 class GetImageView(APIView):
     # permission_classes = [IsAuthenticated]
@@ -179,24 +211,30 @@ class AddCommentView(generics.CreateAPIView):
     serializer_class = CommentSerializer
 
     def perform_create(self, serializer):
+        post_id = self.kwargs['post_id']
+        post = Post.objects.get(id=post_id)
+        post_author = post.author
+        inbox, _ = Inbox.objects.get_or_create(user=post_author)
         
-        post = Post.objects.get(id=self.kwargs['post_id'])
-        if self.request.user.is_anonymous:
-            temp_user = User.objects.get(id=1)
-            serializer.save(author=temp_user, post=post)
-        else:
-            serializer.save(author=self.request.user, post=post)
+        author = self.request.user if not self.request.user.is_anonymous else User.objects.get(id=9)
+
+       
+        comment_type = serializer.validated_data.get('type', 'Comment') 
+        comment_content = serializer.validated_data.get('content')  
+        print(comment_content)
+
+        comment_data = {
+            "type": comment_type,
+            "summary": f'{author.username} commented on your post',
+            "comment": comment_content,  
+        }
         
         
-        
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        # print("nothing,",serializer.instance.post)
-        post_instance = serializer.instance.post
-        post_instance.update_comments_count()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        inbox.content.append(comment_data)
+        inbox.save()
+
+       
+        serializer.save(author=author, post=post)
         
         
         
@@ -255,17 +293,32 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class LikePostView(APIView):
     # permission_classes = [IsAuthenticated]
+     
 
     def post(self, request, post_id):
         
         if self.request.user.is_anonymous:
-            temp_user = User.objects.get(id=1)
+            
+            
+            temp_user = User.objects.get(id=9)
+            
             try:
                 post = Post.objects.get(id=post_id)
+                post_author=post.author
+                inbox, _ = Inbox.objects.get_or_create(user=post_author)
                 if temp_user in post.liked_by.all():
                     post.liked_by.remove(temp_user)
                 else:
                     post.liked_by.add(temp_user)
+                    liked_by_data={
+                        "type": "Like",
+                        "summary": f'{temp_user.username} liked your post',
+                        "actor": AuthorSerializer(temp_user).data,
+                        "object": PostSerializer(post).data
+                    }
+                    inbox.content.append(liked_by_data)
+                    inbox.save()
+                    
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Post.DoesNotExist:
                 return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -274,8 +327,18 @@ class LikePostView(APIView):
         else:
             try:
                 post = Post.objects.get(id=post_id)
+                post_author=post.author
+                inbox, _ = Inbox.objects.get_or_create(user=post_author)
                 if request.user not in post.liked_by.all():
                     post.liked_by.add(request.user)
+                    liked_by_data={
+                        "type": "Like",
+                        "summary": f'{request.user.username} liked your post',
+                        "actor": AuthorSerializer(request.user).data,
+                        "object": PostSerializer(post).data
+                    }
+                    inbox.content.append(liked_by_data)
+                    inbox.save()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Post.DoesNotExist:
                 return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)

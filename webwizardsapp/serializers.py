@@ -75,6 +75,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    type = serializers.CharField(default='post',read_only=True)
     class Meta:
         model = Post
         fields = ['type', 'id', 'title', 'source', 'origin', 'description', 'content_type', 'content', 'author', 'Comment_counts', 'likes', 'published', 'visibility']
@@ -129,13 +130,10 @@ class FollowerSerializer(serializers.Serializer):
         return obj.author_to_follow.username  # Adjust the field name as necessary based on your User model
 
     def get_author_github(self, obj):
-        # Adjust the field name as necessary based on your User model
-        # Here assuming 'github_url' is the field in your User model
         return obj.author_to_follow.github_url if hasattr(obj.author_to_follow, 'github_url') else ""
 
     def get_author_profileImage(self, obj):
-        # Adjust the field name as necessary based on your User model
-        # Here assuming 'profile_image_url' is the field in your User model
+
         return obj.author_to_follow.profile_image_url if hasattr(obj.author_to_follow, 'profile_image_url') else ""
     
     def create(self, validated_data):

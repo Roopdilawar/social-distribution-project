@@ -2,7 +2,7 @@ from django.urls import path
 from django.urls import re_path
 from . import views
 
-from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, ListFollowersView, DetailFollower, InboxView, UserBioView, UserProfilePictureView,FriendRequestView,AcceptFollowRequest
+from .views import LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PostsView, DetailPostView, AddCommentView, LikePostView, ListCommentsView, CommentDetailView, GetImageView, GetUserIDView, ListFollowersView, DetailFollower, InboxView, UserBioView, UserProfilePictureView,FriendRequestView,AcceptFollowRequest,AuthorPostsView
 
 
 
@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/signup/', RegisterView.as_view(), name='signup'),
     path('api/authors/', AuthorsListView.as_view(), name='authors-list'),
     path('api/authors/<str:pk>/', AuthorDetailView.as_view(), name='author-detail'),
+    path('api/authors/<int:author_id>/posts/', AuthorPostsView.as_view(), name='author-posts'),
     path('api/posts/', PostsView.as_view(), name='posts-list'),
     path('api/posts/<int:post_id>/', DetailPostView.as_view(), name='single-post'),
     path('api/posts/<int:post_id>/addcomment/', AddCommentView.as_view(), name='add_comment'),
@@ -19,11 +20,10 @@ urlpatterns = [
     path('api/posts/<int:post_id>/comments/', ListCommentsView.as_view(), name='list_comments'),
     path('api/posts/<int:post_id>/image', GetImageView.as_view(), name='get_image'),
     path('api/get-user-id/', GetUserIDView.as_view(), name='get_id'),
-    # path('api/authors/<int:author_id>/addfollower/', AddFollowerView.as_view(), name='add_follower'),
     path('api/authors/<int:author_id>/followers/', ListFollowersView.as_view(), name='list_followers'),
     path('api/authors/<int:author_id>/followers/<int:follower_id>/', DetailFollower.as_view(), name='DetailFollower'),
     path('api/authors/<int:author_id>/inbox/', InboxView.as_view(), name='inbox'),
-    path('send-friend-request/<int:author_id>/', FriendRequestView.as_view(), name='send_friend_request'),
+    path('api/authors/<int:author_id>/sendfollowrequest/', FriendRequestView.as_view(), name='send_friend_request'),
     path('api/user-bio/', UserBioView.as_view(), name='get_bio'),
     path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
     path('api/authors/<int:author_id>/acceptFollowRequest/', AcceptFollowRequest.as_view(), name='accept_follow_request'),

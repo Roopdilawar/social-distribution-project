@@ -31,6 +31,12 @@ class User(AbstractUser):
 
 
 class Post(models.Model):
+    VISIBILITY_CHOICES = [
+        ('PUBLIC', 'Public'),
+        ('PRIVATE', 'Private'),
+    ]
+    # other fields...
+    
     type= models.CharField(default='post' ,max_length=200)
     title= models.CharField(max_length=200,blank=True,)
     source= models.URLField(max_length=200,default='https://uofa-cmput404.github.io/general/project.html')
@@ -42,7 +48,7 @@ class Post(models.Model):
     Comment_counts= models.IntegerField(default=0)
     likes= models.IntegerField(default=0)
     published= models.DateTimeField(default=timezone.now)
-    visibility= models.CharField(max_length=200,default='PUBLIC')
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES)
     liked_by = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     
     @property
