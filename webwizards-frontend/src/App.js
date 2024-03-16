@@ -16,6 +16,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from './components/theme-context/index.js'; 
 import Tooltip from '@mui/material/Tooltip';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import UserProfileViewOnly from './pages/friend-profile/index.js';
 
 
 function App() {
@@ -121,6 +122,7 @@ function App() {
           <Route path="/" element={<TimelinePage />} />
           <Route path="/posts/:postId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="friend-profile/:id" element={<UserProfileViewOnly />} />
         </Routes>
         </CSSTransition>
       </TransitionGroup>

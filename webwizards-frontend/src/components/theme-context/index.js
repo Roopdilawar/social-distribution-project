@@ -12,20 +12,33 @@ export const ThemeProvider = ({ children }) => {
     return savedMode ? savedMode : 'dark';
   });
 
+  // Define custom theme that adapts based on the mode
   const theme = createTheme({
     palette: {
       mode: themeMode,
     },
     components: {
-        MuiCard: {
-          styleOverrides: {
-            root: {
-              borderRadius: 12,
+      // You can extend the theme with custom components here
+      MuiButton: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            border: `2px solid ${theme.palette.mode === 'dark' ? 'lightblue' : 'lightgreen'}`,
+            color: theme.palette.mode === 'dark' ? 'lightblue' : 'lightgreen',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(173, 216, 230, 0.1)' : 'rgba(144, 238, 144, 0.1)',
             },
+          }),
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
           },
         },
       },
-      
+      // Add more component overrides if needed
+    },
   });
 
   const toggleTheme = () => {
@@ -37,7 +50,7 @@ export const ThemeProvider = ({ children }) => {
   return (
     <ThemeContext.Provider value={{ themeMode, toggleTheme }}>
       <MUIThemeProvider theme={theme}>
-        <CssBaseline />
+        <CssBaseline /> {/* Ensures consistent baseline styles across browsers */}
         {children}
       </MUIThemeProvider>
     </ThemeContext.Provider>

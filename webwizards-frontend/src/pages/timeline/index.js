@@ -3,7 +3,6 @@ import axios from 'axios';
 import { TimelinePost } from '../../components/timeline-post';
 import { Box } from '@mui/material';
 
-
 const TimelinePage = () => {
     const [posts, setPosts] = useState([]);
 
