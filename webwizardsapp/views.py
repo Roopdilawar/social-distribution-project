@@ -138,7 +138,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
         author = User.objects.get(id=author_id)
         post = serializer.save(author=author)  # Save to get a post instance with an ID
         
-        if post.visibility == 'Private':
+        if post.visibility == 'PRIVATE':
             # For private posts, send the post data to the inboxes of the author's followers
             followers = Followers.objects.filter(author=author).values_list('author_to_follow', flat=True)
             for follower_id in followers:
