@@ -45,6 +45,19 @@ export function UserProfileViewOnly() {
     const handleFollowingOpen = () => setShowFollowing(true);
     const handleFollowingClose = () => setShowFollowing(false);
 
+    const buttonStyles = {
+        mt: 2,
+        borderColor: themeMode === 'dark' ? 'white' : 'black', // Border color changes based on theme
+        color: themeMode === 'dark' ? 'white' : 'black', // Text color changes based on theme
+        bgcolor: isFollowing ? 'transparent' : 'rgba(70, 122, 192, 1)',
+        // Assuming you want the background to be transparent
+        '&:hover': {
+            backgroundColor: 'transparent', // Keep background transparent on hover
+            borderColor: themeMode === 'dark' ? 'white' : 'black', // Keep border color consistent on hover
+            color: themeMode === 'dark' ? 'white' : 'black',
+        },
+      };
+
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem('token');
@@ -138,17 +151,12 @@ export function UserProfileViewOnly() {
                 {/* Follow button */}
                 <Button
                     onClick={toggleFollow}
-                    variant="contained"
-                    sx={{
-                        ml: 2,
-                        //backgroundColor: isFollowing ? 'dark' : 'dark',
-                        '&:hover': {
-                            backgroundColor: isFollowing ? 'dark' : 'dark',
-                        },
-                    }}
-                >
+                    variant="outlined"
+                    sx={buttonStyles}
+                    >
                     {isFollowing ? 'Following' : 'Follow'}
-                </Button>    
+                    </Button>
+                    
                     </Typography>
 
                     <div style={{ marginTop: '40px' }} />
