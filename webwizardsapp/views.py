@@ -344,6 +344,58 @@ class LikePostView(APIView):
                 return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+class LikeCommentView(APIView):
+    # permission_classes = [IsAuthenticated] 
+
+    def post(self, request, comment_id):
+        
+        if self.request.user.is_anonymous:
+            
+            
+            temp_user = User.objects.get(id=9)
+            
+            try:
+                comment = Comments.objects.get(id=comment_id)
+                comment_author=comment.author
+                inbox, _ = Inbox.objects.get_or_create(user=comment_author)
+                if temp_user in comments.liked_by.all():
+                    comment.liked_by.remove(temp_user)
+                else:
+                    comment.liked_by.add(temp_user)
+                    liked_by_data={
+                        "type": "Like",
+                        "summary": f'{temp_user.username} liked your comment',
+                        "actor": AuthorSerializer(temp_user).data,
+                        "object": CommentSerializer(comment).data
+                    }
+                    inbox.content.append(liked_by_data)
+                    inbox.save()
+                    
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Comments.DoesNotExist:
+                return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            
+        else:
+            try:
+                comment = Comments.objects.get(id=comment_id)
+                comment_author=comment.author
+                inbox, _ = Inbox.objects.get_or_create(user=comment_author)
+                if request.user not in comment.liked_by.all():
+                    comment.liked_by.add(request.user)
+                    liked_by_data={
+                        "type": "Like",
+                        "summary": f'{request.user.username} liked your comment',
+                        "actor": AuthorSerializer(request.user).data,
+                        "object": CommentSerializer(comment).data
+                    }
+                    inbox.content.append(liked_by_data)
+                    inbox.save()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Comment.DoesNotExist:
+                return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 class GetUserIDView(APIView):
     permission_classes = [IsAuthenticated]
 
