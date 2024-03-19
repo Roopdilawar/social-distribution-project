@@ -46,7 +46,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     <Routes>
     <Route path="/profile" element={<UserProfile />} />
     <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
-    {/* other routes */}
     </Routes>
 
     useEffect(() => {
@@ -72,16 +71,14 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     }, []);
 
     const handleUsernameClick = () => {
-        console.log(userId)
-
         const id = post.author.id.split('/').pop();
-        console.log(id)
-        const isCurrentUser = id.toString() === userId.toString(); // Convert both to strings for comparison
-         // Replace `currentUser.id` with the appropriate way to access the current user's ID
+        const isCurrentUser = id.toString() === userId.toString();
+        const author_info = post.author;
+    
         if (isCurrentUser) {
             navigate("/profile");
         } else {
-            navigate(`/friend-profile/${id}/`);
+            navigate(`/friend-profile/${id}`, { state: { author_info } });
         }
     };
     
@@ -173,20 +170,30 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
 
     const handleLike = async () => {
         if (isViewOnly) return;
+    
         const token = localStorage.getItem('token');
-        const postId = post.id.split('/').pop();
-
+        const postId = post.id.split('/').pop(); 
+        const authorId = post.author.id.split('/').pop();
+    
         const config = {
             headers: {
                 'Authorization': `Token ${token}`
             }
         };
-
+    
         try {
-            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, {}, config);
-            setIsLiked(true);
+            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const authorData = authorResponse.data;
+            console.log(authorData)
+            const likeData = {
+                "actor": authorData,
+                "object": post
+            };
+            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, likeData, config);
+            await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
+            setIsLiked(true); 
         } catch (error) {
-            console.error("Error liking post: ", error);
+            console.error("Error liking post:", error);
         }
     };
 

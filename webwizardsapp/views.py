@@ -113,7 +113,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         author_id = self.kwargs['author_id']
-        return Post.objects.filter(author_id=author_id, visibility='PUBLIC')
+        return Post.objects.filter(author_id=author_id)
 
     def perform_create(self, serializer):
         author_id = self.kwargs['author_id']
@@ -279,6 +279,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     
 
 class LikePostView(APIView):
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         author_data = request.data.get('actor')
