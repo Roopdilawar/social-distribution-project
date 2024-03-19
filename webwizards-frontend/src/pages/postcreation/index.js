@@ -11,6 +11,7 @@ function NewPost({ isOpen, handleClose }) {
     const [title, setTitle] = useState('');
     const [visibility, setVisibility] = useState('PUBLIC');
     const [base64Image, setBase64Image] = useState('');
+    const [userId, setUserId] = useState(null);
 
     const handleInputChange = (event) => {
         setPostContent(event.target.value);
@@ -27,6 +28,26 @@ function NewPost({ isOpen, handleClose }) {
     const handleVisibilityChange = (event) => {
         setVisibility(event.target.value);
     };   
+
+    const fetchUserId = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+            });
+            setUserId(response.data.user_id);
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+        };
+
+    fetchUserId();
     
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -60,7 +81,7 @@ function NewPost({ isOpen, handleClose }) {
         };    
 
         try {
-            const response = await axios.post('http://localhost:8000/api/posts/', postData, config);
+            const response = await axios.post(`http://localhost:8000/api/authors/${userId}/posts/`, postData, config);
             console.log(response.data);
             handleClose(); 
         } catch (error) {

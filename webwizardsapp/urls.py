@@ -26,7 +26,7 @@ urlpatterns = [
     path('api/authors/<int:author_id>/sendfollowrequest/', FriendRequestView.as_view(), name='send_friend_request'),
     path('api/user-bio/', UserBioView.as_view(), name='get_bio'),
     path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
-    path('api/authors/<int:author_id>/acceptFollowRequest/', AcceptFollowRequest.as_view(), name='accept_follow_request'),
+    path('api/authors/<int:author_id>//acceptFollowRequest', AcceptFollowRequest.as_view(), name='accept_follow_request'),
 
     re_path(r'^.*$', views.index),  # This should be the last pattern 
     
