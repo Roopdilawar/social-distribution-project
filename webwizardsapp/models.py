@@ -9,7 +9,7 @@ from django.db.models import JSONField
 class User(AbstractUser):
     # Need to add a few more fields (github, url, host, id)
     # user_email = models.EmailField(unique=True)
-    profile_picture = models.URLField(max_length=20000000000000000000, blank=True, default='https://imgur.com/a/i9xknax')
+    profile_picture = models.URLField(max_length=100000000, blank=True, default='https://imgur.com/a/i9xknax')
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
