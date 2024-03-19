@@ -106,6 +106,7 @@ class FollowerList(models.Model):
 class Inbox(models.Model):
     user = models.ForeignKey(User, related_name='inbox', on_delete=models.CASCADE)
     content=models.JSONField(default=list, blank=True)
-    
-    
-    
+
+
+class Nodes(models.Model):
+    nodes = models.JSONField(default=list, blank=True)

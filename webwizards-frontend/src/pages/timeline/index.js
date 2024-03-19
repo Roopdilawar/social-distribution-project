@@ -7,6 +7,25 @@ const TimelinePage = () => {
     const [posts, setPosts] = useState([]);
     const [isFollowingView, setIsFollowingView] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [nodes, setNodes] = useState([]);
+
+    const fetchNodes = async () => {
+        const token = localStorage.getItem('token');
+            if (!token) {
+                console.log('No token found');
+                return;
+            }
+            try {
+                const response = await axios.get('http://localhost:8000/api/nodes/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+                setNodes(response.data.nodes);
+            } catch (error) {
+                console.error("Error fetching user ID:", error);
+            }
+        };
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -26,34 +45,52 @@ const TimelinePage = () => {
                 console.error("Error fetching user ID:", error);
             }
         };
+        
         fetchUserId();
+        fetchNodes();
     }, []);
 
     useEffect(() => {
         if (!userId) return;
+        fetchNodes();
 
         const fetchPosts = async () => {
-            let endpoint = 'http://localhost:8000/api/posts/';
-            if (isFollowingView) {
-                endpoint = `http://localhost:8000/api/authors/${userId}/inbox/`;
-            }
+            let tempPosts = [];
 
-            try {
-                const response = await axios.get(endpoint);
-                if (isFollowingView) {
+            if (isFollowingView) {
+                try {
+                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/`);
                     const filteredPosts = response.data.content.filter(item => item.type === 'post');
                     const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    setPosts(orderedPosts);
+                    tempPosts = orderedPosts
+                } catch (error) {
+                    console.error("Error fetching posts:", error);
                 }
-                else {
-                    const filteredPosts = response.data
-                    const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    setPosts(orderedPosts);
-                }
-            } catch (error) {
-                console.error("Error fetching posts:", error);
             }
+
+            else {
+                for (let nodeEndpoint of nodes) {
+                    let tempEndpoint = nodeEndpoint + "/api/posts/";
+                    console.log("TEMP ENDPOINT")
+                    console.log(tempEndpoint)
+
+                    try {
+                        const response = await axios.get(tempEndpoint);
+                        const filteredPosts = response.data
+                        const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                        for (let sortedPost of orderedPosts) {
+                            tempPosts.push(sortedPost)
+                        }
+                    } catch (error) {
+                        console.error("Error fetching posts:", error);
+                    }
+                }
+            }
+            console.log("TEMP POSTS")
+            console.log(tempPosts)
+            setPosts(tempPosts)
         };
+
         fetchPosts();
     }, [isFollowingView, userId]);
 

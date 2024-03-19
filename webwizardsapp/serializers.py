@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User,Post,Comments,FollowerList,Inbox,LikedItem
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,Nodes
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -175,3 +175,9 @@ class FollowRequestSerializer(serializers.Serializer):
             "type": "friend_request",
             "author_to_follow_id": author_to_follow_id,
         }
+
+
+class NodesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Nodes
+        fields = ['nodes']

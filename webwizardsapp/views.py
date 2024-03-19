@@ -4,12 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User,Post,Comments,FollowerList,Inbox,LikedItem
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,Nodes
 from rest_framework import generics
 from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer 
+from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer, NodesSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
@@ -484,7 +484,13 @@ class ListFollowersView(APIView):
         }
         return Response(data)
 
+
     
+class NodesView(APIView):
+    def get(self, request, format=None):
+        nodes, _ = Nodes.objects.get_or_create()
+        serializer = NodesSerializer(nodes)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
 
 
 class FriendRequestView(APIView):
@@ -516,9 +522,6 @@ class FriendRequestView(APIView):
                 return Response({"error": "Failed to send friend request."}, status=status.HTTP_400_BAD_REQUEST)
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
     
 
 class InboxView(APIView):
@@ -553,9 +556,6 @@ class InboxView(APIView):
         serializer = InboxSerializer(inbox)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         return Response(serializer.data, status=status_code)
-
-    
-
     
 
 class AcceptFollowRequest(APIView):
