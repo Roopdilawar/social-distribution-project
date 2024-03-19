@@ -229,7 +229,6 @@ export function UserProfile() {
     const [showFollowing, setShowFollowing] = useState(false);
 
     const toggleFollow = () => {
-        // Here you might also send a request to the server to follow/unfollow
         setIsFollowing(!isFollowing);
     };
 

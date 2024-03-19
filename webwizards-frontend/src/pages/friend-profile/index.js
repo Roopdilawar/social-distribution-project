@@ -1,122 +1,82 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Avatar from '@mui/material/Avatar';
-import { Button } from '@mui/material';
-import Box from '@mui/material/Box';
-import { useParams } from 'react-router-dom';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import { styled } from '@mui/material/styles';
+import { Button, Box, Container, Typography } from '@mui/material';
+import { useLocation, useParams } from 'react-router-dom';
 import { useTheme } from '../../components/theme-context';
 import { TimelinePost } from '../../components/timeline-post/index.js';
 
-const ThemeSwitchButton = styled(IconButton)(({ theme }) => ({
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.short,
-    }),
-    transform: 'rotate(0deg)',
-    '&:hover': {
-      backgroundColor: 'transparent',
-      transform: 'rotate(360deg)',
-    },
-  })); 
-
 export function UserProfileViewOnly() {
+    const location = useLocation();
+    const author_info = location.state?.author_info;
     let { id } = useParams();
-    
     const [currentBio, setCurrentBio] = useState('');
     const [currentProfilePic, setCurrentProfilePic] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [posts, setPosts] = useState([]);
-    const { themeMode, toggleTheme } = useTheme();
-
+    const { themeMode } = useTheme();
     const [isFollowing, setIsFollowing] = useState(false);
-    const [showFollowing, setShowFollowing] = useState(false);
-
-    const toggleFollow = () => {
-        // Here you might also send a request to the server to follow/unfollow
-        setIsFollowing(!isFollowing);
-    };
-
-    const handleFollowingOpen = () => setShowFollowing(true);
-    const handleFollowingClose = () => setShowFollowing(false);
-
-    const buttonStyles = {
-        mt: 2,
-        borderColor: themeMode === 'dark' ? 'white' : 'black', // Border color changes based on theme
-        color: themeMode === 'dark' ? 'white' : 'black', // Text color changes based on theme
-        bgcolor: isFollowing ? 'transparent' : 'rgba(70, 122, 192, 1)',
-        // Assuming you want the background to be transparent
-        '&:hover': {
-            backgroundColor: 'transparent', // Keep background transparent on hover
-            borderColor: themeMode === 'dark' ? 'white' : 'black', // Keep border color consistent on hover
-            color: themeMode === 'dark' ? 'white' : 'black',
-        },
-      };
+    const [userId, setUserId] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchInitialData = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
                 console.log('No token found');
                 return;
             }
-            try {
-                const headers = { 'Authorization': `Token ${token}` };
-                
-                // Fetch the author's details first
-                const authorDetailsResponse = await axios.get(`http://localhost:8000/api/authors/${id}/`, { headers });
+            const headers = { 'Authorization': `Token ${token}` };
 
-                // Use authorDetails for direct details and fetch additional data if needed
-                //setCurrentBio(await fetchBio(headers)); // Assuming fetchBio is a function that returns bio
-                setCurrentProfilePic(authorDetailsResponse.data.profileImage); // Assuming fetchProfilePic returns profile picture URL
-                setDisplayName(authorDetailsResponse.data.displayName); // Adjust based on actual response
-            
+            try {
+                const userResponse = await axios.get('http://localhost:8000/api/get-user-id/', { headers });
+                const userId = userResponse.data.user_id;
+                setUserId(userId);
+
+                setCurrentProfilePic(author_info.profileImage);
+                setDisplayName(author_info.displayName);
+
+                const postsResponse = await axios.get(`http://localhost:8000/api/authors/${id}/posts/`, { headers });
+                const publicPosts = postsResponse.data.filter(post => post.visibility === "PUBLIC");
+                setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+
+                const followersResponse = await axios.get(`http://localhost:8000/api/authors/${id}/followers/`, { headers });
+                const isUserFollowing = followersResponse.data.items.some(follower => parseInt(follower.id.split('/').pop()) === userId);
+                setIsFollowing(isUserFollowing);
             } catch (error) {
                 console.error("Error fetching data: ", error.response?.data || error.message);
             }
         };
 
-        const fetchPosts = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/api/posts/');
-                
-                const allPosts = response.data.items;
-    
-                const userPosts = allPosts.filter(post => {
-                    const authorId = post.author.id.split('/').pop();
-                    const userIdString = id ? id.toString() : ''; 
-                    
-                    return authorId === userIdString; 
-                });
-    
-                if (userPosts.length === 0) {
-                    console.log('No posts found for this user.');
-                    setPosts([]); 
-                } else {
-                    const orderedPosts = userPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    setPosts(orderedPosts);
-                }
-                
-            } catch (error) {
-                console.error("Error fetching posts: ", error);
-            }
-        };
-        fetchPosts();
-        fetchData();
+        fetchInitialData();
     }, [id]);
 
-    // Example fetch functions, replace with actual implementations
-    // const fetchBio = async (headers) => {
-    //     const response = await axios.get(`http://localhost:8000/api/user-bio/${id}/`, { headers });
-    //     return response.data.bio;
-    // };
- 
-    
+    const toggleFollow = async () => {
+        if (!userId) return; 
+        const token = localStorage.getItem('token');
+        const config = { headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' }};
+        const data = { "to_follow": author_info };
+
+        try {
+            await axios.post(`http://localhost:8000/api/authors/${id}/sendfollowrequest/`, data, config);
+            setIsFollowing(true); 
+        } catch (error) {
+            console.error("Error sending follow request: ", error.response?.data || error.message);
+        }
+    };
+
+    const buttonStyles = {
+        mt: 2,
+        mb: 5,
+        borderColor: themeMode === 'dark' ? 'white' : 'black',
+        color: themeMode === 'dark' ? 'white' : 'black',
+        bgcolor: isFollowing ? 'transparent' : 'rgba(70, 122, 192, 1)',
+        '&:hover': {
+            backgroundColor: 'transparent',
+            borderColor: themeMode === 'dark' ? 'white' : 'black',
+            color: themeMode === 'dark' ? 'white' : 'black',
+        },
+    };
+
     return (
         <Box sx={{ pt: 8 }}>
             <Container component="main">
@@ -127,55 +87,23 @@ export function UserProfileViewOnly() {
                     marginTop: 2,
                     marginBottom: 2,
                 }}>
-                    <Box sx={{ position: 'fixed', top: 60, right: 0, m: 2, zIndex: 1301 }}>
-                        <ThemeSwitchButton onClick={toggleTheme} color="inherit">
-                            {themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
-                        </ThemeSwitchButton>
-                    </Box>
-                    <Avatar src={currentProfilePic} sx={{ width: 200, height: 200, borderRadius: '50%' }}/>
+                    <Avatar src={currentProfilePic} sx={{ width: 200, height: 200, borderRadius: '50%' }} />
                     <Typography component="h1" variant="h5" sx={{
                         fontSize: '2.25em',
                         marginTop: 1,
-                        fontFamily:'Roboto',
+                        fontFamily: 'Roboto',
                         fontWeight: '1000',
                     }}>
                         {displayName}
                     </Typography>
-                    <div style={{ marginTop: '20px' }} />
-                    <Typography variant="body1" sx={{
-                        fontSize: '1em',
-                        fontFamily: 'Roboto', 
-                    }}>
+                    <Typography variant="body1" sx={{ fontSize: '1em', fontFamily: 'Roboto', mt: 2 }}>
                         {currentBio}
-                    
-                {/* Follow button */}
-                <Button
-                    onClick={toggleFollow}
-                    variant="outlined"
-                    sx={buttonStyles}
-                    >
-                    {isFollowing ? 'Following' : 'Follow'}
-                    </Button>
-                    
                     </Typography>
-
-                    <div style={{ marginTop: '40px' }} />
-
-                    <Grid container spacing={4} justifyContent="center">
-                        {/* Following and Followers buttons removed for brevity */}
-                    </Grid>
-
-                    <div style={{ marginTop: '40px' }} />
-                    <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
-                        {posts && posts.length > 0 ? (
-                            posts.map(post => (
-                                <TimelinePost key={post.id} post={post} isViewOnly={true} />
-                            ))
-                        ) : (
-                            <Typography variant="subtitle1" style={{ textAlign: 'center' }}>
-                                No posts found!
-                            </Typography>
-                        )}
+                    <Button onClick={toggleFollow} variant="outlined" sx={buttonStyles} disabled={isFollowing}>
+                        {isFollowing ? 'Following' : 'Follow'}
+                    </Button>
+                    <div style={{ marginTop: '2px', maxWidth: '1000px', width: '100%', margin: 'auto' }}>
+                        {posts.length > 0 ? posts.map(post => <TimelinePost key={post.id} post={post} isViewOnly={true} />) : <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>}
                     </div>
                 </Box>
             </Container>
