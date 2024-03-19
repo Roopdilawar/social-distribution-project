@@ -3,7 +3,6 @@ import axios from 'axios';
 import { TimelinePost } from '../../components/timeline-post';
 import { Box } from '@mui/material';
 
-
 const TimelinePage = () => {
     const [posts, setPosts] = useState([]);
 
@@ -11,7 +10,8 @@ const TimelinePage = () => {
         const fetchPosts = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/api/posts/');
-                const orderedPosts = response.data.items.sort((a, b) => new Date(b.published) - new Date(a.published));
+                console.log(response.data)
+                const orderedPosts = response.data.sort((a, b) => new Date(b.published) - new Date(a.published));
                 setPosts(orderedPosts);
             } catch (error) {
                 console.error("Error fetching posts: ", error);

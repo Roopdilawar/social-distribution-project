@@ -34,7 +34,7 @@ const ThemeSwitchButton = styled(IconButton)(({ theme }) => ({
     },
   }));  
 
-function UserProfile() {
+export function UserProfile() {
     const [user, setUser] = useState(null);
     const [authors, setAuthors] = useState([]);
     const [editBioOpen, setEditBioOpen] = useState(false);
@@ -106,6 +106,7 @@ function UserProfile() {
 
         fetchUserId();
         fetchUserBio();
+        
         fetchUserProfilePic();
     }, []);
 
@@ -126,9 +127,9 @@ function UserProfile() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/posts/');
-                
-                const allPosts = response.data.items;
+                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/`);
+                console.log(response.data)
+                const allPosts = response.data;
     
                 const userPosts = allPosts.filter(post => {
                     const authorId = post.author.id.split('/').pop();
@@ -224,11 +225,14 @@ function UserProfile() {
         }
     }
 
-    const [showFollowers, setShowFollowers] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
     const [showFollowing, setShowFollowing] = useState(false);
 
-    const handleFollowersOpen = () => setShowFollowers(true);
-    const handleFollowersClose = () => setShowFollowers(false);
+    const toggleFollow = () => {
+        // Here you might also send a request to the server to follow/unfollow
+        setIsFollowing(!isFollowing);
+    };
+
     const handleFollowingOpen = () => setShowFollowing(true);
     const handleFollowingClose = () => setShowFollowing(false);
 
@@ -311,6 +315,8 @@ function UserProfile() {
                     {authors.displayName}
                 </Typography>
                 <div style={{ marginTop: '20px' }} />
+
+
                 <Box sx={{ marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
                 <Typography variant="body1" sx={{
                     fontSize: '1em',
@@ -321,6 +327,7 @@ function UserProfile() {
                 <IconButton aria-label="edit" size="small" onClick={handleOpen} sx={{ ml: 1 }}>
                     <EditIcon fontSize="inherit" />
                 </IconButton>
+
                 </Box>
 
 
@@ -360,55 +367,32 @@ function UserProfile() {
                         p: 1, 
                         borderRadius: '4px', 
                         '&:hover': { 
-                        boxShadow: '0 2px 5px 2px rgba(0, 0, 0, 0.2)', 
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                            boxShadow: '0 2px 5px 2px rgba(0, 0, 0, 0.2)', 
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
                         } 
-                    }}>
+                        }}>
                         Following: {'4'}
                     </Typography>
                     </ButtonBase>
                 </Grid>
                 <Grid item>
-                    <ButtonBase onClick={handleFollowersOpen} style={{ borderRadius: '4px' }}>
                     <Typography variant="subtitle1" sx={{ 
                         fontWeight: 'bold', 
                         mx: 2, 
                         display: 'inline-block', 
                         p: 1, 
                         borderRadius: '4px', 
+                        backgroundColor: 'rgba(0, 0, 0, 0)', 
+                        boxShadow: 'none', 
                         '&:hover': { 
-                        boxShadow: '0 2px 5px 2px rgba(0, 0, 0, 0.2)', 
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        boxShadow: 'none', 
                         } 
                     }}>
-                        Followers: {'4'}
-                    </Typography>
-                    </ButtonBase>
-                </Grid>
-                
-                <Grid item>
-                <Typography variant="subtitle1" sx={{ 
-                    fontWeight: 'bold', 
-                    mx: 2, 
-                    display: 'inline-block', 
-                    p: 1, 
-                    borderRadius: '4px', 
-                    backgroundColor: 'rgba(0, 0, 0, 0)', 
-                    boxShadow: 'none', 
-                    '&:hover': { 
-                    boxShadow: 'none', 
-                    } 
-                }}>
                     Posts: {posts.length}
-                </Typography>
+                    </Typography>
                 </Grid>
                 </Grid>
 
-                <Modal open={showFollowers} onClose={handleFollowersClose}>
-                    <Box sx={modalStyle}>
-                        <Typography variant="h6">Followers</Typography>
-                    </Box>
-                </Modal>
 
                 <Modal open={showFollowing} onClose={handleFollowingClose}>
                     <Box sx={modalStyle}>
@@ -420,7 +404,7 @@ function UserProfile() {
                 <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
                     {posts.length > 0 ? (
                         posts.map(post => (
-                            <TimelinePost key={post.id} post={post} />
+                            <TimelinePost key={post.id} post={post} isViewOnly={false}/>
                         ))
                     ) : (
                         <Typography variant="subtitle1" style={{ textAlign: 'center' }}>
