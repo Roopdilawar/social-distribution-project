@@ -1,80 +1,70 @@
-import React from 'react';
-import { Box, Card, CardContent, Typography, Avatar, Grid, IconButton } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Box, Card, CardContent, Typography, Avatar, IconButton } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
 
-
 const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
-    transition: theme.transitions.create('transform', {
-        duration: theme.transitions.duration.short,
-    }),
-    '&:hover': {
-        transform: 'scale(1.2)',
-        color: theme.palette.primary.main,
-    },
+  transition: theme.transitions.create('transform', {
+    duration: theme.transitions.duration.short,
+  }),
+  '&:hover': {
+    transform: 'scale(1.2)',
+    color: theme.palette.primary.main,
+  },
 }));
 
 function NotificationsPage() {
-    const notifications = {
-        "type":"inbox",
-        "author":"http://127.0.0.1:5454/authors/c1e3db8ccea4541a0f3d7e5c75feb3fb",
-        "items":[
-                {
-                    "@context": "https://www.w3.org/ns/activitystreams",
-                    "summary": "Lara Croft Likes your post",         
-                    "type": "Like",
-                    "author":{
-                        "type":"author",
-                        "id":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                        "host":"http://127.0.0.1:5454/",
-                        "displayName":"Lara Croft",
-                        "url":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                        "github":"http://github.com/laracroft",
-                        "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
-                    },
-                    "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
-                },
-            {
-                "type": "Follow",      
-                "summary":"Greg wants to follow Lara",
-                "actor":{
-                    "type":"author",
-                    "id":"http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471",
-                    "url":"http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471",
-                    "host":"http://127.0.0.1:5454/",
-                    "displayName":"Greg Johnson",
-                    "github": "http://github.com/gjohnson",
-                    "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
-                },
-                "object":{
-                    "type":"author",
-                    // ID of the Author
-                    "id":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                    // the home host of the author
-                    "host":"http://127.0.0.1:5454/",
-                    // the display name of the author
-                    "displayName":"Lara Croft",
-                    // url to the authors profile
-                    "url":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-                    // HATEOS url for Github API
-                    "github": "http://github.com/laracroft",
-                    // Image from a public domain
-                    "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
-                }
-            }
-        ]
+  const [notifications, setNotifications] = useState({ items: [] });
+  const [userId, setUserId] = useState(null);
+  const [nonPostNotifications, setNonPostNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found');
+        return;
+      }
+      try {
+        const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+          headers: {
+            'Authorization': `Token ${token}`
+          }
+        });
+        setUserId(response.data.user_id);
+      } catch (error) {
+        console.error("Error fetching user ID: ", error);
+      }
     };
+    fetchUserId();
+  }, []);
 
-    const nonPostNotifications = notifications.items.filter(notification => notification.type !== "post");
+  useEffect(() => {
+    if (!userId) return; 
 
-    if (nonPostNotifications.length === 0) {
-        return <Typography sx={{ pt: 9, textAlign: 'center' }}>No notifications.</Typography>;
-    }
-
-    const handleAcceptFollow = (actorId) => {
-        console.log(`Accepting follow request from ${actorId}`);
-        // Implement logic here.
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/`);
+        const data = response.data;
+        setNotifications(data);
+        const filteredNotifications = data.items.filter(notification => notification.type !== "post");
+        setNonPostNotifications(filteredNotifications);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
     };
+    fetchNotifications();
+  }, [userId]); 
+
+  if (nonPostNotifications.length === 0) {
+      return <Typography sx={{ pt: 9, textAlign: 'center' }}>No notifications.</Typography>;
+  }
+
+  const handleAcceptFollow = (actorId) => {
+      console.log(`Accepting follow request from ${actorId}`);
+      // Implement logic here.
+  };
 
     return (
         <Box sx={{ pt: 9 }}>
