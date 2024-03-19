@@ -51,6 +51,7 @@ class RegisterView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = serializer.save()
         user.set_password(user.password)
+        user.is_approved = False
         user.save()
         
 
@@ -70,8 +71,12 @@ class LoginAPIView(APIView):
         user = authenticate(username=username, password=password)
         # print(user)
         if user:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key}, status=status.HTTP_200_OK)
+            if user.is_approved:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({"token": token.key}, status=status.HTTP_200_OK)
+            else:
+                print("User not approved.")
+                return Response({"error": "user not approved by the admin"}, status = status.HTTP_403_FORBIDDEN)
         return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -134,8 +139,6 @@ class AuthorPostsView(generics.ListCreateAPIView):
                     print(f"Request to {inbox_url} failed: {e}")
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 
 
             
@@ -355,7 +358,7 @@ class LikedItemsView(APIView):
             "object": post_id
         }
         liked_items_instance, created = LikedItem.objects.get_or_create(user=user)
-        
+ 
         if not any(item['object'] == liked_item_data['object'] for item in liked_items_instance.items):
             liked_items_instance.items.append(liked_item_data)
             liked_items_instance.save()
@@ -412,7 +415,6 @@ class UserProfilePictureView(APIView):
             user.save()
             return Response({'message': 'Profile picture updated successfully'}, status=status.HTTP_200_OK)
         return Response({'error': 'Profile picture is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         
         
         
@@ -466,8 +468,6 @@ class FriendRequestView(APIView):
 
 
     
-
-
 
 class InboxView(APIView):
     def get(self, request, author_id, *args, **kwargs):

@@ -12,6 +12,7 @@ class User(AbstractUser):
     profile_picture = models.URLField(max_length=200, blank=True, default='https://imgur.com/a/i9xknax')
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
     # user_id = models.CharField(max_length=500)
     url = models.CharField(max_length=500, default='http://localhost:8000/')
     host = models.CharField(max_length=500, default='http://localhost:8000/')
