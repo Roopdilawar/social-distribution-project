@@ -264,7 +264,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                     </Typography>
                     {renderContent()}
                 </CardContent>
-                {!isViewOnly && (
+                
                     <CardActions disableSpacing>
                         <Box display="flex" alignItems="flex-start">
                             <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
@@ -296,7 +296,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                             </Box>
                         </Box>
                     </CardActions>
-                )}
+                
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     {newCommentVisible && (
                         <div className="new-comment-container">
