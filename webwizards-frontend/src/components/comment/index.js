@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Avatar, Card, Box, IconButton, Tooltip, CardActions, CardHeader, CardContent, Typography } from "@mui/material"
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -6,8 +6,8 @@ import axios from "axios";
 import "./styles.css"
 
 export default function Comment ({ comment, post }) {
-    const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(comment.likes || 0);
+    const [isLiked, setIsLiked] = useState(false);
     
     const handleLike = async () => {    
         const token = localStorage.getItem('token');
@@ -32,6 +32,7 @@ export default function Comment ({ comment, post }) {
             await axios.post(`http://localhost:8000/api/posts/${postId}/comments/${commentId}/like/`, likeData, config);
             // await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
             setIsLiked(true); 
+            setLikesCount(likesCount + 1);
         } catch (error) {
             console.error("Error liking post:", error);
         }
