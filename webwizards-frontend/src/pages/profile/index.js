@@ -127,9 +127,9 @@ export function UserProfile() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/posts/');
-                
-                const allPosts = response.data.items;
+                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/`);
+                console.log(response.data)
+                const allPosts = response.data;
     
                 const userPosts = allPosts.filter(post => {
                     const authorId = post.author.id.split('/').pop();

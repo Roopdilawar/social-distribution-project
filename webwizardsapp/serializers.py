@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User,Post,UserFollowing,Comments
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -34,6 +34,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             github=validated_data.get('github', ''),
+            url=validated_data.get('url', 'http://localhost:8000/'),
+            host=validated_data.get('host', 'http://localhost:8000/' ),
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -43,15 +45,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 class AuthorSerializer(serializers.ModelSerializer):
     type = serializers.CharField(default='author',read_only=True)
     id = serializers.SerializerMethodField()
-    url = serializers.CharField(default='url') # Need to update
-    host = serializers.CharField(default='host') # Need to update
+    url = serializers.SerializerMethodField()
+    host = serializers.CharField(default='host')
     displayName = serializers.CharField(source='username')
-    github = serializers.URLField() 
+    github = serializers.URLField()
     profileImage = serializers.URLField(source='profile_picture')
     
     def get_id(self, obj):
-        return f"http://127.0.0.1:5454/authors/{obj.id}"
+        return f"{obj.host}authors/{obj.id}"
     
+    def get_url(self, obj):
+        return f"{obj.host}authors/{obj.id}"
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
@@ -70,47 +74,104 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'user_email', 'profile_picture']       
         
 
-User = User
-class UserFollowingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserFollowing
-        fields = ['user', 'following_user']
-
-    def validate(self, data):
-        if data['user'] == data['following_user']:
-            raise serializers.ValidationError("You cannot follow yourself.")
-        if UserFollowing.objects.filter(user=data['user'], following_user=data['following_user']).exists():
-            raise serializers.ValidationError("You are already following this user.")
-        return data
 
 
 
 class PostSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    type = serializers.CharField(default='post',read_only=True)
     class Meta:
         model = Post
-        fields = ['type', 'id', 'title', 'source', 'origin', 'description', 'content_type', 'content', 'author', 'Comment_counts', 'likes', 'published', 'visibility']
+        fields = ['type', 'id', 'title', 'source', 'origin', 'description', 'content_type', 'content', 'author', 'comment_counts', 'likes', 'published', 'visibility']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         post_id = instance.id
-        representation['id'] = f"http://127.0.0.1:5454/authors/{instance.author.id}/posts/{post_id}"
-        representation['Comment_counts'] = instance.comments.all().count()
+        representation['id'] = f"{instance.author.host}authors/{instance.author.id}/posts/{post_id}"
+        representation['comment_counts'] = instance.comments.all().count()
 
         return representation
 
     
-    
+class LikedItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikedItem
+        fields = '__all__'
+
+
         
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    
     
     class Meta:
         model = Comments
         fields = ['id', 'post', 'author', 'content', 'created']
         
         
-    
-    
+# class FollowerSerializer(serializers.Serializer):
+#     type = serializers.SerializerMethodField(method_name='get_author_type')
+#     id = serializers.SerializerMethodField(method_name='get_author_id')
+#     url = serializers.SerializerMethodField(method_name='get_author_url')
+#     host = serializers.SerializerMethodField(method_name='get_author_host')
+#     displayName = serializers.SerializerMethodField(method_name='get_author_displayName')
+#     github = serializers.SerializerMethodField(method_name='get_author_github')
+#     profileImage = serializers.SerializerMethodField(method_name='get_author_profileImage')
 
+#     class Meta:
+#         model = FollowerList
+#         fields = ('type', 'id', 'url', 'host', 'displayName', 'github', 'profileImage')
+
+#     def get_author_type(self, obj):
+#         return "author"
+
+#     def get_author_id(self, obj):
+#         return f"{obj.author_to_follow.host}authors/{obj.author_to_follow.pk}"
+
+#     def get_author_url(self, obj):
+#         return f"{obj.author_to_follow.host}authors/{obj.author_to_follow.pk}"
+
+#     def get_author_host(self, obj):
+#         return obj.author_to_follow.host
+
+#     def get_author_displayName(self, obj):
+#         return obj.author_to_follow.username 
+
+#     def get_author_github(self, obj):
+#         return obj.author_to_follow.github_url if hasattr(obj.author_to_follow, 'github_url') else ""
+
+#     def get_author_profileImage(self, obj):
+
+#         return obj.author_to_follow.profile_image_url if hasattr(obj.author_to_follow, 'profile_image_url') else ""
     
+#     def create(self, validated_data):
+#         return Followers.objects.create(**validated_data)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+class InboxSerializer(serializers.ModelSerializer):
+    post=PostSerializer(read_only=True)
+    comment=CommentSerializer(read_only=True)
+    
+    class Meta:
+        model = Inbox
+        fields = ['post','comment',"content"]
+        
+        
+
+from rest_framework import serializers
+
+class FollowRequestSerializer(serializers.Serializer):
+    author_to_follow_id= serializers.IntegerField()
+    def create(self, validated_data):
+        author_to_follow_id = validated_data.get('author_to_follow_id')
+        return {
+            "type": "friend_request",
+            "author_to_follow_id": author_to_follow_id,
+        }

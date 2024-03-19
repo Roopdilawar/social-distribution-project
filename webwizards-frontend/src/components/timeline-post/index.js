@@ -17,6 +17,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Comment from "../comment/index.js";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnly }) => {
@@ -218,6 +219,11 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         }
     };
 
+    const timeAgo = (dateString) => {
+        const date = parseISO(dateString);
+        return formatDistanceToNow(date, { addSuffix: true });
+    };
+
     return (
         <>
             <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } }}>
@@ -227,6 +233,24 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                         <Typography variant="subtitle2" color="primary" onClick={!isViewOnly ? handleUsernameClick : null} style={{ cursor: !isViewOnly ? 'pointer' : 'default' }}>
                             {post.author.displayName}
                         </Typography>
+                    subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
+                    action={
+                        isProfilePage && (
+                            <>
+                                <IconButton onClick={handleMenuClick}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    keepMounted
+                                    open={Boolean(anchorEl)}
+                                    onClose={handleMenuClose}
+                                >
+                                    <MenuItem onClick={handleEdit}>Edit</MenuItem>
+                                    <MenuItem onClick={handleDelete}>Delete</MenuItem>
+                                </Menu>
+                            </>
+                        )
                     }
                     subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
                     action={!isViewOnly && isProfilePage && (
