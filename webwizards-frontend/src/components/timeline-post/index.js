@@ -232,7 +232,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                     title={
                         <Typography variant="subtitle2" color="primary" onClick={!isViewOnly ? handleUsernameClick : null} style={{ cursor: !isViewOnly ? 'pointer' : 'default' }}>
                             {post.author.displayName}
-                        </Typography>
+                        </Typography>}
                     subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
                     action={
                         isProfilePage && (
