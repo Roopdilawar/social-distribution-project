@@ -68,7 +68,7 @@ class Comments(models.Model):
     content = models.TextField()
     created = models.DateTimeField(default=timezone.now)
     likes = models.IntegerField(default=0)
-    liked_by = models.ManyToManyField(User, realted_name='liked_posts',)
+    liked_by = models.ManyToManyField(User, related_name='liked_comments',)
 
     @property
     def likes(self):
