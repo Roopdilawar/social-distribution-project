@@ -9,23 +9,31 @@ export default function Comment ({ comment, post }) {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(comment.likes || 0);
     
-    const handleLike = async () => {
+    const handleLike = async () => {    
         const token = localStorage.getItem('token');
-        const postId = post.id.split('/').pop();
-        const commentId = comment.id;
-
-
+        const postId = post.id.split('/').pop(); 
+        const commentId = comment.id
+        const authorId = post.author.id.split('/').pop();
+    
         const config = {
             headers: {
                 'Authorization': `Token ${token}`
             }
         };
-
+    
         try {
-            await axios.post(`http://localhost:8000/api/posts/${postId}/comments/${commentId}/like/`, {}, config);
-            setIsLiked(true);
+            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${authorId}/`, config);
+            const authorData = authorResponse.data;
+            console.log(authorData)
+            const likeData = {
+                "actor": authorData,
+                "object": comment
+            };
+            await axios.post(`http://localhost:8000/api/posts/${postId}/comments/${commentId}/like/`, likeData, config);
+            // await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
+            setIsLiked(true); 
         } catch (error) {
-            console.error("Error liking post: ", error);
+            console.error("Error liking post:", error);
         }
     };
 

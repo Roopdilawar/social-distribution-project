@@ -371,53 +371,52 @@ class LikedItemsView(APIView):
 class LikeCommentView(APIView):
     # permission_classes = [IsAuthenticated] 
 
-    def post(self, request, comment_id):
+    def post(self, request, comment_id, post_id):
         
-        if self.request.user.is_anonymous:
-            
-            
-            temp_user = User.objects.get(id=9)
-            
-            try:
-                comment = Comments.objects.get(id=comment_id)
-                comment_author=comment.author
-                inbox, _ = Inbox.objects.get_or_create(user=comment_author)
-                if temp_user in comments.liked_by.all():
-                    comment.liked_by.remove(temp_user)
-                else:
-                    comment.liked_by.add(temp_user)
-                    liked_by_data={
-                        "type": "Like",
-                        "summary": f'{temp_user.username} liked your comment',
-                        "actor": AuthorSerializer(temp_user).data,
-                        "object": CommentSerializer(comment).data
-                    }
-                    inbox.content.append(liked_by_data)
-                    inbox.save()
-                    
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Comments.DoesNotExist:
-                return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
-            
-            
-        else:
-            try:
-                comment = Comments.objects.get(id=comment_id)
-                comment_author=comment.author
-                inbox, _ = Inbox.objects.get_or_create(user=comment_author)
-                if request.user not in comment.liked_by.all():
-                    comment.liked_by.add(request.user)
-                    liked_by_data={
-                        "type": "Like",
-                        "summary": f'{request.user.username} liked your comment',
-                        "actor": AuthorSerializer(request.user).data,
-                        "object": CommentSerializer(comment).data
-                    }
-                    inbox.content.append(liked_by_data)
-                    inbox.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Comment.DoesNotExist:
-                return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+        author_data = request.data.get('actor')
+        comment_data = request.data.get('object')
+
+        if not author_data or not comment_data:
+            return Response({"error": "Author and Comment data are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        comment_id = comment_data['id']
+
+        try:
+            comment = Comments.objects.get(id=comment_id)
+        except Post.DoesNotExist:
+            return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the author has already liked this post
+        if any(author['id'] == author_data['id'] for author in comment.liked_by):
+            return Response({"message": "You have already liked this comment."}, status=status.HTTP_409_CONFLICT)
+
+        # Append the new like to the liked_by field
+        comment.liked_by.append(author_data)
+        comment.likes += 1
+        comment.save()
+
+        # Send like notification to the author's inbox
+        # author_id_url = post_data['author']['id']
+        # parts = author_id_url.split('/')
+        # parts.insert(3, 'api')
+        # author_inbox_url = '/'.join(parts) + '/inbox/'
+        # liked_by_message = {
+        #     "summary": f"{author_data['displayName']} Likes your post",
+        #     "type": "Like",
+        #     "author": author_data,
+        #     "object": post_data['id']
+        # }
+
+        # try:
+        #     response = requests.post(author_inbox_url, json=liked_by_message, headers={"Content-Type": "application/json"})
+        #     if response.status_code in [200, 201]:
+        #         return Response({"message": "Like notification sent successfully."}, status=status.HTTP_204_NO_CONTENT)
+        #     else:
+        #         return Response({"error": "Failed to send like notification to the author's inbox.", "status_code": response.status_code}, status=status.HTTP_400_BAD_REQUEST)
+        # except requests.exceptions.RequestException as e:
+        #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Like successfully recorded."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class GetUserIDView(APIView):
