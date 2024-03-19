@@ -11,8 +11,20 @@ class User(AbstractUser):
     profile_picture = models.URLField(max_length=200, blank=True, default='https://imgur.com/a/i9xknax')
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+    
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['user_email']
+    
+    def save(self, *args, **kwargs):
+        # Call the "real" save() method.
+        super().save(*args, **kwargs)
+
+        if not self.inbox:
+            # Create a new portfolio and assign it to the user.
+            inbox= Inbox.objects.create(user=self)
+            self.inbox = inbox
+            self.save()
     
 
     
@@ -20,6 +32,12 @@ class User(AbstractUser):
 
 
 class Post(models.Model):
+    VISIBILITY_CHOICES = [
+        ('PUBLIC', 'Public'),
+        ('PRIVATE', 'Private'),
+    ]
+    # other fields...
+    
     type= models.CharField(default='post' ,max_length=200)
     title= models.CharField(max_length=200,blank=True,)
     source= models.URLField(max_length=200,default='https://uofa-cmput404.github.io/general/project.html')
@@ -31,7 +49,7 @@ class Post(models.Model):
     Comment_counts= models.IntegerField(default=0)
     likes= models.IntegerField(default=0)
     published= models.DateTimeField(default=timezone.now)
-    visibility= models.CharField(max_length=200,default='PUBLIC')
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES)
     liked_by = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     
     @property
@@ -81,10 +99,7 @@ class Followers(models.Model):
 
 class Inbox(models.Model):
     user = models.ForeignKey(User, related_name='inbox', on_delete=models.CASCADE)
-    post= models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True)
-    comment= models.ForeignKey(Comments, on_delete=models.CASCADE, blank=True, null=True)
-    liked= models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True,related_name='liked_by')
-    messages= models.TextField(default='This is a message', blank=True,null=True)
+    content=models.JSONField(default=list, blank=True)
     
     
     
