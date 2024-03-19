@@ -234,25 +234,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                             {post.author.displayName}
                         </Typography>}
                     subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
-                    action={
-                        isProfilePage && (
-                            <>
-                                <IconButton onClick={handleMenuClick}>
-                                    <MoreVertIcon />
-                                </IconButton>
-                                <Menu
-                                    anchorEl={anchorEl}
-                                    keepMounted
-                                    open={Boolean(anchorEl)}
-                                    onClose={handleMenuClose}
-                                >
-                                    <MenuItem onClick={handleEdit}>Edit</MenuItem>
-                                    <MenuItem onClick={handleDelete}>Delete</MenuItem>
-                                </Menu>
-                            </>
-                        )
-                    }
-                    subheader={<Typography variant="caption">{new Date(post.published).toLocaleString()}</Typography>}
                     action={!isViewOnly && isProfilePage && (
                         <>
                             <IconButton onClick={handleMenuClick}>
