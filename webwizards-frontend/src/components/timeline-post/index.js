@@ -321,7 +321,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                     )}
                     <div className="all-comments-container">
                         {comments.length > 0 ? comments.slice(commentsPage * 10, (commentsPage * 10) + 10).map((comment) => (
-                            <Comment comment={comment} key={comment.id} />
+                            <Comment comment={comment} key={comment.id} post={post} />
                         )) : <Typography>No comments.</Typography>}
                         <Pagination count={Math.ceil(comments.length / 10)} page={commentsPage + 1} onChange={(event, page) => setCommentsPage(page - 1)} />
                     </div>

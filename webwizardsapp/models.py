@@ -75,6 +75,12 @@ class Comments(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created = models.DateTimeField(default=timezone.now)
+    likes = models.IntegerField(default=0)
+    liked_by = JSONField(default=list, blank=True)    
+
+    @property
+    def likes_count(self):
+        return len(self.liked_by)
 
     def __str__(self):
         return f'Comment by {self.author.username} on {self.post.title}'
