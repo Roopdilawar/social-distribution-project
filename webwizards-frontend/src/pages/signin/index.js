@@ -65,7 +65,7 @@ export default function SignIn() {
 			<div style={{ textAlign: 'right', marginRight : '20px'}}>
 				<a 
 				style={{color: '#90CAF9'}}
-				href="http://127.0.0.1:8000/admin/" target="_blank" rel="noopener noreferrer">
+				href="http://localhost:8000/admin/" target="_blank" rel="noopener noreferrer">
 					Admin Login
 				</a>
 			</div>
