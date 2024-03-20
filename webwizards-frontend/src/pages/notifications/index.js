@@ -79,7 +79,6 @@ function NotificationsPage() {
       let tempArray = nonPostNotifications.filter((tempNot) => {
         return notification != tempNot
       })
-      console.log(tempArray);
       setNonPostNotifications(tempArray);
     } catch (error) {
       console.error("Error accepting follow request: ", error.response?.data || error.message);
