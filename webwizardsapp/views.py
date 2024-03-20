@@ -124,14 +124,45 @@ class AuthorPostsView(generics.ListCreateAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             
             post_data = PostSerializer(post).data  
+
+            # Iterate through author's followers
             for follower_info in follower_list_instance.followers:
-                base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
-                inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
-                
-                try:
-                    response = requests.post(inbox_url, json=post_data, headers={"Content-Type": "application/json"})
-                    if response.status_code not in (200, 201):
-                        print(f"Failed to post to {inbox_url}. Status code: {response.status_code}")
+
+                # For every follower of the author, iterate through THEIR followers
+                base_url = follower_info['host']
+
+                followers_followers_list_url = f"{base_url}api/authors/{follower_info['id'].split('/').pop()}/followers/"
+
+                try :
+                    # Get list of follower followers
+                    response = requests.get(followers_followers_list_url)
+
+                    followers_followers_list = response.json()['items']
+
+                    am_follower = False
+                    
+                    # Iterate through all of their followers and check if we are a member of the list
+                    for follower_followers_info in followers_followers_list:
+                        if author.id == int(follower_followers_info['id'].split('/').pop()):
+                            am_follower = True
+                            break
+                    
+                    # If we are one of the users they are following
+                    if am_follower == True:
+                        print('gooood')
+                        # Get the inbox url
+                        base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+                        inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+                        
+                        try:
+                            # Post to their inbox
+                            response = requests.post(inbox_url, json=post_data, headers={"Content-Type": "application/json"})
+                            if response.status_code not in (200, 201):
+                                print(f"Failed to post to {inbox_url}. Status code: {response.status_code}")
+                        except requests.exceptions.RequestException as e:
+                            print(f"Request to {inbox_url} failed: {e}")
+
+
                 except requests.exceptions.RequestException as e:
                     print(f"Request to {inbox_url} failed: {e}")
             
