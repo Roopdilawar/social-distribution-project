@@ -198,14 +198,14 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         try {
             const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
             const authorData = authorResponse.data;
-            console.log(authorData)
             const likeData = {
                 "actor": authorData,
                 "object": post
             };
             await axios.post(`${endpointUrl}/api/posts/${postId}/like/`, likeData);
             await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
-            setIsLiked(true); 
+            setIsLiked(true);
+            setLikesCount(likesCount + 1); 
         } catch (error) {
             console.error("Error liking post:", error);
         }

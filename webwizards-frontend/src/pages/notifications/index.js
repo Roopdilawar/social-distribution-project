@@ -75,6 +75,12 @@ function NotificationsPage() {
       console.log(notification)
       await axios.post(`http://localhost:8000/api/authors/${userId}/acceptFollowRequest/`, notification, config);
       console.log("Follow request accepted successfully");
+
+      let tempArray = nonPostNotifications.filter((tempNot) => {
+        return notification != tempNot
+      })
+      console.log(tempArray);
+      setNonPostNotifications(tempArray);
     } catch (error) {
       console.error("Error accepting follow request: ", error.response?.data || error.message);
     }
