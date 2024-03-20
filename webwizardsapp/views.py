@@ -24,6 +24,8 @@ from rest_framework.pagination import PageNumberPagination
 import requests
 from django.http import JsonResponse
 
+from rest_framework.pagination import PageNumberPagination
+
 
 def index(request):
     try:
@@ -36,6 +38,12 @@ def index(request):
             """,
             status=501,
         )
+
+
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size_query_param = 'size'
+    page_size = 5
+    max_page_size = 100
 
 
 class RegisterView(generics.CreateAPIView):
@@ -81,6 +89,7 @@ class LoginAPIView(APIView):
 class AuthorsListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = AuthorSerializer
+    pagination_class = CustomPageNumberPagination
 
     def list(self, request, *args, **kwargs):
         response = super(AuthorsListView, self).list(request, *args, **kwargs)
