@@ -71,9 +71,7 @@ const TimelinePage = () => {
             else {
                 for (let nodeEndpoint of nodes) {
                     let tempEndpoint = nodeEndpoint + "/api/posts/";
-                    console.log("TEMP ENDPOINT")
-                    console.log(tempEndpoint)
-
+                  
                     try {
                         const response = await axios.get(tempEndpoint);
                         const filteredPosts = response.data

@@ -25,6 +25,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [likesCount, setLikesCount] = useState(post.likes || 0);
     const [commentsCount, setCommentsCount] = useState(post.comment_counts || 0);
     const [userId, setUserId] = useState(null);
+    const [userData, setUserData] = useState({});
     const [postAuthorId, setpostAuthorId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null); 
@@ -83,6 +84,31 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         fetchUserId();
         fetchLikesAndComments();
     }, []);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            if (userId == null) {
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+
+            const config = {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            };
+            try {
+                const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+                const authorData = authorResponse.data;
+                setUserData(authorData);
+            } catch (error) {
+                console.error("Error fetching user info: ", error);
+            }
+        }
+
+        fetchUserInfo();
+    }, [userId])
 
     const handleUsernameClick = () => {
         const id = post.author.id.split('/').pop();
@@ -315,7 +341,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     {newCommentVisible && (
                         <div className="new-comment-container">
-                            <Avatar src={post.author.profileImage} alt={post.author.displayName} className="new-comment-avatar" />
+                            <Avatar src={userData.profileImage} alt={userData.displayName} className="new-comment-avatar" />
                             <div className="comment-info">
                                 <span className="comment-input">
                                     <FormControl fullWidth>
