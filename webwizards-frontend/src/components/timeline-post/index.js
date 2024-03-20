@@ -23,6 +23,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnly }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likes || 0);
+    const [commentsCount, setCommentsCount] = useState(post.comment_counts || 0);
     const [userId, setUserId] = useState(null);
     const [postAuthorId, setpostAuthorId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,6 +49,18 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
     </Routes>
 
+    const fetchLikesAndComments = async () => {
+        const endpointUrl = post.id.split('/authors')[0];
+        try {
+            const response = await axios.get(`${endpointUrl}/api/posts/${post.id.split('/').pop()}/`);
+            setLikesCount(response.data.likes)
+            setCommentsCount(response.data.comment_counts)
+            
+        } catch (error) {
+            console.error("Error fetching post information: ", error);
+        }
+    }
+
     useEffect(() => {
         const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -68,6 +81,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
 
         fetchUserId();
+        fetchLikesAndComments();
     }, []);
 
     const handleUsernameClick = () => {
@@ -284,7 +298,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                     </IconButton>
                                 </Tooltip>
                                 <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {post.comment_counts} {post.comment_counts === 1 ? 'Comment' : 'Comments'}
+                                    {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
                                 </Typography>
                             </Box>
                             <Box display="flex" alignItems="center">
