@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.db.models import JSONField
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 
 
@@ -9,7 +11,7 @@ from django.db.models import JSONField
 class User(AbstractUser):
     # Need to add a few more fields (github, url, host, id)
     # user_email = models.EmailField(unique=True)
-    profile_picture = models.URLField(max_length=20000000000000000000, blank=True, default='https://imgur.com/a/i9xknax')
+    profile_picture = models.TextField(blank=True, default='https://imgur.com/a/i9xknax')
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
@@ -72,7 +74,7 @@ class LikedItem(models.Model):
 
 class Comments(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.JSONField(default=dict)
     content = models.TextField()
     created = models.DateTimeField(default=timezone.now)
     likes = models.IntegerField(default=0)
@@ -83,7 +85,7 @@ class Comments(models.Model):
         return len(self.liked_by)
 
     def __str__(self):
-        return f'Comment by {self.author.username} on {self.post.title}'
+        return f'Comment by {self.author.get("displayName")} on {self.post.title}'
     
     
 
@@ -106,6 +108,22 @@ class FollowerList(models.Model):
 class Inbox(models.Model):
     user = models.ForeignKey(User, related_name='inbox', on_delete=models.CASCADE)
     content=models.JSONField(default=list, blank=True)
-    
-    
-    
+
+
+class Nodes(models.Model):
+    nodes = models.JSONField(default=list, blank=True)
+
+
+class GitHubLastUpdate(models.Model):
+    last_update_time = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
+
+    @classmethod
+    def get_last_update_time(cls):
+        obj, created = cls.objects.get_or_create(id=1)
+        return obj.last_update_time
+
+    @classmethod
+    def set_last_update_time(cls, last_update_time):
+        obj, created = cls.objects.get_or_create(id=1)
+        obj.last_update_time = last_update_time
+        obj.save()

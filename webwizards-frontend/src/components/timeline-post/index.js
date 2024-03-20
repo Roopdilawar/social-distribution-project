@@ -23,6 +23,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnly }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likes || 0);
+    const [commentsCount, setCommentsCount] = useState(post.comment_counts || 0);
     const [userId, setUserId] = useState(null);
     const [postAuthorId, setpostAuthorId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,6 +49,18 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
     </Routes>
 
+    const fetchLikesAndComments = async () => {
+        const endpointUrl = post.id.split('/authors')[0];
+        try {
+            const response = await axios.get(`${endpointUrl}/api/posts/${post.id.split('/').pop()}/`);
+            setLikesCount(response.data.likes)
+            setCommentsCount(response.data.comment_counts)
+            
+        } catch (error) {
+            console.error("Error fetching post information: ", error);
+        }
+    }
+
     useEffect(() => {
         const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -68,6 +81,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
 
         fetchUserId();
+        fetchLikesAndComments();
     }, []);
 
     const handleUsernameClick = () => {
@@ -104,17 +118,12 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     }
 
     const fetchComments = async () => {
+        const endpointUrl = post.id.split('/authors')[0];
         const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
 
-        const config = {
-            headers: {
-                'Authorization': `Token ${token}`
-            }
-        };
-
         try {
-            const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
+            const response = await axios.get(`${endpointUrl}/api/posts/${postId}/comments/`);
             const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
@@ -123,16 +132,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     };
 
     const handleCommentSubmit = async (event) => {
+        const endpointUrl = post.id.split('/authors')[0];
         const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
-
-        const commentData = {
-            post: postId,
-            content: newCommentInput,
-            created: new Date().toISOString(),
-            author: ""
-        };
-
         const config = {
             headers: {
                 'Authorization': `Token ${token}`
@@ -140,7 +142,17 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
 
         try {
-            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
+            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const authorData = authorResponse.data;
+            console.log(authorData)
+            const commentData = {
+                post: postId,
+                content: newCommentInput,
+                created: new Date().toISOString(),
+                author: authorData
+            };
+           
+            const response = await axios.post(`${endpointUrl}/api/posts/${postId}/addcomment/`, commentData);
             fetchComments();
             setNewCommentInput("");
         } catch (error) {
@@ -174,6 +186,8 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
         const authorId = post.author.id.split('/').pop();
+        const endpointUrl = post.id.split('/authors')[0];
+
     
         const config = {
             headers: {
@@ -184,14 +198,14 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         try {
             const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
             const authorData = authorResponse.data;
-            console.log(authorData)
             const likeData = {
                 "actor": authorData,
                 "object": post
             };
-            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, likeData, config);
+            await axios.post(`${endpointUrl}/api/posts/${postId}/like/`, likeData);
             await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
-            setIsLiked(true); 
+            setIsLiked(true);
+            setLikesCount(likesCount + 1); 
         } catch (error) {
             console.error("Error liking post:", error);
         }
@@ -264,7 +278,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                     </Typography>
                     {renderContent()}
                 </CardContent>
-                {!isViewOnly && (
+                
                     <CardActions disableSpacing>
                         <Box display="flex" alignItems="flex-start">
                             <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
@@ -284,7 +298,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                     </IconButton>
                                 </Tooltip>
                                 <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {post.commentCounts} {post.commentCounts === 1 ? 'Comment' : 'Comments'}
+                                    {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
                                 </Typography>
                             </Box>
                             <Box display="flex" alignItems="center">
@@ -296,7 +310,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                             </Box>
                         </Box>
                     </CardActions>
-                )}
+                
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     {newCommentVisible && (
                         <div className="new-comment-container">

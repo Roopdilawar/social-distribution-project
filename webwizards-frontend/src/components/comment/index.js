@@ -8,12 +8,35 @@ import "./styles.css"
 export default function Comment ({ comment, post }) {
     const [likesCount, setLikesCount] = useState(comment.likes || 0);
     const [isLiked, setIsLiked] = useState(false);
-    
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+            });
+            setUserId(response.data.user_id);
+        } catch (error) {
+            console.error("Error fetching user ID: ", error);
+        }
+        };
+
+        fetchUserId();
+    }, []);
+
     const handleLike = async () => {    
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
         const commentId = comment.id
-        const authorId = post.author.id.split('/').pop();
+        const endpointUrl = post.id.split('/authors')[0];
     
         const config = {
             headers: {
@@ -22,15 +45,18 @@ export default function Comment ({ comment, post }) {
         };
     
         try {
-            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${authorId}/`, config);
+            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
             const authorData = authorResponse.data;
-            console.log(authorData)
+
+            console.log("AUTHOR DATA");
+            console.log(authorData);
+
             const likeData = {
-                "actor": authorData,
+                "author": authorData,
                 "object": comment
             };
-            await axios.post(`http://localhost:8000/api/posts/${postId}/comments/${commentId}/like/`, likeData, config);
-            // await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
+            console.log(`${endpointUrl}/api/posts/${postId}/comments/${commentId}/like/`)
+            await axios.post(`${endpointUrl}/api/posts/${postId}/comments/${commentId}/like/`, likeData);
             setIsLiked(true); 
             setLikesCount(likesCount + 1);
         } catch (error) {

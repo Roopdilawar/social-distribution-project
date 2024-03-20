@@ -4,12 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User,Post,Comments,FollowerList,Inbox,LikedItem
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,Nodes
 from rest_framework import generics
 from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer 
+from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer, NodesSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
@@ -51,9 +51,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        # print("Received data:", request.data)  # Debug: Print received data
         username = request.data.get('username')  # Or change 'username' to the correct key
-        # print("Username:", username)
         return super(RegisterView, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
@@ -77,7 +75,6 @@ class LoginAPIView(APIView):
         password = request.data.get('password')
         print(username, password)
         user = authenticate(username=username, password=password)
-        # print(user)
         if user:
             if user.is_approved:
                 token, created = Token.objects.get_or_create(user=user)
@@ -156,6 +153,48 @@ class AuthorPostsView(APIView):
                 "total_pages": paginator.num_pages,
                 "total_items": paginator.count
             }
+            post_data = PostSerializer(post).data  
+
+            # Iterate through author's followers
+            for follower_info in follower_list_instance.followers:
+
+                # For every follower of the author, iterate through THEIR followers
+                base_url = follower_info['host']
+
+                followers_followers_list_url = f"{base_url}api/authors/{follower_info['id'].split('/').pop()}/followers/"
+
+                try :
+                    # Get list of follower followers
+                    response = requests.get(followers_followers_list_url)
+
+                    followers_followers_list = response.json()['items']
+
+                    am_follower = False
+                    
+                    # Iterate through all of their followers and check if we are a member of the list
+                    for follower_followers_info in followers_followers_list:
+                        if author.id == int(follower_followers_info['id'].split('/').pop()):
+                            am_follower = True
+                            break
+                    
+                    # If we are one of the users they are following
+                    if am_follower == True:
+                        print('gooood')
+                        # Get the inbox url
+                        base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+                        inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+                        
+                        try:
+                            # Post to their inbox
+                            response = requests.post(inbox_url, json=post_data, headers={"Content-Type": "application/json"})
+                            if response.status_code not in (200, 201):
+                                print(f"Failed to post to {inbox_url}. Status code: {response.status_code}")
+                        except requests.exceptions.RequestException as e:
+                            print(f"Request to {inbox_url} failed: {e}")
+
+
+                except requests.exceptions.RequestException as e:
+                    print(f"Request to {inbox_url} failed: {e}")
             
             return Response({
                 "type": "posts",
@@ -176,8 +215,6 @@ class AuthorPostsView(APIView):
 
 
 class GetImageView(APIView):
-    # permission_classes = [IsAuthenticated]
-
     def get(self, request, post_id, format=None):
         post = get_object_or_404(Post, id=post_id)
 
@@ -197,7 +234,6 @@ class GetImageView(APIView):
 class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    # permission_classes = [IsAuthenticated]
 
     def get_object(self):
         queryset = self.get_queryset()
@@ -205,7 +241,6 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
-        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -217,11 +252,41 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         response = super(DetailPostView, self).update(request, *args, **kwargs)
+        post_data = self.get_object()
+        if response.status_code in (200, 201):
+            self.update_or_delete_inboxes(post_data, method='PUT')
         return response
 
     def destroy(self, request, *args, **kwargs):
+        post_data = self.get_object()
         response = super(DetailPostView, self).destroy(request, *args, **kwargs)
+        if response.status_code == 204:
+            self.update_or_delete_inboxes(post_data, method='DELETE')
         return response
+    
+    def update_or_delete_inboxes(self, post_data, method):
+        author = post_data.author
+        post_data = PostSerializer(post_data).data
+        try:
+            follower_list_instance = FollowerList.objects.get(user=author)
+        except FollowerList.DoesNotExist:
+            return JsonResponse({'message': 'No followers found.'}, status=200)
+        
+        for follower_info in follower_list_instance.followers:
+            base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+            inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+            
+            headers = {"Content-Type": "application/json"}
+            try:
+                if method == 'PUT':
+                    response = requests.put(inbox_url, json=post_data, headers=headers)
+                elif method == 'DELETE':
+                    response = requests.delete(inbox_url, json=post_data, headers=headers)
+                
+                if response.status_code not in (200, 201, 204):
+                    print(f"Failed to {method} to {inbox_url}. Status code: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                print(f"Request to {inbox_url} failed: {e}")
 
 
 
@@ -235,17 +300,16 @@ class AddCommentView(generics.CreateAPIView):
         post_author = post.author
         inbox, _ = Inbox.objects.get_or_create(user=post_author)
         
-        author = self.request.user if not self.request.user.is_anonymous else User.objects.get(id=9)
+        author = self.request.data.get('author')
 
-       
         comment_type = serializer.validated_data.get('type', 'Comment') 
         comment_content = serializer.validated_data.get('content')  
-        print(comment_content)
 
         comment_data = {
             "type": comment_type,
-            "summary": f'{author.username} commented on your post',
-            "comment": comment_content,  
+            "summary": f"{author['displayName']} commented on your post",
+            "comment": comment_content, 
+            "author": author 
         }
         
         
@@ -253,7 +317,7 @@ class AddCommentView(generics.CreateAPIView):
         inbox.save()
 
        
-        serializer.save(author=author, post=post)
+        serializer.save(post=post)
         
         
         
@@ -302,16 +366,13 @@ class ListCommentsView(generics.ListAPIView):
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comments.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = [IsAuthenticated]
 
     def get_object(self):
         queryset = self.get_queryset()
-        # print(self.kwargs)
         obj = get_object_or_404(queryset, pk=self.kwargs['comment_id'])
         return obj
 
     def put(self, request, *args, **kwargs):
-        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -332,7 +393,6 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     
 
 class LikePostView(APIView):
-    # permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         author_data = request.data.get('actor')
@@ -422,11 +482,9 @@ class LikedItemsView(APIView):
 
 
 class LikeCommentView(APIView):
-    # permission_classes = [IsAuthenticated] 
-
     def post(self, request, comment_id, post_id):
         
-        author_data = request.data.get('actor')
+        author_data = request.data.get('author')
         comment_data = request.data.get('object')
 
         if not author_data or not comment_data:
@@ -447,27 +505,6 @@ class LikeCommentView(APIView):
         comment.liked_by.append(author_data)
         comment.likes += 1
         comment.save()
-
-        # Send like notification to the author's inbox
-        # author_id_url = post_data['author']['id']
-        # parts = author_id_url.split('/')
-        # parts.insert(3, 'api')
-        # author_inbox_url = '/'.join(parts) + '/inbox/'
-        # liked_by_message = {
-        #     "summary": f"{author_data['displayName']} Likes your post",
-        #     "type": "Like",
-        #     "author": author_data,
-        #     "object": post_data['id']
-        # }
-
-        # try:
-        #     response = requests.post(author_inbox_url, json=liked_by_message, headers={"Content-Type": "application/json"})
-        #     if response.status_code in [200, 201]:
-        #         return Response({"message": "Like notification sent successfully."}, status=status.HTTP_204_NO_CONTENT)
-        #     else:
-        #         return Response({"error": "Failed to send like notification to the author's inbox.", "status_code": response.status_code}, status=status.HTTP_400_BAD_REQUEST)
-        # except requests.exceptions.RequestException as e:
-        #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Like successfully recorded."}, status=status.HTTP_204_NO_CONTENT)
 
@@ -537,7 +574,13 @@ class ListFollowersView(APIView):
         }
         return Response(data)
 
+
     
+class NodesView(APIView):
+    def get(self, request, format=None):
+        nodes, _ = Nodes.objects.get_or_create()
+        serializer = NodesSerializer(nodes)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
 
 
 class FriendRequestView(APIView):
@@ -569,9 +612,6 @@ class FriendRequestView(APIView):
                 return Response({"error": "Failed to send friend request."}, status=status.HTTP_400_BAD_REQUEST)
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
     
 
 class InboxView(APIView):
@@ -606,8 +646,41 @@ class InboxView(APIView):
         serializer = InboxSerializer(inbox)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         return Response(serializer.data, status=status_code)
-
     
+    def put(self, request, author_id, *args, **kwargs):
+        friend = get_object_or_404(User, id=author_id)
+        inbox = Inbox.objects.get(user=friend)
+
+        item_to_update = request.data
+        updated = False
+
+        for index, content_item in enumerate(inbox.content):
+            if content_item['id'] == item_to_update['id']:  
+                inbox.content[index] = item_to_update
+                updated = True
+                break
+
+        if updated:
+            inbox.save()
+            return Response({"message": "Item updated successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, author_id, *args, **kwargs):
+
+        friend = get_object_or_404(User, id=author_id)
+        inbox = Inbox.objects.get(user=friend)
+
+        item_to_delete_id = request.data.get('id') 
+        initial_length = len(inbox.content)
+
+        inbox.content = [item for item in inbox.content if item.get('id') != item_to_delete_id]
+
+        if len(inbox.content) < initial_length:
+            inbox.save()
+            return Response({"message": "Item deleted successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
 
     
 
