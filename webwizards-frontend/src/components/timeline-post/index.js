@@ -284,7 +284,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                     </IconButton>
                                 </Tooltip>
                                 <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {post.commentCounts} {post.commentCounts === 1 ? 'Comment' : 'Comments'}
+                                    {post.comment_counts} {post.comment_counts === 1 ? 'Comment' : 'Comments'}
                                 </Typography>
                             </Box>
                             <Box display="flex" alignItems="center">
