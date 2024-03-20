@@ -87,9 +87,11 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const handleUsernameClick = () => {
         const id = post.author.id.split('/').pop();
         const isCurrentUser = id.toString() === userId.toString();
+        const baseUrl = post.id.split("/authors/")[0];
+        const same_url = baseUrl === "http://localhost:8000"
         const author_info = post.author;
-    
-        if (isCurrentUser) {
+        console.log(author_info)
+        if (isCurrentUser && same_url) {
             navigate("/profile");
         } else {
             navigate(`/friend-profile/${id}`, { state: { author_info } });
