@@ -33,18 +33,18 @@ export function UserProfileViewOnly() {
             const headers = { 'Authorization': `Token ${token}` };
 
             try {
-                const userResponse = await axios.get('http://localhost:8000/api/get-user-id/', { headers });
+                const userResponse = await axios.get(`${author_info.host}api/get-user-id/`, { headers });
                 const userId = userResponse.data.user_id;
                 setUserId(userId);
                 
                 setCurrentProfilePic(author_info.profileImage);
                 setDisplayName(author_info.displayName);
 
-                const postsResponse = await axios.get(`http://localhost:8000/api/authors/${id}/posts/`, { headers });
+                const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/`, { headers });
                 const publicPosts = postsResponse.data.filter(post => post.visibility === "PUBLIC");
                 setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
 
-                const followersResponse = await axios.get(`http://localhost:8000/api/authors/${id}/followers/`, { headers });
+                const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers/`, { headers });
                 const isUserFollowing = followersResponse.data.items.some(follower => parseInt(follower.id.split('/').pop()) === userId);
                 setIsFollowing(isUserFollowing);
             } catch (error) {
@@ -58,7 +58,7 @@ export function UserProfileViewOnly() {
 
     const fetchFollowers = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/api/authors/${id}/followers/`);
+            const response = await axios.get(`${author_info.host}api/authors/${id}/followers/`);
             setFollowers(response.data);
             console.log('Number of followers:', followers.items.length);
             console.log('Followers:', followers.items);
