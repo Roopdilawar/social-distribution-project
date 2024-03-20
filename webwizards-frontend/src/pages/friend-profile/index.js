@@ -39,11 +39,11 @@ export function UserProfileViewOnly() {
                 setCurrentProfilePic(author_info.profileImage);
                 setDisplayName(author_info.displayName);
 
-                const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/`, { headers });
+                const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/`);
                 const publicPosts = postsResponse.data.filter(post => post.visibility === "PUBLIC");
                 setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
 
-                const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers/`, { headers });
+                const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers/`);
                 const isUserFollowing = followersResponse.data.items.some(follower => parseInt(follower.id.split('/').pop()) === userId);
                 setIsFollowing(isUserFollowing);
             } catch (error) {
