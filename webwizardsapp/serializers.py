@@ -175,3 +175,11 @@ class FollowRequestSerializer(serializers.Serializer):
             "type": "friend_request",
             "author_to_follow_id": author_to_follow_id,
         }
+
+
+
+class LikeActionSerializer(serializers.Serializer):
+    summary = serializers.CharField(max_length=255)
+    type = serializers.CharField(max_length=100)
+    author = AuthorSerializer()
+    object = serializers.URLField()
