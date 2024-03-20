@@ -181,7 +181,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     };
 
     const handleLike = async () => {
-        if (isViewOnly) return;
     
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
