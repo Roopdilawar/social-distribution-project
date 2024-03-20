@@ -33,20 +33,54 @@ class Command(BaseCommand):
             if response.status_code == 200:
                 activities = response.json()
 
+                from django.utils.html import format_html
+
                 for activity in activities:
                     activity_time = make_aware(datetime.strptime(activity['created_at'], '%Y-%m-%dT%H:%M:%SZ'))
-                    if activity_time > last_update_time:
-                        Post.objects.create(
-                            type='post',  
-                            title=f"GitHub Activity: {activity['type']}",
-                            source=url,  
-                            origin=url,
-                            description=f"Github Post",
-                            content_type='text/plain',  
-                            content=f"Repository: {activity.get('repo', {}).get('name', 'N/A')}; Details: {activity.get('payload', {}).get('commits', 'N/A')}",
-                            author=user,  
-                            visibility='PUBLIC',  
+                    if activity_time <= last_update_time:
+                        continue
+                    
+                    content = ""
+                    if activity['type'] == 'PushEvent':
+                        repo_name = activity.get('repo', {}).get('name', 'N/A')
+                        commits = activity.get('payload', {}).get('commits', [])
+                        commit_messages = "; ".join([commit['message'] for commit in commits])
+                        content = format_html(
+                            "Pushed to {}: {}",
+                            repo_name,
+                            commit_messages or "No commit messages available"
                         )
+                    elif activity['type'] == 'PullRequestEvent':
+                        pr_action = activity.get('payload', {}).get('action', 'N/A')
+                        pr_number = activity.get('payload', {}).get('number', 'N/A')
+                        content = format_html(
+                            "Pull Request #{} {}",
+                            pr_number,
+                            pr_action
+                        )
+                    elif activity['type'] == 'CreateEvent':
+                        ref_type = activity.get('payload', {}).get('ref_type', 'N/A')
+                        ref_name = activity.get('payload', {}).get('ref', 'N/A')
+                        content = format_html(
+                            "Created a new {}: {}",
+                            ref_type,
+                            ref_name
+                        )
+                    else:
+                        content = "Performed an action: {}".format(activity['type'])
+                    
+                    Post.objects.create(
+                        type='post',  
+                        title=f"GitHub Activity: {activity['type']}",
+                        source=url,  
+                        origin=url,
+                        description="GitHub Activity",
+                        content_type='text/plain',  
+                        content=content,
+                        author=user,  
+                        visibility='PUBLIC',  
+                    )
+
                 self.stdout.write(self.style.SUCCESS(f'Successfully fetched and created posts for GitHub activity of user "{username}"'))
             else:
                 self.stdout.write(self.style.ERROR(f'Failed to fetch GitHub activity for user "{username}"'))
