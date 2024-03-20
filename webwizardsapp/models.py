@@ -74,7 +74,7 @@ class LikedItem(models.Model):
 
 class Comments(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.JSONField(default=dict)
     content = models.TextField()
     created = models.DateTimeField(default=timezone.now)
     likes = models.IntegerField(default=0)
@@ -85,7 +85,7 @@ class Comments(models.Model):
         return len(self.liked_by)
 
     def __str__(self):
-        return f'Comment by {self.author.username} on {self.post.title}'
+        return f'Comment by {self.author.get("displayName")} on {self.post.title}'
     
     
 

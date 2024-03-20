@@ -136,6 +136,7 @@ export function UserProfileViewOnly() {
                         marginTop: 1,
                         fontFamily: 'Roboto',
                         fontWeight: '1000',
+                        textAlign: 'center'
                     }}>
                         {displayName}
 

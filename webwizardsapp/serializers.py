@@ -101,7 +101,7 @@ class LikedItemSerializer(serializers.ModelSerializer):
 
         
 class CommentSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(read_only=True)
+    # author = AuthorSerializer(read_only=True)
     
     
     class Meta:
