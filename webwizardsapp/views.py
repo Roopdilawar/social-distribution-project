@@ -43,9 +43,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        # print("Received data:", request.data)  # Debug: Print received data
         username = request.data.get('username')  # Or change 'username' to the correct key
-        # print("Username:", username)
         return super(RegisterView, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
@@ -69,7 +67,6 @@ class LoginAPIView(APIView):
         password = request.data.get('password')
         print(username, password)
         user = authenticate(username=username, password=password)
-        # print(user)
         if user:
             if user.is_approved:
                 token, created = Token.objects.get_or_create(user=user)
@@ -144,8 +141,6 @@ class AuthorPostsView(generics.ListCreateAPIView):
             
 
 class GetImageView(APIView):
-    # permission_classes = [IsAuthenticated]
-
     def get(self, request, post_id, format=None):
         post = get_object_or_404(Post, id=post_id)
 
@@ -165,7 +160,6 @@ class GetImageView(APIView):
 class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    # permission_classes = [IsAuthenticated]
 
     def get_object(self):
         queryset = self.get_queryset()
@@ -173,7 +167,6 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
-        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -203,17 +196,16 @@ class AddCommentView(generics.CreateAPIView):
         post_author = post.author
         inbox, _ = Inbox.objects.get_or_create(user=post_author)
         
-        author = self.request.user if not self.request.user.is_anonymous else User.objects.get(id=9)
+        author = self.request.data.get('author')
 
-       
         comment_type = serializer.validated_data.get('type', 'Comment') 
         comment_content = serializer.validated_data.get('content')  
-        print(comment_content)
 
         comment_data = {
             "type": comment_type,
-            "summary": f'{author.username} commented on your post',
-            "comment": comment_content,  
+            "summary": f"{author['displayName']} commented on your post",
+            "comment": comment_content, 
+            "author": author 
         }
         
         
@@ -221,7 +213,7 @@ class AddCommentView(generics.CreateAPIView):
         inbox.save()
 
        
-        serializer.save(author=author, post=post)
+        serializer.save(post=post)
         
         
         
@@ -249,16 +241,13 @@ class ListCommentsView(generics.ListAPIView):
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comments.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = [IsAuthenticated]
 
     def get_object(self):
         queryset = self.get_queryset()
-        # print(self.kwargs)
         obj = get_object_or_404(queryset, pk=self.kwargs['comment_id'])
         return obj
 
     def put(self, request, *args, **kwargs):
-        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -279,7 +268,6 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     
 
 class LikePostView(APIView):
-    # permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         author_data = request.data.get('actor')
@@ -369,11 +357,9 @@ class LikedItemsView(APIView):
 
 
 class LikeCommentView(APIView):
-    # permission_classes = [IsAuthenticated] 
-
     def post(self, request, comment_id, post_id):
         
-        author_data = request.data.get('actor')
+        author_data = request.data.get('author')
         comment_data = request.data.get('object')
 
         if not author_data or not comment_data:
@@ -394,27 +380,6 @@ class LikeCommentView(APIView):
         comment.liked_by.append(author_data)
         comment.likes += 1
         comment.save()
-
-        # Send like notification to the author's inbox
-        # author_id_url = post_data['author']['id']
-        # parts = author_id_url.split('/')
-        # parts.insert(3, 'api')
-        # author_inbox_url = '/'.join(parts) + '/inbox/'
-        # liked_by_message = {
-        #     "summary": f"{author_data['displayName']} Likes your post",
-        #     "type": "Like",
-        #     "author": author_data,
-        #     "object": post_data['id']
-        # }
-
-        # try:
-        #     response = requests.post(author_inbox_url, json=liked_by_message, headers={"Content-Type": "application/json"})
-        #     if response.status_code in [200, 201]:
-        #         return Response({"message": "Like notification sent successfully."}, status=status.HTTP_204_NO_CONTENT)
-        #     else:
-        #         return Response({"error": "Failed to send like notification to the author's inbox.", "status_code": response.status_code}, status=status.HTTP_400_BAD_REQUEST)
-        # except requests.exceptions.RequestException as e:
-        #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Like successfully recorded."}, status=status.HTTP_204_NO_CONTENT)
 

@@ -104,17 +104,12 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     }
 
     const fetchComments = async () => {
+        const endpointUrl = post.id.split('/authors')[0];
         const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
 
-        const config = {
-            headers: {
-                'Authorization': `Token ${token}`
-            }
-        };
-
         try {
-            const response = await axios.get(`http://localhost:8000/api/posts/${postId}/comments/`, config);
+            const response = await axios.get(`${endpointUrl}/api/posts/${postId}/comments/`);
             const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
@@ -123,16 +118,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     };
 
     const handleCommentSubmit = async (event) => {
+        const endpointUrl = post.id.split('/authors')[0];
         const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
-
-        const commentData = {
-            post: postId,
-            content: newCommentInput,
-            created: new Date().toISOString(),
-            author: ""
-        };
-
         const config = {
             headers: {
                 'Authorization': `Token ${token}`
@@ -140,7 +128,17 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
 
         try {
-            const response = await axios.post(`http://localhost:8000/api/posts/${postId}/addcomment/`, commentData, config);
+            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const authorData = authorResponse.data;
+            console.log(authorData)
+            const commentData = {
+                post: postId,
+                content: newCommentInput,
+                created: new Date().toISOString(),
+                author: authorData
+            };
+           
+            const response = await axios.post(`${endpointUrl}/api/posts/${postId}/addcomment/`, commentData);
             fetchComments();
             setNewCommentInput("");
         } catch (error) {
@@ -174,6 +172,8 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
         const authorId = post.author.id.split('/').pop();
+        const endpointUrl = post.id.split('/authors')[0];
+
     
         const config = {
             headers: {
@@ -189,7 +189,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 "actor": authorData,
                 "object": post
             };
-            await axios.post(`http://localhost:8000/api/posts/${postId}/like/`, likeData, config);
+            await axios.post(`${endpointUrl}/api/posts/${postId}/like/`, likeData);
             await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
             setIsLiked(true); 
         } catch (error) {
