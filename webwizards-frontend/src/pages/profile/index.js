@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
+import { Box, Modal, Typography, List, ListItem, ListItemText } from '@mui/material';
 import axios from 'axios';
 import { TimelinePost } from '../../components/timeline-post/index.js';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import Modal from '@mui/material/Modal';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -46,6 +44,8 @@ export function UserProfile() {
     const [userId, setUserId] = useState(null);
     const [posts, setPosts] = useState([]);
     const { themeMode, toggleTheme } = useTheme();
+    const [followers, setFollowers] = useState({ items: [] });
+
 
     const fetchUserBio = async () => {
         const token = localStorage.getItem('token');
@@ -105,8 +105,7 @@ export function UserProfile() {
         };
 
         fetchUserId();
-        fetchUserBio();
-        
+        fetchUserBio();  
         fetchUserProfilePic();
     }, []);
 
@@ -124,11 +123,41 @@ export function UserProfile() {
         fetchAuthors();
     }, [userId]);
 
+    const fetchFollowers = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get(`http://localhost:8000/api/authors/${userId}/followers/`,{
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+            });
+            setFollowers(response.data);
+            console.log(followers.items.length);
+            console.log(response.data); // Logs the raw data from the API
+
+            console.log('Number of followers:', followers.items.length);
+            console.log('Followers:', followers.items);
+        } 
+        catch (error) {
+            console.error('Error fetching followers:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (userId) {
+          fetchFollowers();
+        }
+      }, [userId]);
+
     useEffect(() => {
         const fetchPosts = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/`);
-                console.log(response.data)
+                
                 const allPosts = response.data;
     
                 const userPosts = allPosts.filter(post => {
@@ -150,10 +179,13 @@ export function UserProfile() {
                 console.error("Error fetching posts: ", error);
             }
         };
+
         fetchPosts();
         const intervalId = setInterval(fetchPosts, 1000);
         return () => clearInterval(intervalId);
     }, [userId]);     
+
+    
 
     const handleOpen = () => {
         setEditBioOpen(true);
@@ -370,7 +402,7 @@ export function UserProfile() {
                             backgroundColor: 'rgba(0, 0, 0, 0.04)',
                         } 
                         }}>
-                        Following: {'4'}
+                        Followers: {followers.items.length}
                     </Typography>
                     </ButtonBase>
                 </Grid>
@@ -394,10 +426,26 @@ export function UserProfile() {
 
 
                 <Modal open={showFollowing} onClose={handleFollowingClose}>
-                    <Box sx={modalStyle}>
-                        <Typography variant="h6">Following</Typography>
-                    </Box>
-                </Modal>        
+                        <Box sx={modalStyle}>
+                            <Typography variant="h6">Followers</Typography>
+                            <Box sx={{ overflowY: 'auto', maxHeight: '300px', marginTop: '10px' }}>
+                                {followers.items.length > 0 ? (
+                                    <List>
+                                        {followers.items.map((follower, index) => (
+                                            <ListItem key={index}>
+                                                {/* Assuming 'name' is an attribute of follower. Adjust as necessary. */}
+                                                <ListItemText primary={follower.displayName || 'Unnamed Follower'} />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (
+                                    <Typography variant="body1">No followers found.</Typography>
+                                )}
+                            </Box>
+                        </Box>
+                    </Modal>
+
+      
 
                 <div style={{ marginTop: '40px' }} />
                 <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
