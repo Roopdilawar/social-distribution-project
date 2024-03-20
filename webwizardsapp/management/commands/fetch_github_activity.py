@@ -6,25 +6,19 @@ from django.utils.timezone import now, make_aware
 from datetime import datetime
 import os
 from webwizardsapp.models import Post 
+from webwizardsapp.models import GitHubLastUpdate
+
 
 User = get_user_model()
-
-LAST_UPDATE_FILE = 'last_github_update.txt'
 
 class Command(BaseCommand):
     help = 'Fetches public GitHub activity for all users with a GitHub username and creates posts'
 
     def get_last_update_time(self):
-        try:
-            with open(LAST_UPDATE_FILE, 'r') as f:
-                last_update_str = f.read().strip()
-                return make_aware(datetime.strptime(last_update_str, '%Y-%m-%dT%H:%M:%SZ'))
-        except FileNotFoundError:
-            return make_aware(datetime.min)
+        return GitHubLastUpdate.get_last_update_time() or make_aware(datetime.min)
 
     def set_last_update_time(self, last_update_time):
-        with open(LAST_UPDATE_FILE, 'w') as f:
-            f.write(last_update_time.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        GitHubLastUpdate.set_last_update_time(last_update_time)
 
     def handle(self, *args, **options):
         last_update_time = self.get_last_update_time()
@@ -33,7 +27,7 @@ class Command(BaseCommand):
         users_with_github = User.objects.exclude(github__isnull=True).exclude(github__exact='')
 
         for user in users_with_github:
-            username = user.github.split('/')[3]  # Assuming user.github is the full URL
+            username = user.github.split('/')[3] 
             url = f'https://api.github.com/users/{username}/events/public'
             response = requests.get(url)
             if response.status_code == 200:

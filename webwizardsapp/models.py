@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.db.models import JSONField
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 
 
@@ -110,3 +112,18 @@ class Inbox(models.Model):
 
 class Nodes(models.Model):
     nodes = models.JSONField(default=list, blank=True)
+
+
+class GitHubLastUpdate(models.Model):
+    last_update_time = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
+
+    @classmethod
+    def get_last_update_time(cls):
+        obj, created = cls.objects.get_or_create(id=1)
+        return obj.last_update_time
+
+    @classmethod
+    def set_last_update_time(cls, last_update_time):
+        obj, created = cls.objects.get_or_create(id=1)
+        obj.last_update_time = last_update_time
+        obj.save()
