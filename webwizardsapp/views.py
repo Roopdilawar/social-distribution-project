@@ -173,7 +173,6 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
-        # print("i am in put")
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -185,11 +184,41 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         response = super(DetailPostView, self).update(request, *args, **kwargs)
+        post_data = self.get_object()
+        if response.status_code in (200, 201):
+            self.update_or_delete_inboxes(post_data, method='PUT')
         return response
 
     def destroy(self, request, *args, **kwargs):
+        post_data = self.get_object()
         response = super(DetailPostView, self).destroy(request, *args, **kwargs)
+        if response.status_code == 204:
+            self.update_or_delete_inboxes(post_data, method='DELETE')
         return response
+    
+    def update_or_delete_inboxes(self, post_data, method):
+        author = post_data.author
+        post_data = PostSerializer(post_data).data
+        try:
+            follower_list_instance = FollowerList.objects.get(user=author)
+        except FollowerList.DoesNotExist:
+            return JsonResponse({'message': 'No followers found.'}, status=200)
+        
+        for follower_info in follower_list_instance.followers:
+            base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+            inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+            
+            headers = {"Content-Type": "application/json"}
+            try:
+                if method == 'PUT':
+                    response = requests.put(inbox_url, json=post_data, headers=headers)
+                elif method == 'DELETE':
+                    response = requests.delete(inbox_url, json=post_data, headers=headers)
+                
+                if response.status_code not in (200, 201, 204):
+                    print(f"Failed to {method} to {inbox_url}. Status code: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                print(f"Request to {inbox_url} failed: {e}")
 
 
 
@@ -556,6 +585,42 @@ class InboxView(APIView):
         serializer = InboxSerializer(inbox)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         return Response(serializer.data, status=status_code)
+    
+    def put(self, request, author_id, *args, **kwargs):
+        friend = get_object_or_404(User, id=author_id)
+        inbox = Inbox.objects.get(user=friend)
+
+        item_to_update = request.data
+        updated = False
+
+        for index, content_item in enumerate(inbox.content):
+            if content_item['id'] == item_to_update['id']:  
+                inbox.content[index] = item_to_update
+                updated = True
+                break
+
+        if updated:
+            inbox.save()
+            return Response({"message": "Item updated successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, author_id, *args, **kwargs):
+
+        friend = get_object_or_404(User, id=author_id)
+        inbox = Inbox.objects.get(user=friend)
+
+        item_to_delete_id = request.data.get('id') 
+        initial_length = len(inbox.content)
+
+        inbox.content = [item for item in inbox.content if item.get('id') != item_to_delete_id]
+
+        if len(inbox.content) < initial_length:
+            inbox.save()
+            return Response({"message": "Item deleted successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+
     
 
 class AcceptFollowRequest(APIView):
