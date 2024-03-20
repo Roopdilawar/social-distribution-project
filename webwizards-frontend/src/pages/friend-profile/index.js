@@ -33,8 +33,7 @@ export function UserProfileViewOnly() {
             const headers = { 'Authorization': `Token ${token}` };
 
             try {
-                const userResponse = await axios.get(`${author_info.host}api/get-user-id/`, { headers });
-                const userId = userResponse.data.user_id;
+                const userId = author_info.id.split('/').pop();
                 setUserId(userId);
                 
                 setCurrentProfilePic(author_info.profileImage);

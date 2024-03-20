@@ -86,9 +86,8 @@ const TimelinePage = () => {
                     }
                 }
             }
-            console.log("TEMP POSTS")
-            console.log(tempPosts)
-            setPosts(tempPosts)
+
+            setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)))
         };
 
         fetchPosts();
