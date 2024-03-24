@@ -6,6 +6,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import RepeatIcon from '@mui/icons-material/Repeat';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useLocation } from "react-router-dom"; 
 import ReactMarkdown from 'react-markdown';
@@ -254,6 +255,52 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         }
     };
 
+    const handleRepost = async () => {
+        if (post.visibility === 'PUBLIC') {
+            const token = localStorage.getItem('token');
+            let newTitle = `Repost: ${post.title}`;
+            let newContent = post.content;
+            let newContentType = post.content_type;
+
+            if (post.content_type != "image/base64") {
+                let parsedString = parseISO(post.published);
+                let repostString = `
+
+*Repost of post by ${post.author.displayName} on ${parsedString}*
+`;
+                newContent = post.content + repostString;
+                newContentType = "text/markdown";
+            }
+            
+            const postData = {
+                title: newTitle,
+                source: post.source,
+                origin: post.origin, 
+                description: post.description, 
+                content_type: newContentType,
+                content: newContent,
+                comment_counts: post.comment_counts, 
+                published: new Date().toISOString(), 
+                visibility: post.visibility
+            };
+
+            console.log(postData);
+
+            const config = {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            };    
+    
+            try {
+                const response = await axios.post(`http://localhost:8000/api/authors/${userId}/posts/`, postData, config);
+                console.log(response.data);
+            } catch (error) {
+                console.error("Error submitting post: ", error);
+            }
+        }
+    }
+
     const renderContent = () => {
         switch (post.content_type) {
             case 'text/plain':
@@ -322,6 +369,16 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                 <Tooltip title="Comment">
                                     <IconButton aria-label="comment" onClick={handleExpandComments}>
                                         <ChatBubbleOutlineIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
+                                    {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
+                                </Typography>
+                            </Box>
+                            <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                                <Tooltip title="Repost">
+                                    <IconButton aria-label="repost" onClick={handleRepost}>
+                                        <RepeatIcon />
                                     </IconButton>
                                 </Tooltip>
                                 <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
