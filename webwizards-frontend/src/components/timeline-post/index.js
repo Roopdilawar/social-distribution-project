@@ -258,6 +258,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const handleRepost = async () => {
         if (post.visibility === 'PUBLIC') {
             const token = localStorage.getItem('token');
+            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}`;
             let newTitle = `Repost: ${post.title}`;
             let newContent = post.content;
             let newContentType = post.content_type;
@@ -274,7 +275,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
             
             const postData = {
                 title: newTitle,
-                source: post.source,
+                source: postLink,
                 origin: post.origin, 
                 description: post.description, 
                 content_type: newContentType,
