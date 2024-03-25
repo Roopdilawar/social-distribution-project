@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from .authentication import ServerBasicAuthentication
-from .models import User,Post,Comments,FollowerList,Inbox,LikedItem
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,ServerCredentials
 from rest_framework import generics
 from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer
+from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer,ServerCredentialsSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
@@ -699,8 +699,10 @@ class AcceptFollowRequest(APIView):
         return Response({"success": "Follow request accepted."}, status=status.HTTP_201_CREATED)
         
         
-        
-        
-    
-    
-    
+
+class ServerCredentialsView(APIView):
+    def get(self, request, *args, **kwargs):
+        credentials = ServerCredentials.objects.all()
+        serializer = ServerCredentialsSerializer(credentials, many=True)
+        response_data = {item['server_url']: {'outgoing_username': item['outgoing_username'], 'outgoing_password': item['outgoing_password']} for item in serializer.data}
+        return Response(response_data)
