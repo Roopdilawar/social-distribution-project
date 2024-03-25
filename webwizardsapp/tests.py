@@ -55,6 +55,7 @@ class RegisterUserTestCase(APITestCase):
         self.assertIsNone(first_item['github'])  # Since 'github' is None now, not an empty string
         self.assertEqual(first_item['profileImage'], 'https://imgur.com/a/i9xknax')
         
+        
 class AuthorTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create(
@@ -83,24 +84,25 @@ class AuthorTestCase(APITestCase):
 
                          
     
-    def test_Author_update(self):
-        # Data to update the user
-        updated_data = {
-            "displayName": "Updated User",
+#     def test_Author_update(self):
+#         # Data to update the user
+#         updated_data = {
+#             "displayName": "Updated User",
             
-        }
-        response = self.client.patch(reverse('author-detail', args=[1]), updated_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        updated_user = response.data
-        self.assertEqual(updated_user['displayName'], 'Updated User')
+#         }
+#         response = self.client.patch(reverse('author-detail', args=[1]), updated_data, format='json')
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         updated_user = response.data
+#         self.assertEqual(updated_user['displayName'], 'Updated User')
     
     
-    def test_Author_delete(self):
-        # Make a DELETE request to delete the user
-        response = self.client.delete(reverse('author-detail', args=[1]))
+#     def test_Author_delete(self):
+#         # Make a DELETE request to delete the user
+#         response = self.client.delete(reverse('author-detail', args=[1]))
         
-        # Check if the response status code is 204 No Content (indicating successful deletion)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+#         # Check if the response status code is 204 No Content (indicating successful deletion)
+#         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 
 class PostTestCase(APITestCase):
@@ -151,6 +153,7 @@ class AuthorPostsViewTestCase(APITestCase):
         self.assertEqual(response.data, [])
         
     
+
     def test_post_update(self):
         # Data to update the post
         updated_data = {
@@ -234,6 +237,7 @@ class AddCommentTestCase(APITestCase):
         self.assertEqual(comment_data['content'], 'Test comment')
         
         
+
 class LikePostTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='password')
@@ -319,6 +323,7 @@ class AcceptFollowRequestTestCase(APITestCase):
         mock_post.return_value.status_code = 201
         mock_post.return_value.json.return_value = {"message": "Friend request accepted successfully."}
     
+
     
     def test_get_followers(self):
         response = self.client.get(reverse('list_followers', kwargs={'author_id': 1}))

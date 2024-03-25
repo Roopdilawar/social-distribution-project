@@ -70,11 +70,11 @@ const TimelinePage = () => {
 
             else {
                 for (let nodeEndpoint of nodes) {
-                    let tempEndpoint = nodeEndpoint + "/api/posts/";
+                    let tempEndpoint = nodeEndpoint + "/api/posts/?all=true";
                   
                     try {
                         const response = await axios.get(tempEndpoint);
-                        const filteredPosts = response.data
+                        const filteredPosts = response.data.items
                         const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
                         for (let sortedPost of orderedPosts) {
                             tempPosts.push(sortedPost)

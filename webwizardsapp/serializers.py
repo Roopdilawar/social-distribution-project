@@ -107,53 +107,8 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = ['id', 'post', 'author', 'content', 'created', 'likes']
-        
-        
-# class FollowerSerializer(serializers.Serializer):
-#     type = serializers.SerializerMethodField(method_name='get_author_type')
-#     id = serializers.SerializerMethodField(method_name='get_author_id')
-#     url = serializers.SerializerMethodField(method_name='get_author_url')
-#     host = serializers.SerializerMethodField(method_name='get_author_host')
-#     displayName = serializers.SerializerMethodField(method_name='get_author_displayName')
-#     github = serializers.SerializerMethodField(method_name='get_author_github')
-#     profileImage = serializers.SerializerMethodField(method_name='get_author_profileImage')
-
-#     class Meta:
-#         model = FollowerList
-#         fields = ('type', 'id', 'url', 'host', 'displayName', 'github', 'profileImage')
-
-#     def get_author_type(self, obj):
-#         return "author"
-
-#     def get_author_id(self, obj):
-#         return f"{obj.author_to_follow.host}authors/{obj.author_to_follow.pk}"
-
-#     def get_author_url(self, obj):
-#         return f"{obj.author_to_follow.host}authors/{obj.author_to_follow.pk}"
-
-#     def get_author_host(self, obj):
-#         return obj.author_to_follow.host
-
-#     def get_author_displayName(self, obj):
-#         return obj.author_to_follow.username 
-
-#     def get_author_github(self, obj):
-#         return obj.author_to_follow.github_url if hasattr(obj.author_to_follow, 'github_url') else ""
-
-#     def get_author_profileImage(self, obj):
-
-#         return obj.author_to_follow.profile_image_url if hasattr(obj.author_to_follow, 'profile_image_url') else ""
-    
-#     def create(self, validated_data):
-#         return Followers.objects.create(**validated_data)
-    
-    
-    
-    
-    
-    
-    
-    
+ 
+ 
     
 class InboxSerializer(serializers.ModelSerializer):
     post=PostSerializer(read_only=True)
