@@ -382,9 +382,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                         <RepeatIcon />
                                     </IconButton>
                                 </Tooltip>
-                                <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
-                                </Typography>
                             </Box>
                             <Box display="flex" alignItems="center">
                                 <Tooltip title="Share">
