@@ -27,11 +27,6 @@ from django.http import JsonResponse
 from rest_framework.pagination import PageNumberPagination
 from django.core.paginator import Paginator
 
-class CustomPageNumberPagination(PageNumberPagination):
-    page_size_query_param = 'size'
-    page_size = 5
-    max_page_size = 100
-
 
 def index(request):
     try:
@@ -46,10 +41,22 @@ def index(request):
         )
 
 
-class CustomPageNumberPagination(PageNumberPagination):
-    page_size_query_param = 'size'
+class CustomPagination(PageNumberPagination):
     page_size = 5
-    max_page_size = 100
+    max_page_size = 1000000
+
+    def get_page_size(self, request):
+        if request.query_params.get('all') == 'true':
+            return self.max_page_size
+        return super().get_page_size(request)
+
+    def get_paginated_response(self, data):
+        return Response({
+            'type': self.request.parser_context['view'].pagination_type,
+            'next': self.get_next_link(),
+            'prev': self.get_previous_link(),
+            'items': data,
+        })
 
 
 class RegisterView(generics.CreateAPIView):
@@ -95,15 +102,9 @@ class LoginAPIView(APIView):
 class AuthorsListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = AuthorSerializer
-    pagination_class = CustomPageNumberPagination
+    pagination_class = CustomPagination
+    pagination_type = 'authors'
 
-    def list(self, request, *args, **kwargs):
-        response = super(AuthorsListView, self).list(request, *args, **kwargs)
-        response.data = {
-            "type": "authors",
-            "items": response.data
-        }
-        return response
     
     
 class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
@@ -119,7 +120,8 @@ class AuthorDetailView(generics.RetrieveAPIView,UpdateAPIView,DestroyAPIView):
 class PublicPostsView(generics.ListAPIView):
     queryset = Post.objects.filter(visibility='PUBLIC').order_by('-published')
     serializer_class = PostSerializer
-    pagination_class = CustomPageNumberPagination
+    pagination_class = CustomPagination
+    pagination_type = 'posts'
 
     def get(self, request, *args, **kwargs):
         # Get the page from the pagination class
@@ -137,28 +139,26 @@ class PublicPostsView(generics.ListAPIView):
     
 
 
-class AuthorPostsView(APIView):
-    # Define any class variables if needed
+class AuthorPostsView(generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+    pagination_class = CustomPagination
+    pagination_type = 'posts'
 
-    def get(self, request, *args, **kwargs):
+    def get_queryset(self):
         author_id = self.kwargs['author_id']
-        queryset = Post.objects.filter(author_id=author_id)
+        return Post.objects.filter(author_id=author_id)
+
+    def perform_create(self, serializer):
+        author_id = self.kwargs['author_id']
+        author = User.objects.get(id=author_id)
+        post = serializer.save(author=author)
         
-        if 'page' in request.query_params:
-            pagination_class = CustomPageNumberPagination()
-            page_size = pagination_class.page_size
-            paginator = Paginator(queryset, page_size)
-            page_number = request.query_params.get('page') or 1
-            page = paginator.get_page(page_number)
-            serializer = PostSerializer(page, many=True)
+        if post.visibility == 'FRIENDS':
+            try:
+                follower_list_instance = FollowerList.objects.get(user=author)
+            except FollowerList.DoesNotExist:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             
-            pagination_data = {
-                "next": page.next_page_number() if page.has_next() else None,
-                "previous": page.previous_page_number() if page.has_previous() else None,
-                "current": page.number,
-                "total_pages": paginator.num_pages,
-                "total_items": paginator.count
-            }
             post_data = PostSerializer(post).data  
 
             # Iterate through author's followers
@@ -202,21 +202,7 @@ class AuthorPostsView(APIView):
                 except requests.exceptions.RequestException as e:
                     print(f"Request to {inbox_url} failed: {e}")
             
-            return Response({
-                "type": "posts",
-                "items": serializer.data,
-                "pagination": pagination_data
-            })
-        else:
-            serializer = PostSerializer(queryset, many=True)
-            return Response(serializer.data)
-
-    def post(self, request, *args, **kwargs):
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(author_id=self.kwargs['author_id'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
        
 
 
@@ -331,43 +317,13 @@ class AddCommentView(generics.CreateAPIView):
                
 class ListCommentsView(generics.ListAPIView):
     serializer_class = CommentSerializer
-    pagination_class = CustomPageNumberPagination  # Define your custom pagination class here
+    pagination_class = CustomPagination
+    pagination_type = 'comments'
 
     def get_queryset(self):
         post_id = self.kwargs['post_id']
         return Comments.objects.filter(post_id=post_id)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-
-        if 'page' in request.query_params:
-            page_size = self.pagination_class.page_size  # Accessing pagination_class's attribute
-            paginator = Paginator(queryset, page_size)
-            page_number = request.query_params.get('page') or 1
-            page = paginator.get_page(page_number)
-            serializer = self.get_serializer(page, many=True)
-
-            # Construct pagination data
-            pagination_data = {
-                "next": page.next_page_number() if page.has_next() else None,
-                "previous": page.previous_page_number() if page.has_previous() else None,
-                "current": page.number,
-                "total_pages": paginator.num_pages,
-                "total_items": paginator.count
-            }
-
-            return Response({
-                "type": "comments",
-                "items": serializer.data,
-                "pagination": pagination_data
-            })
-        else:
-            return Response({
-                "type": "comments",
-                "items": serializer.data
-                # No pagination data included when 'page' parameter is absent
-            })
     
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comments.objects.all()
@@ -621,11 +577,35 @@ class FriendRequestView(APIView):
     
 
 class InboxView(APIView):
-    def get(self, request, author_id, *args, **kwargs):
-        friend = get_object_or_404(User, id=author_id)
-        inbox, _ = Inbox.objects.get_or_create(user=friend)
-        serializer = InboxSerializer(inbox)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    pagination_class = CustomPagination
+    pagination_type = 'inbox'
+
+    def get(self, request, *args, **kwargs):
+        author_id = self.kwargs.get('author_id')
+        inbox, _ = Inbox.objects.get_or_create(user_id=author_id)
+        contents = inbox.content
+
+        page_size = self.pagination_class().get_page_size(request)
+        paginator = Paginator(contents, page_size)
+        page_number = request.query_params.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+
+        base_url = request.build_absolute_uri()
+        next_page = page_obj.next_page_number() if page_obj.has_next() else None
+        prev_page = page_obj.previous_page_number() if page_obj.has_previous() else None
+
+        next_link = f"{base_url}?page={next_page}" if next_page else None
+        prev_link = f"{base_url}?page={prev_page}" if prev_page else None
+
+        response_data = {
+            "type": "inbox",
+            "id": f"http://localhost:8000/api/authors/{author_id}/",
+            "next": next_link,
+            "prev": prev_link,
+            "items": page_obj.object_list
+        }
+
+        return Response(response_data)
     
     def post(self, request, author_id, *args, **kwargs):
         friend = get_object_or_404(User, id=author_id)

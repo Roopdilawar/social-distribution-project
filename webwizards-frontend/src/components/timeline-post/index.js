@@ -152,7 +152,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
 
         try {
-            const response = await axios.get(`${endpointUrl}/api/posts/${postId}/comments/`);
+            const response = await axios.get(`${endpointUrl}/api/posts/${postId}/comments/?all=true`);
             const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {

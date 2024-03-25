@@ -55,7 +55,7 @@ export function UserProfileViewOnly() {
                     setCurrentProfilePic(author_info.profileImage);
                     setDisplayName(author_info.displayName);
     
-                    const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/`);
+                    const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/?all=true`);
                     const publicPosts = postsResponse.data.filter(post => post.visibility === "PUBLIC");
                     setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
     
