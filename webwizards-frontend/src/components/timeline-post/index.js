@@ -6,6 +6,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import RepeatIcon from '@mui/icons-material/Repeat';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useLocation } from "react-router-dom"; 
 import ReactMarkdown from 'react-markdown';
@@ -25,6 +26,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [likesCount, setLikesCount] = useState(post.likes || 0);
     const [commentsCount, setCommentsCount] = useState(post.comment_counts || 0);
     const [userId, setUserId] = useState(null);
+    const [userData, setUserData] = useState({});
     const [postAuthorId, setpostAuthorId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null); 
@@ -84,12 +86,39 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         fetchLikesAndComments();
     }, []);
 
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            if (userId == null) {
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+
+            const config = {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            };
+            try {
+                const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+                const authorData = authorResponse.data;
+                setUserData(authorData);
+            } catch (error) {
+                console.error("Error fetching user info: ", error);
+            }
+        }
+
+        fetchUserInfo();
+    }, [userId])
+
     const handleUsernameClick = () => {
         const id = post.author.id.split('/').pop();
         const isCurrentUser = id.toString() === userId.toString();
+        const baseUrl = post.id.split("/authors/")[0];
+        const same_url = baseUrl === "http://localhost:8000"
         const author_info = post.author;
-    
-        if (isCurrentUser) {
+        console.log(author_info)
+        if (isCurrentUser && same_url) {
             navigate("/profile");
         } else {
             navigate(`/friend-profile/${id}`, { state: { author_info } });
@@ -181,7 +210,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     };
 
     const handleLike = async () => {
-        if (isViewOnly) return;
     
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
@@ -226,6 +254,53 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
             setShowCopyConfirmation(true); 
         }
     };
+
+    const handleRepost = async () => {
+        if (post.visibility === 'PUBLIC') {
+            const token = localStorage.getItem('token');
+            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}`;
+            let newTitle = `Repost: ${post.title}`;
+            let newContent = post.content;
+            let newContentType = post.content_type;
+
+            if (post.content_type != "image/base64") {
+                let parsedString = parseISO(post.published);
+                let repostString = `
+
+*Repost of post by ${post.author.displayName} on ${parsedString}*
+`;
+                newContent = post.content + repostString;
+                newContentType = "text/markdown";
+            }
+            
+            const postData = {
+                title: newTitle,
+                source: postLink,
+                origin: post.origin, 
+                description: post.description, 
+                content_type: newContentType,
+                content: newContent,
+                comment_counts: post.comment_counts, 
+                published: new Date().toISOString(), 
+                visibility: post.visibility
+            };
+
+            console.log(postData);
+
+            const config = {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            };    
+    
+            try {
+                const response = await axios.post(`http://localhost:8000/api/authors/${userId}/posts/`, postData, config);
+                console.log(response.data);
+            } catch (error) {
+                console.error("Error submitting post: ", error);
+            }
+        }
+    }
 
     const renderContent = () => {
         switch (post.content_type) {
@@ -301,6 +376,16 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                     {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
                                 </Typography>
                             </Box>
+                            <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                                <Tooltip title="Repost">
+                                    <IconButton aria-label="repost" onClick={handleRepost}>
+                                        <RepeatIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
+                                    {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
+                                </Typography>
+                            </Box>
                             <Box display="flex" alignItems="center">
                                 <Tooltip title="Share">
                                     <IconButton aria-label="share" onClick={handleShareClick}>
@@ -314,7 +399,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     {newCommentVisible && (
                         <div className="new-comment-container">
-                            <Avatar src={post.author.profileImage} alt={post.author.displayName} className="new-comment-avatar" />
+                            <Avatar src={userData.profileImage} alt={userData.displayName} className="new-comment-avatar" />
                             <div className="comment-info">
                                 <span className="comment-input">
                                     <FormControl fullWidth>

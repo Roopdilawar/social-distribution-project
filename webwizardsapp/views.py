@@ -46,6 +46,12 @@ def index(request):
         )
 
 
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size_query_param = 'size'
+    page_size = 5
+    max_page_size = 100
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -655,7 +661,7 @@ class InboxView(APIView):
         updated = False
 
         for index, content_item in enumerate(inbox.content):
-            if content_item['id'] == item_to_update['id']:  
+            if content_item.get('id', None) == item_to_update.get('id', False):  
                 inbox.content[index] = item_to_update
                 updated = True
                 break
