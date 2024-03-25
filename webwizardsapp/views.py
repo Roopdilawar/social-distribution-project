@@ -447,7 +447,7 @@ class LikedItemsView(APIView):
 
 
 class LikeCommentView(APIView):
-    def post(self, request, comment_id, post_id):
+    def post(self, request, author_id, comment_id, post_id):
         
         author_data = request.data.get('author')
         comment_data = request.data.get('object')

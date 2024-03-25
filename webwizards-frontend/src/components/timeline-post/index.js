@@ -54,7 +54,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const fetchLikesAndComments = async () => {
         const endpointUrl = post.id.split('/authors')[0];
         try {
-            const response = await axios.get(`${endpointUrl}/api/posts/${post.id.split('/').pop()}/`);
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${post.id.split('/').pop()}/`);
             setLikesCount(response.data.likes)
             setCommentsCount(response.data.comment_counts)
             
@@ -152,7 +152,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
 
         try {
-            const response = await axios.get(`${endpointUrl}/api/posts/${postId}/comments/?all=true`);
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/?all=true`);
             const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
@@ -181,7 +181,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 author: authorData
             };
            
-            const response = await axios.post(`${endpointUrl}/api/posts/${postId}/addcomment/`, commentData);
+            const response = await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/addcomment/`, commentData);
             fetchComments();
             setNewCommentInput("");
         } catch (error) {
@@ -201,7 +201,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
     
         try {
-            await axios.delete(`http://localhost:8000/api/posts/${postId}/`, config);
+            await axios.delete(`http://localhost:8000/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/`, config);
             console.log("Post deleted successfully");
             handleMenuClose();
         } catch (error) {
@@ -230,7 +230,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 "actor": authorData,
                 "object": post
             };
-            await axios.post(`${endpointUrl}/api/posts/${postId}/like/`, likeData);
+            await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/like/`, likeData);
             await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
             setIsLiked(true);
             setLikesCount(likesCount + 1); 
@@ -258,7 +258,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const handleRepost = async () => {
         if (post.visibility === 'PUBLIC') {
             const token = localStorage.getItem('token');
-            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}`;
+            const postLink = post.id;
             let newTitle = `Repost: ${post.title}`;
             let newContent = post.content;
             let newContentType = post.content_type;

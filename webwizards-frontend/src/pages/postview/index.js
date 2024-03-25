@@ -7,11 +7,12 @@ import { Box } from '@mui/material';
 const PostViewPage = () => {
     const [post, setPost] = useState(null); 
     const { postId } = useParams(); 
+    const { userId } = useParams(); 
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/posts/${postId}/`); 
+                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/${postId}/`); 
                 setPost(response.data); 
                 console.log(response.data)
                 console.log(response)
