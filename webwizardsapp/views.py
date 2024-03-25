@@ -4,12 +4,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,Nodes
+from .authentication import ServerBasicAuthentication
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem
 from rest_framework import generics
 from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer, NodesSerializer
+from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
@@ -257,6 +258,7 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class AddCommentView(generics.CreateAPIView):
+    authentication_classes = [ServerBasicAuthentication]
     queryset = Comments.objects.all()
     serializer_class = CommentSerializer
 
@@ -338,6 +340,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     
 
 class LikePostView(APIView):
+    authentication_classes = [ServerBasicAuthentication]
 
     def post(self, request, *args, **kwargs):
         author_data = request.data.get('actor')
@@ -521,11 +524,6 @@ class ListFollowersView(APIView):
 
 
     
-class NodesView(APIView):
-    def get(self, request, format=None):
-        nodes, _ = Nodes.objects.get_or_create()
-        serializer = NodesSerializer(nodes)
-        return Response(serializer.data, status=status.HTTP_200_OK)    
 
 
 class FriendRequestView(APIView):
@@ -560,6 +558,8 @@ class FriendRequestView(APIView):
     
 
 class InboxView(APIView):
+    authentication_classes = [ServerBasicAuthentication]
+
     def get(self, request, author_id, *args, **kwargs):
         friend = get_object_or_404(User, id=author_id)
         inbox, _ = Inbox.objects.get_or_create(user=friend)
