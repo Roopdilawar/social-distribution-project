@@ -181,7 +181,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 author: authorData
             };
            
-            const response = await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/addcomment/`, commentData);
+            const response = await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/`, commentData);
             fetchComments();
             setNewCommentInput("");
         } catch (error) {

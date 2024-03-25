@@ -283,10 +283,15 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-class AddCommentView(generics.CreateAPIView):
+class CommentView(generics.ListCreateAPIView):
     authentication_classes = [ServerBasicAuthentication]
-    queryset = Comments.objects.all()
     serializer_class = CommentSerializer
+    pagination_class = CustomPagination
+    pagination_type = 'comments'
+
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        return Comments.objects.filter(post_id=post_id)
 
     def perform_create(self, serializer):
         post_id = self.kwargs['post_id']
@@ -295,9 +300,8 @@ class AddCommentView(generics.CreateAPIView):
         inbox, _ = Inbox.objects.get_or_create(user=post_author)
         
         author = self.request.data.get('author')
-
         comment_type = serializer.validated_data.get('type', 'Comment') 
-        comment_content = serializer.validated_data.get('content')  
+        comment_content = serializer.validated_data.get('content')
 
         comment_data = {
             "type": comment_type,
@@ -306,25 +310,9 @@ class AddCommentView(generics.CreateAPIView):
             "author": author 
         }
         
-        
         inbox.content.append(comment_data)
         inbox.save()
-
-       
         serializer.save(post=post)
-        
-        
-        
-        
-               
-class ListCommentsView(generics.ListAPIView):
-    serializer_class = CommentSerializer
-    pagination_class = CustomPagination
-    pagination_type = 'comments'
-
-    def get_queryset(self):
-        post_id = self.kwargs['post_id']
-        return Comments.objects.filter(post_id=post_id)
 
     
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
