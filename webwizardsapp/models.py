@@ -110,9 +110,6 @@ class Inbox(models.Model):
     content=models.JSONField(default=list, blank=True)
 
 
-class Nodes(models.Model):
-    nodes = models.JSONField(default=list, blank=True)
-
 
 class GitHubLastUpdate(models.Model):
     last_update_time = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
@@ -127,3 +124,17 @@ class GitHubLastUpdate(models.Model):
         obj, created = cls.objects.get_or_create(id=1)
         obj.last_update_time = last_update_time
         obj.save()
+
+    
+class ServerCredentials(models.Model):
+    server_name = models.CharField(max_length=255, unique=True)
+    server_url = models.URLField(max_length=1024)
+
+    incoming_username = models.CharField(max_length=255)
+    incoming_password = models.CharField(max_length=255)
+    
+    outgoing_username = models.CharField(max_length=255)
+    outgoing_password = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.server_name

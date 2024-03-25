@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,Nodes
+from .models import User,Post,Comments,FollowerList,Inbox,LikedItem,ServerCredentials
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -107,8 +107,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = ['id', 'post', 'author', 'content', 'created', 'likes']
- 
- 
     
 class InboxSerializer(serializers.ModelSerializer):
     post=PostSerializer(read_only=True)
@@ -132,7 +130,7 @@ class FollowRequestSerializer(serializers.Serializer):
         }
 
 
-class NodesSerializer(serializers.ModelSerializer):
+class ServerCredentialsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Nodes
-        fields = ['nodes']
+        model = ServerCredentials
+        fields = ['server_url', 'outgoing_username', 'outgoing_password']

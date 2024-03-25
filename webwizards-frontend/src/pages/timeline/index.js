@@ -7,25 +7,25 @@ const TimelinePage = () => {
     const [posts, setPosts] = useState([]);
     const [isFollowingView, setIsFollowingView] = useState(false);
     const [userId, setUserId] = useState(null);
-    const [nodes, setNodes] = useState([]);
+    const [serverCredentials, setServerCredentials] = useState([]);
 
-    const fetchNodes = async () => {
+    const fetchServerCredentials = async () => {
         const token = localStorage.getItem('token');
-            if (!token) {
-                console.log('No token found');
-                return;
-            }
-            try {
-                const response = await axios.get('http://localhost:8000/api/nodes/', {
-                    headers: {
-                        'Authorization': `Token ${token}`
-                    }
-                });
-                setNodes(response.data.nodes);
-            } catch (error) {
-                console.error("Error fetching user ID:", error);
-            }
-        };
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+            setServerCredentials(response.data);
+        } catch (error) {
+            console.error("Error fetching server credentials:", error);
+        }
+    };
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -47,45 +47,54 @@ const TimelinePage = () => {
         };
         
         fetchUserId();
-        fetchNodes();
+        fetchServerCredentials();
     }, []);
 
     useEffect(() => {
         if (!userId) return;
-        fetchNodes();
+        fetchServerCredentials();
 
         const fetchPosts = async () => {
             let tempPosts = [];
 
             if (isFollowingView) {
                 try {
-                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/`);
-                    const filteredPosts = response.data.content.filter(item => item.type === 'post');
+                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/`, {
+                        headers: {
+                            'Authorization': `Token ${localStorage.getItem('token')}`
+                        }
+                    });
+                    const filteredPosts = response.data.items.filter(item => item.type === 'post');
                     const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    tempPosts = orderedPosts
+                    tempPosts = orderedPosts;
                 } catch (error) {
                     console.error("Error fetching posts:", error);
                 }
             }
 
             else {
-                for (let nodeEndpoint of nodes) {
-                    let tempEndpoint = nodeEndpoint + "/api/posts/?all=true";
+                for (let [url, credentials] of Object.entries(serverCredentials)) {
+                    let tempEndpoint = url + "/api/posts/?all=true";
                   
                     try {
-                        const response = await axios.get(tempEndpoint);
+                        const response = await axios.get(tempEndpoint, {
+                            auth: {
+                                username: credentials.outgoing_username,
+                                password: credentials.outgoing_password
+                            }
+                        });
                         const filteredPosts = response.data.items
                         const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
                         for (let sortedPost of orderedPosts) {
                             tempPosts.push(sortedPost)
                         }
                     } catch (error) {
-                        console.error("Error fetching posts:", error);
+                        console.error(`Error fetching posts from ${url}:`, error);
                     }
                 }
             }
 
-            setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)))
+            setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
         };
 
         fetchPosts();
