@@ -54,7 +54,8 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     comment_counts = models.IntegerField(default=0)
     likes = models.IntegerField(default=0) 
-    liked_by = JSONField(default=list, blank=True)    
+    liked_by = JSONField(default=list, blank=True)
+    likes_objects = JSONField(default=list, blank=True)
     published = models.DateTimeField(default=timezone.now)
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES)
 

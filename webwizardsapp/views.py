@@ -347,7 +347,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 class LikePostView(APIView):
     authentication_classes = [ServerBasicAuthentication]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, author_id, *args, **kwargs):
         author_data = request.data.get('actor')
         post_data = request.data.get('object')
 
@@ -355,20 +355,6 @@ class LikePostView(APIView):
             return Response({"error": "Author and Post data are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         post_id = post_data['id'].split('/')[-1]
-
-        try:
-            post = Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Check if the author has already liked this post
-        if any(author['id'] == author_data['id'] for author in post.liked_by):
-            return Response({"message": "You have already liked this post."}, status=status.HTTP_409_CONFLICT)
-
-        # Append the new like to the liked_by field
-        post.liked_by.append(author_data)
-        post.likes += 1
-        post.save()
 
         # Send like notification to the author's inbox
         author_id_url = post_data['author']['id']
@@ -394,11 +380,20 @@ class LikePostView(APIView):
         return Response({"message": "Like successfully recorded."}, status=status.HTTP_204_NO_CONTENT)
 
 
+class LikesView(APIView):
+    def get(self, request, author_id, post_id, format=None):
+        post = get_object_or_404(Post, author_id=author_id, id=post_id)
+        response_data = {
+            "type": "likes",
+            "items": post.likes_objects
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
 class LikedItemsView(APIView):
 
-    def get(self, request, *args, **kwargs):
-        user = request.user if not request.user.is_anonymous else get_object_or_404(User, id=9)
+    def get(self, request, author_id, *args, **kwargs):
+        user = User.objects.get(id=author_id)
         try:
             liked_items_instance = LikedItem.objects.get(user=user)
         except LikedItem.DoesNotExist:
@@ -596,10 +591,6 @@ class InboxView(APIView):
     def post(self, request, author_id, *args, **kwargs):
         friend = get_object_or_404(User, id=author_id)
         inbox, created = Inbox.objects.get_or_create(user=friend)
-        content = inbox.content  
-        content.append(request.data) 
-        inbox.content = content 
-        inbox.save() 
 
         if request.data.get('type') == 'Like':
             post_url = request.data.get('object', '')
@@ -610,10 +601,19 @@ class InboxView(APIView):
                 # Prevent duplicate entries for the same author
                 if not any(author['id'] == request.data['author']['id'] for author in post.liked_by):
                     post.liked_by.append(request.data['author'])
+                    post.likes_objects.append(request.data)
                     post.likes += 1 
                     post.save()
+                else:
+                    # The user has already liked the post, so return a failure response
+                    return Response({"error": "You have already liked this post."}, status=status.HTTP_409_CONFLICT)
             except Post.DoesNotExist:
                 pass
+            
+        content = inbox.content  
+        content.append(request.data) 
+        inbox.content = content 
+        inbox.save() 
 
         serializer = InboxSerializer(inbox)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
