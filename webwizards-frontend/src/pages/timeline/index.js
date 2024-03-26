@@ -61,7 +61,7 @@ const TimelinePage = () => {
             let morePages = true;
             try {
                 while (morePages) {
-                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${100}`, {
+                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${tempPaginationNumber}`, {
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`
                         }
@@ -71,11 +71,10 @@ const TimelinePage = () => {
                     for (let sortedPost of orderedPosts) {
                         tempPosts.push(sortedPost)
                     }
-                    tempPaginationNumber++;
-
-                    if (filteredPosts.length < 1) {
+                    if (response.data.next == null) {
                         morePages = false;
                     }
+                    tempPaginationNumber++;
                 }
             } catch (error) {
                 morePages = false;
