@@ -19,7 +19,8 @@ import Comment from "../comment/index.js";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnly }) => {
     const [isLiked, setIsLiked] = useState(false);
@@ -32,7 +33,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [anchorEl, setAnchorEl] = useState(null); 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
     const [comments, setComments] = useState([]);
-    const [commentsPage, setCommentsPage] = useState(0);
+    const [paginationNumber, setPaginationNumber] = useState(1);
 
     const navigate = useNavigate();
 
@@ -152,13 +153,17 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
 
         try {
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/?all=true`);
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/?page=${paginationNumber}`);
             const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
             console.error("Errror fetching comments: ", error);
         }
     };
+
+    useEffect(() => {
+        fetchComments();
+    }, [paginationNumber])
 
     const handleCommentSubmit = async (event) => {
         const endpointUrl = post.id.split('/authors')[0];
@@ -416,10 +421,14 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                         </div>
                     )}
                     <div className="all-comments-container">
-                        {comments.length > 0 ? comments.slice(commentsPage * 10, (commentsPage * 10) + 10).map((comment) => (
+                        {comments.length > 0 ? comments.map((comment) => (
                             <Comment comment={comment} key={comment.id} post={post} />
                         )) : <Typography>No comments.</Typography>}
-                        <Pagination count={Math.ceil(comments.length / 10)} page={commentsPage + 1} onChange={(event, page) => setCommentsPage(page - 1)} />
+                        <Box display="flex" justifyContent="center" alignItems="center">
+                            { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+                            <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+                        </Box>
+                        {/* <Pagination count={Math.ceil(comments.length / 10)} page={commentsPage + 1} onChange={(event, page) => setCommentsPage(page - 1)} /> */}
                     </div>
                 </Collapse>
             </Card>
