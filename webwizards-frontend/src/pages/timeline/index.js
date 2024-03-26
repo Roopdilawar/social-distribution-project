@@ -63,7 +63,7 @@ const TimelinePage = () => {
 
         if (isFollowingView) {
             try {
-                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/`, {
+                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${paginationNumber}`, {
                     headers: {
                         'Authorization': `Token ${localStorage.getItem('token')}`
                     }
@@ -127,10 +127,13 @@ const TimelinePage = () => {
                     <TimelinePost key={post.id} post={post} detailedView={false} />
                 ))}
             </div>
-            <Box display="flex" justifyContent="center" alignItems="center">
-                { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-                <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
-            </Box>
+            { posts.length > 0 ? 
+                <Box display="flex" justifyContent="center" alignItems="center">
+                    { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+                    <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+                </Box>
+            :
+            ""}
         </Box>
     );
 };

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Box, Card, CardContent, Typography, Avatar, IconButton } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
   transition: theme.transitions.create('transform', {
@@ -18,6 +20,7 @@ function NotificationsPage() {
   const [notifications, setNotifications] = useState({ items: [] });
   const [userId, setUserId] = useState(null);
   const [nonPostNotifications, setNonPostNotifications] = useState([]);
+  const [paginationNumber, setPaginationNumber] = useState(1);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -40,21 +43,26 @@ function NotificationsPage() {
     fetchUserId();
   }, []);
 
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${paginationNumber}`);
+      const data = response.data.items.reverse();
+      const filteredNotifications = data.filter(notification => notification.type !== "post");
+      setNonPostNotifications(filteredNotifications);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
+
   useEffect(() => {
     if (!userId) return; 
 
-    const fetchNotifications = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?all=true`);
-        const data = response.data.items.reverse();
-        const filteredNotifications = data.filter(notification => notification.type !== "post");
-        setNonPostNotifications(filteredNotifications);
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
     fetchNotifications();
   }, [userId]); 
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [paginationNumber]);
 
   const handleAcceptFollow = async (notification) => {
     console.log(`Accepting follow request from ${notification.actor.id}`);
@@ -118,6 +126,10 @@ function NotificationsPage() {
             )}
           </Card>
         ))}
+        <Box display="flex" justifyContent="center" alignItems="center">
+            { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+            <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+        </Box>
       </div>
     </Box>
   );

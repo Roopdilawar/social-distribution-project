@@ -428,7 +428,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                             { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
                             <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
                         </Box>
-                        {/* <Pagination count={Math.ceil(comments.length / 10)} page={commentsPage + 1} onChange={(event, page) => setCommentsPage(page - 1)} /> */}
                     </div>
                 </Collapse>
             </Card>
