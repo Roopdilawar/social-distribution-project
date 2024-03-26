@@ -10,8 +10,7 @@ const TimelinePage = () => {
     const [isFollowingView, setIsFollowingView] = useState(false);
     const [userId, setUserId] = useState(null);
     const [serverCredentials, setServerCredentials] = useState([]);
-    const [paginationNumber, setPaginationNumber] = useState(1);
-    
+    const [postsPage, setPostsPage] = useState(0);
 
     const fetchServerCredentials = async () => {
         const token = localStorage.getItem('token');
@@ -30,10 +29,6 @@ const TimelinePage = () => {
             console.error("Error fetching server credentials:", error);
         }
     };
-
-    useEffect(() => {
-        fetchPosts();
-    }, [paginationNumber])
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -62,42 +57,61 @@ const TimelinePage = () => {
         let tempPosts = [];
 
         if (isFollowingView) {
+            let tempPaginationNumber = 1;
+            let morePages = true;
             try {
-                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${paginationNumber}`, {
-                    headers: {
-                        'Authorization': `Token ${localStorage.getItem('token')}`
+                while (morePages) {
+                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${100}`, {
+                        headers: {
+                            'Authorization': `Token ${localStorage.getItem('token')}`
+                        }
+                    });
+                    const filteredPosts = response.data.items.filter(item => item.type === 'post');
+                    const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                    for (let sortedPost of orderedPosts) {
+                        tempPosts.push(sortedPost)
                     }
-                });
-                const filteredPosts = response.data.items.filter(item => item.type === 'post');
-                const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                tempPosts = orderedPosts;
+                    tempPaginationNumber++;
+
+                    if (filteredPosts.length < 1) {
+                        morePages = false;
+                    }
+                }
             } catch (error) {
+                morePages = false;
                 console.error("Error fetching posts:", error);
             }
         }
 
         else {
             for (let [url, credentials] of Object.entries(serverCredentials)) {
-                let tempEndpoint = url + `/api/posts/?page=${paginationNumber}`;
+                let tempPaginationNumber = 1;
+                let morePages = true;
+
+                while (morePages) {
+                    let tempEndpoint = url + `/api/posts/?page=${tempPaginationNumber}`;
               
-                try {
-                    const response = await axios.get(tempEndpoint, {
-                        auth: {
-                            username: credentials.outgoing_username,
-                            password: credentials.outgoing_password
+                    try {
+                        const response = await axios.get(tempEndpoint, {
+                            auth: {
+                                username: credentials.outgoing_username,
+                                password: credentials.outgoing_password
+                            }
+                        });
+                        const filteredPosts = response.data.items
+                        const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                        for (let sortedPost of orderedPosts) {
+                            tempPosts.push(sortedPost)
                         }
-                    });
-                    const filteredPosts = response.data.items
-                    const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    for (let sortedPost of orderedPosts) {
-                        tempPosts.push(sortedPost)
+                        tempPaginationNumber++;
+                    } catch (error) {
+                        morePages = false;
+                        console.error(`Error fetching posts from ${url}:`, error);
                     }
-                } catch (error) {
-                    console.error(`Error fetching posts from ${url}:`, error);
                 }
+                
             }
         }
-
         setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
     };
 
@@ -123,15 +137,18 @@ const TimelinePage = () => {
                 </Typography>
             </div>
             <div style={{ maxWidth: '1000px', margin: 'auto' }}>
-                {posts.map(post => (
+                {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => (
                     <TimelinePost key={post.id} post={post} detailedView={false} />
                 ))}
             </div>
             { posts.length > 0 ? 
-                <Box display="flex" justifyContent="center" alignItems="center">
-                    { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-                    <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
-                </Box>
+                <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
+
+                // <Box display="flex" justifyContent="center" alignItems="center">
+                //     { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+                //     {/* { anotherPageAvailble ? <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/> : ""} */}
+                //     <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+                // </Box>
             :
             ""}
         </Box>

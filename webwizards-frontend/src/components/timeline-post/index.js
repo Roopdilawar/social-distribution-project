@@ -34,7 +34,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
     const [comments, setComments] = useState([]);
     const [paginationNumber, setPaginationNumber] = useState(1);
-
+    const [anotherPageAvailble, setAnotherPageAvailble] = useState(true);
     const navigate = useNavigate();
 
     const location = useLocation();
@@ -145,6 +145,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         setExpanded(!expanded);
         setNewCommentVisible(true);
         fetchComments();
+        checkNextCommentPage();
     }
 
     const fetchComments = async () => {
@@ -161,8 +162,23 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         }
     };
 
+    const checkNextCommentPage = async () => {
+        const endpointUrl = post.id.split('/authors')[0];
+        const postId = post.id.split('/').pop();
+        const token = localStorage.getItem('token');
+        const nextPageNumber = paginationNumber + 1;
+
+        try {
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/?page=${nextPageNumber}`);
+            setAnotherPageAvailble(true);
+        } catch (error) {
+            setAnotherPageAvailble(false);
+        }
+    };
+
     useEffect(() => {
         fetchComments();
+        checkNextCommentPage();
     }, [paginationNumber])
 
     const handleCommentSubmit = async (event) => {
@@ -188,6 +204,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
            
             const response = await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/`, commentData);
             fetchComments();
+            checkNextCommentPage();
             setNewCommentInput("");
         } catch (error) {
             console.error("Error submitting post: ", error);
@@ -426,7 +443,12 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                         )) : <Typography>No comments.</Typography>}
                         <Box display="flex" justifyContent="center" alignItems="center">
                             { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-                            <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+                            {
+                                anotherPageAvailble ? 
+                                <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+                                :
+                                ""
+                            }
                         </Box>
                     </div>
                 </Collapse>
