@@ -90,19 +90,38 @@ export function UserProfileViewOnly() {
         }
       }, [id]);
 
-    const toggleFollow = async () => {
+      const toggleFollow = async () => {
         if (!userId) return; 
         const token = localStorage.getItem('token');
         const config = { headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' }};
-        const data = { "to_follow": author_info };
-
-        try {
-            await axios.post(`http://localhost:8000/api/authors/${id}/sendfollowrequest/`, data, config);
-            setIsFollowing(true); 
-        } catch (error) {
-            console.error("Error sending follow request: ", error.response?.data || error.message);
+        const inboxUrl = `${author_info.host}api/authors/${id}/inbox/`;
+    
+        if (isFollowing) {
+            const actorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const actor_info = actorResponse.data;
+            console.log(actor_info)
+            const unfollowData = {
+                type: 'Unfollow',
+                actor: actor_info,
+                object: author_info
+            };
+            try {
+                await axios.post(inboxUrl, unfollowData, config);
+                setIsFollowing(false);
+            } catch (error) {
+                console.error("Error sending unfollow request: ", error.response?.data || error.message);
+            }
+        } else {
+            const data = { "to_follow": author_info };
+            try {
+                await axios.post(`http://localhost:8000/api/authors/${id}/sendfollowrequest/`, data, config);
+                setIsFollowing(true); 
+            } catch (error) {
+                console.error("Error sending follow request: ", error.response?.data || error.message);
+            }
         }
     };
+    
 
 
     const [showFollowing, setShowFollowing] = useState(false);
@@ -219,8 +238,8 @@ export function UserProfileViewOnly() {
                     <Typography variant="body1" sx={{ fontSize: '1em', fontFamily: 'Roboto', mt: 2 }}>
                         {currentBio}
                     </Typography>
-                    <Button onClick={toggleFollow} variant="outlined" sx={buttonStyles} disabled={isFollowing}>
-                        {isFollowing ? 'Following' : 'Follow'}
+                    <Button onClick={toggleFollow} variant="outlined" sx={buttonStyles}>
+                        {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
                     <div style={{ marginTop: '2px', maxWidth: '1000px', width: '100%', margin: 'auto' }}>
                         {posts.length > 0 ? posts.map(post => <TimelinePost key={post.id} post={post} isViewOnly={true} />) : <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>}

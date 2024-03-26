@@ -618,6 +618,7 @@ class InboxView(APIView):
                 updated_followers = [follower for follower in follower_list_instance.followers if follower['id'] != actor_id]
                 follower_list_instance.followers = updated_followers
                 follower_list_instance.save()
+                return Response({"message": "Item updated successfully."}, status=status.HTTP_200_OK)
             except FollowerList.DoesNotExist:
                 return Response({"error": "Follower list not found for the specified user."}, status=status.HTTP_404_NOT_FOUND)
             
