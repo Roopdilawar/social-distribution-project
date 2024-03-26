@@ -258,28 +258,29 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return response
     
     def update_or_delete_inboxes(self, post_data, method):
-        author = post_data.author
-        post_data = PostSerializer(post_data).data
-        try:
-            follower_list_instance = FollowerList.objects.get(user=author)
-        except FollowerList.DoesNotExist:
-            return JsonResponse({'message': 'No followers found.'}, status=200)
+        pass
+        # author = post_data.author
+        # post_data = PostSerializer(post_data).data
+        # try:
+        #     follower_list_instance = FollowerList.objects.get(user=author)
+        # except FollowerList.DoesNotExist:
+        #     return JsonResponse({'message': 'No followers found.'}, status=200)
         
-        for follower_info in follower_list_instance.followers:
-            base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
-            inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+        # for follower_info in follower_list_instance.followers:
+        #     base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+        #     inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
             
-            headers = {"Content-Type": "application/json"}
-            try:
-                if method == 'PUT':
-                    response = requests.put(inbox_url, json=post_data, headers=headers)
-                elif method == 'DELETE':
-                    response = requests.delete(inbox_url, json=post_data, headers=headers)
+        #     headers = {"Content-Type": "application/json"}
+        #     try:
+        #         if method == 'PUT':
+        #             response = requests.put(inbox_url, json=post_data, headers=headers)
+        #         elif method == 'DELETE':
+        #             response = requests.delete(inbox_url, json=post_data, headers=headers)
                 
-                if response.status_code not in (200, 201, 204):
-                    print(f"Failed to {method} to {inbox_url}. Status code: {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                print(f"Request to {inbox_url} failed: {e}")
+        #         if response.status_code not in (200, 201, 204):
+        #             print(f"Failed to {method} to {inbox_url}. Status code: {response.status_code}")
+        #     except requests.exceptions.RequestException as e:
+        #         print(f"Request to {inbox_url} failed: {e}")
 
 
 

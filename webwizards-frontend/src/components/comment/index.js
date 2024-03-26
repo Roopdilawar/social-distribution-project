@@ -55,8 +55,8 @@ export default function Comment ({ comment, post }) {
                 "author": authorData,
                 "object": comment
             };
-            console.log(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/${commentId}/like/`)
-            await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments/${commentId}/like/`, likeData);
+            console.log(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments/${commentId}/like/`)
+            await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments/${commentId}/like/`, likeData);
             setIsLiked(true); 
             setLikesCount(likesCount + 1);
         } catch (error) {
