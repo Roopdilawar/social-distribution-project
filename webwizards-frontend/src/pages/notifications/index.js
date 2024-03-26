@@ -21,6 +21,8 @@ function NotificationsPage() {
   const [userId, setUserId] = useState(null);
   const [nonPostNotifications, setNonPostNotifications] = useState([]);
   const [paginationNumber, setPaginationNumber] = useState(1);
+  const [anotherPage, setAnotherPage] = useState(true);
+  const [backPage, setBackPage] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -48,6 +50,19 @@ function NotificationsPage() {
       const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${paginationNumber}`);
       const data = response.data.items.reverse();
       const filteredNotifications = data.filter(notification => notification.type !== "post");
+      console.log(response.data.next);
+      if (response.data.next == null) {
+        setAnotherPage(false);
+      }
+      else {
+        setAnotherPage(true)
+      }
+      if (response.data.prev == null) {
+        setBackPage(false);
+      }
+      else {
+        setBackPage(true);
+      }
       setNonPostNotifications(filteredNotifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -127,8 +142,8 @@ function NotificationsPage() {
           </Card>
         ))}
         <Box display="flex" justifyContent="center" alignItems="center">
-            { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-            <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+            { backPage ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+            { anotherPage ? <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)} /> : "" }
         </Box>
       </div>
     </Box>

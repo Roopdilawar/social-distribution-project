@@ -576,7 +576,7 @@ class InboxView(APIView):
         page_number = request.query_params.get('page', 1)
         page_obj = paginator.get_page(page_number)
 
-        base_url = request.build_absolute_uri()
+        base_url = request.build_absolute_uri().split("?")[0]
         next_page = page_obj.next_page_number() if page_obj.has_next() else None
         prev_page = page_obj.previous_page_number() if page_obj.has_previous() else None
 
