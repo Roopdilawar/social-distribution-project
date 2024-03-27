@@ -814,8 +814,8 @@ class AcceptFollowRequest(APIView):
         follow_response_data = {
             "type": "FollowResponse",
             "summary": f"{requester_info['displayName']} {'accepted' if accepted else 'rejected'} your friend request.",
-            "actor": requester_info,  
-            "object": AuthorSerializer(author_to_follow).data,
+            "actor": AuthorSerializer(author_to_follow).data,  
+            "object": requester_info,
             "accepted": accepted
         }
 
