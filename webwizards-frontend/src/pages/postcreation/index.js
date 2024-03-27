@@ -69,7 +69,7 @@ function NewPost({ isOpen, handleClose }) {
             description: "Test Post", 
             content_type: base64Image ? "image/base64" : (useMarkdown ? "text/markdown" : "text/plain"),
             content: base64Image || postContent,
-            comment_counts: 0, 
+            count: 0, 
             published: new Date().toISOString(), 
             visibility: visibility
         };

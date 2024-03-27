@@ -24,9 +24,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework.pagination import PageNumberPagination
 import requests
 from django.http import JsonResponse
-
+from requests.auth import HTTPBasicAuth
 from rest_framework.pagination import PageNumberPagination
 from django.core.paginator import Paginator
+from django.core.serializers import serialize
+import re
 
 
 def index(request):
@@ -168,7 +170,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
                 # For every follower of the author, iterate through THEIR followers
                 base_url = follower_info['host']
 
-                followers_followers_list_url = f"{base_url}api/authors/{follower_info['id'].split('/').pop()}/followers/"
+                followers_followers_list_url = f"{base_url}api/authors/{follower_info['id'].split('/').pop()}/followers"
 
                 try :
                     # Get list of follower followers
@@ -189,7 +191,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
                         print('gooood')
                         # Get the inbox url
                         base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
-                        inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+                        inbox_url = f"{base_url}/api/authors/{author_segment}/inbox"
                         
                         try:
                             # Post to their inbox
@@ -258,28 +260,29 @@ class DetailPostView(generics.RetrieveUpdateDestroyAPIView):
         return response
     
     def update_or_delete_inboxes(self, post_data, method):
-        author = post_data.author
-        post_data = PostSerializer(post_data).data
-        try:
-            follower_list_instance = FollowerList.objects.get(user=author)
-        except FollowerList.DoesNotExist:
-            return JsonResponse({'message': 'No followers found.'}, status=200)
+        pass
+        # author = post_data.author
+        # post_data = PostSerializer(post_data).data
+        # try:
+        #     follower_list_instance = FollowerList.objects.get(user=author)
+        # except FollowerList.DoesNotExist:
+        #     return JsonResponse({'message': 'No followers found.'}, status=200)
         
-        for follower_info in follower_list_instance.followers:
-            base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
-            inbox_url = f"{base_url}/api/authors/{author_segment}/inbox/"
+        # for follower_info in follower_list_instance.followers:
+        #     base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+        #     inbox_url = f"{base_url}/api/authors/{author_segment}/inbox"
             
-            headers = {"Content-Type": "application/json"}
-            try:
-                if method == 'PUT':
-                    response = requests.put(inbox_url, json=post_data, headers=headers)
-                elif method == 'DELETE':
-                    response = requests.delete(inbox_url, json=post_data, headers=headers)
+        #     headers = {"Content-Type": "application/json"}
+        #     try:
+        #         if method == 'PUT':
+        #             response = requests.put(inbox_url, json=post_data, headers=headers)
+        #         elif method == 'DELETE':
+        #             response = requests.delete(inbox_url, json=post_data, headers=headers)
                 
-                if response.status_code not in (200, 201, 204):
-                    print(f"Failed to {method} to {inbox_url}. Status code: {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                print(f"Request to {inbox_url} failed: {e}")
+        #         if response.status_code not in (200, 201, 204):
+        #             print(f"Failed to {method} to {inbox_url}. Status code: {response.status_code}")
+        #     except requests.exceptions.RequestException as e:
+        #         print(f"Request to {inbox_url} failed: {e}")
 
 
 
@@ -293,26 +296,82 @@ class CommentView(generics.ListCreateAPIView):
         post_id = self.kwargs['post_id']
         return Comments.objects.filter(post_id=post_id)
 
-    def perform_create(self, serializer):
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_paginated_response(self, data):
         post_id = self.kwargs['post_id']
         post = Post.objects.get(id=post_id)
-        post_author = post.author
-        inbox, _ = Inbox.objects.get_or_create(user=post_author)
-        
-        author = self.request.data.get('author')
-        comment_type = serializer.validated_data.get('type', 'Comment') 
-        comment_content = serializer.validated_data.get('content')
+        return Response({
+            "type": "comments",
+            "post": post_id,
+            "id": post_id,
+            "next": self.paginator.get_next_link(),
+            "prev": self.paginator.get_previous_link(),
+            "comments": data,
+            "page": self.paginator.page.number,
+            "size": self.paginator.page_size
+        })
 
+
+
+class AddCommentView(APIView):
+    authentication_classes = [ServerBasicAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        post_data = request.data.get('object')  # Full post object
+        author_data = request.data.get('author')  # Author of the comment
+
+        if not post_data or not author_data:
+            return Response({"error": "Both post and author data are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract post ID from the provided post object
+        post_id = post_data.get('id').split('/')[-1]
+        post_author_data = post_data.get('author')  # Author of the post
+
+        # Construct the comment object with data provided by the frontend
+        comment_content = self.request.data.get('comment')
         comment_data = {
-            "type": comment_type,
-            "summary": f"{author['displayName']} commented on your post",
-            "comment": comment_content, 
-            "author": author 
+            "type": "comment",
+            "id": post_data['id'],
+            "author": author_data,
+            "comment": comment_content,
+            "contentType": "plain/text",
+            "published": self.request.data.get('published')
         }
-        
-        inbox.content.append(comment_data)
-        inbox.save()
-        serializer.save(post=post)
+
+        # Construct the URL for the post author's inbox
+        author_inbox_url = f"{post_author_data['host']}/api/authors/{post_author_data['id'].split('/').pop()}/inbox"
+
+        # Retrieve server credentials for the post author's server
+        try:
+            credentials = ServerCredentials.objects.get(server_url=post_author_data['host'])
+        except ServerCredentials.DoesNotExist:
+            return Response({"error": "Server credentials for the post author's server not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Send the comment object to the post author's inbox
+        print(author_inbox_url)
+        try:
+            response = requests.post(
+                author_inbox_url,
+                json=comment_data,
+                headers={"Content-Type": "application/json"},
+                auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+            )
+            if response.status_code not in [200, 201]:
+                return Response({"error": "Failed to send comment to the post author's inbox.", "status_code": response.status_code}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Comment notification sent successfully."}, status=status.HTTP_204_NO_CONTENT)
+
 
     
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -345,9 +404,8 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     
 
 class LikePostView(APIView):
-    authentication_classes = [ServerBasicAuthentication]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, author_id, *args, **kwargs):
         author_data = request.data.get('actor')
         post_data = request.data.get('object')
 
@@ -355,26 +413,18 @@ class LikePostView(APIView):
             return Response({"error": "Author and Post data are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         post_id = post_data['id'].split('/')[-1]
-
-        try:
-            post = Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Check if the author has already liked this post
-        if any(author['id'] == author_data['id'] for author in post.liked_by):
-            return Response({"message": "You have already liked this post."}, status=status.HTTP_409_CONFLICT)
-
-        # Append the new like to the liked_by field
-        post.liked_by.append(author_data)
-        post.likes += 1
-        post.save()
-
-        # Send like notification to the author's inbox
         author_id_url = post_data['author']['id']
         parts = author_id_url.split('/')
-        parts.insert(3, 'api')
-        author_inbox_url = '/'.join(parts) + '/inbox/'
+        host = parts[2]
+        
+        try:
+            credentials = ServerCredentials.objects.get(server_url=post_data['author']['host'])
+        except ServerCredentials.DoesNotExist:
+            return Response({"error": "Server credentials not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if 'api' not in parts:
+            parts.insert(3, 'api')
+        author_inbox_url = '/'.join(parts) + '/inbox'
         liked_by_message = {
             "summary": f"{author_data['displayName']} Likes your post",
             "type": "Like",
@@ -383,7 +433,12 @@ class LikePostView(APIView):
         }
 
         try:
-            response = requests.post(author_inbox_url, json=liked_by_message, headers={"Content-Type": "application/json"})
+            response = requests.post(
+                author_inbox_url, 
+                json=liked_by_message, 
+                headers={"Content-Type": "application/json"},
+                auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+            )
             if response.status_code in [200, 201]:
                 return Response({"message": "Like notification sent successfully."}, status=status.HTTP_204_NO_CONTENT)
             else:
@@ -394,11 +449,17 @@ class LikePostView(APIView):
         return Response({"message": "Like successfully recorded."}, status=status.HTTP_204_NO_CONTENT)
 
 
+class LikesView(APIView):
+    def get(self, request, author_id, post_id, format=None):
+        post = get_object_or_404(Post, author_id=author_id, id=post_id)
+        response_data = post.likes_objects
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
 class LikedItemsView(APIView):
 
-    def get(self, request, *args, **kwargs):
-        user = request.user if not request.user.is_anonymous else get_object_or_404(User, id=9)
+    def get(self, request, author_id, *args, **kwargs):
+        user = User.objects.get(id=author_id)
         try:
             liked_items_instance = LikedItem.objects.get(user=user)
         except LikedItem.DoesNotExist:
@@ -542,8 +603,15 @@ class FriendRequestView(APIView):
         parts = original_url.split('/')
         if len(parts) > 3 and parts[3] == 'authors':
             parts.insert(3, 'api')  
-            inbox_url = '/'.join(parts) + "/inbox/"
+        inbox_url = '/'.join(parts) + "/inbox"
+        inbox_url = re.sub(r'/+', '/', inbox_url)
+        inbox_url = re.sub(r'(http:|https:)/', r'\1//', inbox_url)
         user_serializer = AuthorSerializer(user)
+
+        try:
+            credentials = ServerCredentials.objects.get(server_url=to_follow['host'])
+        except ServerCredentials.DoesNotExist:
+            return Response({"error": "Server credentials not found."}, status=status.HTTP_404_NOT_FOUND)
 
         friend_request_data = {
             "type": "Follow",
@@ -553,7 +621,12 @@ class FriendRequestView(APIView):
         }
 
         try:
-            response = requests.post(inbox_url, json=friend_request_data, headers={"Content-Type": "application/json"})
+            response = requests.post(
+                inbox_url, 
+                json=friend_request_data, 
+                headers={"Content-Type": "application/json"}, 
+                auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+            )
             if response.status_code in [200, 201]:
                 return Response({"message": "Friend request sent successfully."}, status=status.HTTP_201_CREATED)
             else:
@@ -596,10 +669,6 @@ class InboxView(APIView):
     def post(self, request, author_id, *args, **kwargs):
         friend = get_object_or_404(User, id=author_id)
         inbox, created = Inbox.objects.get_or_create(user=friend)
-        content = inbox.content  
-        content.append(request.data) 
-        inbox.content = content 
-        inbox.save() 
 
         if request.data.get('type') == 'Like':
             post_url = request.data.get('object', '')
@@ -610,10 +679,56 @@ class InboxView(APIView):
                 # Prevent duplicate entries for the same author
                 if not any(author['id'] == request.data['author']['id'] for author in post.liked_by):
                     post.liked_by.append(request.data['author'])
+                    post.likes_objects.append(request.data)
                     post.likes += 1 
                     post.save()
+                else:
+                    # The user has already liked the post, so return a failure response
+                    return Response({"error": "You have already liked this post."}, status=status.HTTP_409_CONFLICT)
             except Post.DoesNotExist:
                 pass
+        
+        elif request.data.get('type') == 'Unfollow':
+            actor_id = request.data.get('actor', {}).get('id', '')
+            actor_id = actor_id.replace("/api/", "/")
+            try:
+                follower_list_instance = FollowerList.objects.get(user=friend)
+                # Attempt to remove the follower based on 'actor_id'
+                updated_followers = [follower for follower in follower_list_instance.followers if follower['id'] != actor_id]
+                follower_list_instance.followers = updated_followers
+                follower_list_instance.save()
+                return Response({"message": "Item updated successfully."}, status=status.HTTP_200_OK)
+            except FollowerList.DoesNotExist:
+                return Response({"error": "Follower list not found for the specified user."}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.data.get('type') == 'comment':
+            comment_data = request.data  # The complete comment data from request
+            post_data = request.data.get('id')  # The complete post object from request data
+
+            if not post_data:
+                return Response({"error": "Post data is required for comments."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create a new comment object associated with the post
+            try:
+                # Extract post ID from the complete post object
+                post_id = post_data.split('/posts/')[1].split('/')[0]
+                post = Post.objects.get(id=post_id)
+                # Creating new comment object
+                new_comment = Comments.objects.create(
+                    post=post,
+                    author=comment_data['author'],
+                    comment=comment_data['comment'],
+                )
+                serializer = CommentSerializer(instance=new_comment)
+                comment_data["summary"] = f"{comment_data['author']['displayName']} commented on your post"
+            except Post.DoesNotExist:
+                return Response({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            
+        content = inbox.content  
+        content.append(request.data) 
+        inbox.content = content 
+        inbox.save() 
 
         serializer = InboxSerializer(inbox)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
@@ -665,9 +780,9 @@ class AcceptFollowRequest(APIView):
         actor_id = data['actor']['id'].split('/')[-1]
         
         # Update the inbox to remove the follow request
-        updated_content = [item for item in inbox.content if item != data]
-        inbox.content = updated_content
-        inbox.save()
+        # updated_content = [item for item in inbox.content if item != data]
+        # inbox.content = updated_content
+        # inbox.save()
 
         if actor_id == str(author_id):
             return Response({"error": "You can't follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
@@ -683,8 +798,47 @@ class AcceptFollowRequest(APIView):
 
         # Add the requester to the follower list
         follower_list.add_follower(requester_info)
-        
-        return Response({"success": "Follow request accepted."}, status=status.HTTP_201_CREATED)
+        accepted = True
+
+        import pdb
+        pdb.set_trace()
+
+        follow_response_data = {
+            "type": "FollowResponse",
+            "summary": f"{requester_info['displayName']} {'accepted' if accepted else 'rejected'} your friend request.",
+            "actor": requester_info,  
+            "object": AuthorSerializer(author_to_follow).data,
+            "accepted": accepted
+        }
+
+        # Construct the URL for the requester's inbox
+        parts = requester_info['id'].split('/')
+        if 'api' not in parts:
+            parts.insert(3, 'api')
+        requester_inbox_url = '/'.join(parts) + '/inbox'
+        requester_inbox_url = re.sub(r'/+', '/', requester_inbox_url)
+        requester_inbox_url = re.sub(r'(http:|https:)/', r'\1//', requester_inbox_url)
+
+        # Retrieve server credentials for the requester's server
+        try:
+            credentials = ServerCredentials.objects.get(server_url=requester_info['host'])
+        except ServerCredentials.DoesNotExist:
+            return Response({"error": "Server credentials not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Send the follow response object to the requester's inbox
+        try:
+            response = requests.post(
+                requester_inbox_url,
+                json=follow_response_data,
+                headers={"Content-Type": "application/json"},
+                auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+            )
+            if response.status_code not in [200, 201]:
+                return Response({"error": "Failed to send follow response to the requester's inbox.", "status_code": response.status_code}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"success": "Follow response sent successfully."}, status=status.HTTP_201_CREATED)
         
         
 

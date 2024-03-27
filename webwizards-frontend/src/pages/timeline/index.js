@@ -61,7 +61,7 @@ const TimelinePage = () => {
             let morePages = true;
             try {
                 while (morePages) {
-                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${tempPaginationNumber}`, {
+                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${tempPaginationNumber}`, {
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`
                         }
@@ -88,8 +88,7 @@ const TimelinePage = () => {
                 let morePages = true;
 
                 while (morePages) {
-                    let tempEndpoint = url + `/api/posts/?page=${tempPaginationNumber}`;
-              
+                    let tempEndpoint = url + `/api/posts/${url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? 'public/' : ''}?page=${tempPaginationNumber}`;                
                     try {
                         const response = await axios.get(tempEndpoint, {
                             auth: {

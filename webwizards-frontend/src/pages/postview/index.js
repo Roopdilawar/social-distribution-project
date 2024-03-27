@@ -12,7 +12,7 @@ const PostViewPage = () => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/${postId}/`); 
+                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/${postId}`); 
                 setPost(response.data); 
                 console.log(response.data)
                 console.log(response)

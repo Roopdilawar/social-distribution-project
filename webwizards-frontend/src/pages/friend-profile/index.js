@@ -22,6 +22,7 @@ export function UserProfileViewOnly() {
     const [isFollowing, setIsFollowing] = useState(false);
     const [userId, setUserId] = useState(null);
     const [followers, setFollowers] = useState({ items: [] });
+    const [serverCredentials, setServerCredentials] = useState([]);
 
     const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -41,6 +42,24 @@ export function UserProfileViewOnly() {
         }
     };
 
+    const fetchServerCredentials = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+            setServerCredentials(response.data);
+        } catch (error) {
+            console.error("Error fetching server credentials:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchInitialData = async () => {
             const token = localStorage.getItem('token');
@@ -54,12 +73,23 @@ export function UserProfileViewOnly() {
                 if (userId != null) {
                     setCurrentProfilePic(author_info.profileImage);
                     setDisplayName(author_info.displayName);
-    
-                    const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/?all=true`);
+                    const serverAuth = serverCredentials[author_info.host];
+
+                    const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?all=true`, {
+                        auth: {
+                            username: serverAuth.outgoing_username,
+                            password: serverAuth.outgoing_password
+                        }
+                    });
                     const publicPosts = postsResponse.data.items.filter(post => post.visibility === "PUBLIC");
                     setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
     
-                    const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers/`);
+                    const followersResponse = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
+                        auth: {
+                            username: serverAuth.outgoing_username,
+                            password: serverAuth.outgoing_password
+                        }
+                    });
                     console.log(followersResponse.data.items)
                     const isUserFollowing = followersResponse.data.items.some(follower => follower.id === `http://localhost:8000/authors/${userId}`);
                     setIsFollowing(isUserFollowing);
@@ -70,13 +100,20 @@ export function UserProfileViewOnly() {
         };
 
         fetchUserId();
+        fetchServerCredentials();
         fetchInitialData();
         fetchFollowers();
     }, [id, userId]);
 
     const fetchFollowers = async () => {
         try {
-            const response = await axios.get(`${author_info.host}api/authors/${id}/followers/`);
+            const serverAuth = serverCredentials[author_info.host];
+            const response = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
+                auth: {
+                    username: serverAuth.outgoing_username,
+                    password: serverAuth.outgoing_password
+                }
+            });
             setFollowers(response.data);
             } 
         catch (error) {
@@ -90,19 +127,44 @@ export function UserProfileViewOnly() {
         }
       }, [id]);
 
-    const toggleFollow = async () => {
+      const toggleFollow = async () => {
         if (!userId) return; 
         const token = localStorage.getItem('token');
         const config = { headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' }};
-        const data = { "to_follow": author_info };
-
-        try {
-            await axios.post(`http://localhost:8000/api/authors/${id}/sendfollowrequest/`, data, config);
-            setIsFollowing(true); 
-        } catch (error) {
-            console.error("Error sending follow request: ", error.response?.data || error.message);
+        const inboxUrl = `${author_info.host}/api/authors/${id}/inbox`;
+        const serverAuth = serverCredentials[author_info.host];
+    
+        if (isFollowing) {
+            const actorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const actor_info = actorResponse.data;
+            console.log(actor_info)
+            const unfollowData = {
+                type: 'Unfollow',
+                actor: actor_info,
+                object: author_info
+            };
+            try {
+                await axios.post(inboxUrl, unfollowData, {
+                    auth: {
+                        username: serverAuth.outgoing_username,
+                        password: serverAuth.outgoing_password
+                    }
+                });
+                setIsFollowing(false);
+            } catch (error) {
+                console.error("Error sending unfollow request: ", error.response?.data || error.message);
+            }
+        } else {
+            const data = { "to_follow": author_info };
+            try {
+                await axios.post(`http://localhost:8000/api/authors/${userId}/sendfollowrequest/`, data, config);
+                setIsFollowing(true); 
+            } catch (error) {
+                console.error("Error sending follow request: ", error.response?.data || error.message);
+            }
         }
     };
+    
 
 
     const [showFollowing, setShowFollowing] = useState(false);
@@ -219,8 +281,8 @@ export function UserProfileViewOnly() {
                     <Typography variant="body1" sx={{ fontSize: '1em', fontFamily: 'Roboto', mt: 2 }}>
                         {currentBio}
                     </Typography>
-                    <Button onClick={toggleFollow} variant="outlined" sx={buttonStyles} disabled={isFollowing}>
-                        {isFollowing ? 'Following' : 'Follow'}
+                    <Button onClick={toggleFollow} variant="outlined" sx={buttonStyles}>
+                        {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
                     <div style={{ marginTop: '2px', maxWidth: '1000px', width: '100%', margin: 'auto' }}>
                         {posts.length > 0 ? posts.map(post => <TimelinePost key={post.id} post={post} isViewOnly={true} />) : <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>}
