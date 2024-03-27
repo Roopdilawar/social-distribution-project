@@ -34,8 +34,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             github=validated_data.get('github', ''),
-            url=validated_data.get('url', 'http://localhost:8000/'),
-            host=validated_data.get('host', 'http://localhost:8000/' ),
+            url=validated_data.get('url', 'http://localhost:8000'),
+            host=validated_data.get('host', 'http://localhost:8000' ),
         )
         user.set_password(validated_data['password'])
         user.save()
