@@ -140,13 +140,9 @@ const TimelinePage = () => {
                 ))}
             </div>
             { posts.length > 0 ? 
-                <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
-
-                // <Box display="flex" justifyContent="center" alignItems="center">
-                //     { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-                //     {/* { anotherPageAvailble ? <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/> : ""} */}
-                //     <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
-                // </Box>
+                <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
+                    <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
+                </Box>
             :
             ""}
         </Box>
