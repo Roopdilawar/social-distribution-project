@@ -125,7 +125,7 @@ function App() {
           <Route path="signin" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
           <Route path="/" element={<TimelinePage />} />
-          <Route path="/posts/:postId" element={<PostViewPage/>} />
+          <Route path="/posts/:postId/:authorId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="friend-profile/:id" element={<UserProfileViewOnly />} />
           <Route path="inbox" element={<NotificationsPage />} />

@@ -286,8 +286,8 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     };
 
     const handleShareClick = async () => {
-        if (post.visibility === 'PUBLIC') {
-            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}`;
+        if (post.visibility === 'PUBLIC' || post.visibility === 'PRIVATE') {
+            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}/${post.author.id.split('/').pop()}`;
             try {
                 await navigator.clipboard.writeText(postLink);
                 setSnackbarMessage("Link copied to clipboard"); 
