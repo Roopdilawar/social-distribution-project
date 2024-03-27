@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Container from '@mui/material/Container';
-import { Box, Modal, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Modal, Typography, List, ListItem, ListItemText, Pagination } from '@mui/material';
 import axios from 'axios';
 import { TimelinePost } from '../../components/timeline-post/index.js';
 import Grid from '@mui/material/Grid';
@@ -45,7 +45,7 @@ export function UserProfile() {
     const [posts, setPosts] = useState([]);
     const { themeMode, toggleTheme } = useTheme();
     const [followers, setFollowers] = useState({ items: [] });
-
+    const [postsPage, setPostsPage] = useState(0);
 
     const fetchUserBio = async () => {
         const token = localStorage.getItem('token');
@@ -158,7 +158,29 @@ export function UserProfile() {
             try {
                 const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/?all=true`);
                 
-                const allPosts = response.data.items;
+                let morePages = true;
+                let allPosts = [];
+                let tempPaginationNumber = 1;
+                    
+                while (morePages) {
+                    const postsResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/?page=${tempPaginationNumber}`, {
+                        headers: {
+                            'Authorization': `Token ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    const filteredPosts = postsResponse.data.items.filter(item => item.type === 'post');
+                    const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                    for (let sortedPost of orderedPosts) {
+                        allPosts.push(sortedPost)
+                    }
+                    if (postsResponse.data.next == null) {
+                        console.log("YIPEE)")
+                        morePages = false;
+                    }
+                    tempPaginationNumber++;
+                }
+                // const allPosts = response.data.items;
     
                 const userPosts = allPosts.filter(post => {
                     const authorId = post.author.id.split('/').pop();
@@ -450,7 +472,7 @@ export function UserProfile() {
                 <div style={{ marginTop: '40px' }} />
                 <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
                     {posts.length > 0 ? (
-                        posts.map(post => (
+                        posts.slice(postsPage * 5, (postsPage * 5) + 5).map(post => (
                             <TimelinePost key={post.id} post={post} isViewOnly={false}/>
                         ))
                     ) : (
@@ -460,6 +482,12 @@ export function UserProfile() {
                     )}
                 </div>
             </Box>
+            { posts.length > 0 ? 
+                        <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
+                            <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
+                        </Box>
+                    :
+                    ""}
         </Container>
         </Box>
 );

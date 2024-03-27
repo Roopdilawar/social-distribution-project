@@ -5,7 +5,7 @@ import { Paper, ButtonBase } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import { Button, Box, Container, Typography } from '@mui/material';
 import { useLocation, useParams } from 'react-router-dom';
-import { Modal, List, ListItem, ListItemText } from '@mui/material';
+import { Modal, List, ListItem, ListItemText, Pagination } from '@mui/material';
 import { useTheme } from '../../components/theme-context';
 import { TimelinePost } from '../../components/timeline-post/index.js';
 
@@ -23,6 +23,7 @@ export function UserProfileViewOnly() {
     const [userId, setUserId] = useState(null);
     const [followers, setFollowers] = useState({ items: [] });
     const [serverCredentials, setServerCredentials] = useState([]);
+    const [postsPage, setPostsPage] = useState(0);
 
     const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -75,15 +76,43 @@ export function UserProfileViewOnly() {
                     setDisplayName(author_info.displayName);
                     const serverAuth = serverCredentials[author_info.host];
 
-                    const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?all=true`, {
-                        auth: {
-                            username: serverAuth.outgoing_username,
-                            password: serverAuth.outgoing_password
+                    let tempPaginationNumber = 1;
+                    let morePages = true;
+                    let tempPosts= [];
+                    
+                    while (morePages) {
+                        // const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${tempPaginationNumber}`, {
+                        //     headers: {
+                        //         'Authorization': `Token ${localStorage.getItem('token')}`
+                        //     }
+                        // });
+                        const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?page=${tempPaginationNumber}`, {
+                            auth: {
+                                username: serverAuth.outgoing_username,
+                                password: serverAuth.outgoing_password
+                            }
+                        });
+                        const filteredPosts = postsResponse.data.items.filter(item => item.type === 'post');
+                        const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                        for (let sortedPost of orderedPosts) {
+                            tempPosts.push(sortedPost)
                         }
-                    });
-                    const publicPosts = postsResponse.data.items.filter(post => post.visibility === "PUBLIC");
-                    setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
-    
+                        if (postsResponse.data.next == null) {
+                            morePages = false;
+                        }
+                        tempPaginationNumber++;
+                    }
+
+                    // const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?all=true`, {
+                    //     auth: {
+                    //         username: serverAuth.outgoing_username,
+                    //         password: serverAuth.outgoing_password
+                    //     }
+                    // });
+                    // const publicPosts = postsResponse.data.items.filter(post => post.visibility === "PUBLIC");
+                    // setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+                    setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+
                     const followersResponse = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
                         auth: {
                             username: serverAuth.outgoing_username,
@@ -285,8 +314,14 @@ export function UserProfileViewOnly() {
                         {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
                     <div style={{ marginTop: '2px', maxWidth: '1000px', width: '100%', margin: 'auto' }}>
-                        {posts.length > 0 ? posts.map(post => <TimelinePost key={post.id} post={post} isViewOnly={true} />) : <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>}
+                        {posts.length > 0 ? posts.slice(postsPage * 5, (postsPage * 5) + 5).map(post => <TimelinePost key={post.id} post={post} isViewOnly={true} />) : <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>}
                     </div>
+                    { posts.length > 0 ? 
+                        <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
+                            <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
+                        </Box>
+                    :
+                    ""}
                 </Box>
             </Container>
         </Box>

@@ -19,7 +19,8 @@ import Comment from "../comment/index.js";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnly }) => {
     const [isLiked, setIsLiked] = useState(false);
@@ -32,7 +33,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [anchorEl, setAnchorEl] = useState(null); 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
     const [comments, setComments] = useState([]);
-    const [commentsPage, setCommentsPage] = useState(0);
+    const [paginationNumber, setPaginationNumber] = useState(1);
+    const [anotherPageAvailble, setAnotherPageAvailble] = useState(true);
+    const [prevPageAvailble, setPrevPageAvailble] = useState(false);
     const [serverCredentials, setServerCredentials] = useState({});
 
     const navigate = useNavigate();
@@ -180,6 +183,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         setExpanded(!expanded);
         setNewCommentVisible(true);
         fetchComments();
+        // checkNextCommentPage();
     }
 
     const fetchComments = async () => {
@@ -188,18 +192,52 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
         try {
             const serverAuth = serverCredentials[post.author.host];
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?all=true`, {
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?page=${paginationNumber}`, {
                 auth: {
                     username: serverAuth.outgoing_username,
                     password: serverAuth.outgoing_password
                 }
             });
+            if (response.data.next != null) {
+                setAnotherPageAvailble(true);
+            }
+            else {
+                setAnotherPageAvailble(false);
+            }
+
+            if (response.data.prev != null) {
+                setPrevPageAvailble(true);
+            }
+
+            else {
+                setPrevPageAvailble(false);
+            }
             const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
             console.error("Errror fetching comments: ", error);
         }
     };
+
+    // const checkNextCommentPage = async () => {
+    //     const endpointUrl = post.id.split('/authors')[0];
+    //     const postId = post.id.split('/').pop();
+    //     const token = localStorage.getItem('token');
+    //     const nextPageNumber = paginationNumber + 1;
+
+    //     try {
+    //         const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments?page=${nextPageNumber}`);
+            
+    //         setAnotherPageAvailble(true);
+    //     } catch (error) {
+    //         setAnotherPageAvailble(false);
+    //     }
+    // };
+
+    useEffect(() => {
+        fetchComments();
+        // checkNextCommentPage();
+    }, [paginationNumber])
 
     const handleCommentSubmit = async (event) => {
         const endpointUrl = post.author.host;
@@ -229,6 +267,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 }
             });
             fetchComments();
+            // checkNextCommentPage();
             setNewCommentInput("");
         } catch (error) {
             console.error("Error submitting post: ", error);
@@ -461,10 +500,18 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                         </div>
                     )}
                     <div className="all-comments-container">
-                        {comments.length > 0 ? comments.slice(commentsPage * 10, (commentsPage * 10) + 10).map((comment) => (
+                        {comments.length > 0 ? comments.map((comment) => (
                             <Comment comment={comment} key={comment.id} post={post} />
                         )) : <Typography>No comments.</Typography>}
-                        <Pagination count={Math.ceil(comments.length / 10)} page={commentsPage + 1} onChange={(event, page) => setCommentsPage(page - 1)} />
+                        <Box display="flex" justifyContent="center" alignItems="center">
+                            { prevPageAvailble ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+                            {
+                                anotherPageAvailble ? 
+                                <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
+                                :
+                                ""
+                            }
+                        </Box>
                     </div>
                 </Collapse>
             </Card>

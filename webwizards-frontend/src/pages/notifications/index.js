@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Box, Card, CardContent, Typography, Avatar, IconButton, Button } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
   transition: theme.transitions.create('transform', {
@@ -18,6 +20,9 @@ function NotificationsPage() {
   const [notifications, setNotifications] = useState({ items: [] });
   const [userId, setUserId] = useState(null);
   const [nonPostNotifications, setNonPostNotifications] = useState([]);
+  const [paginationNumber, setPaginationNumber] = useState(1);
+  const [anotherPage, setAnotherPage] = useState(true);
+  const [backPage, setBackPage] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -42,9 +47,22 @@ function NotificationsPage() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?all=true`);
+      const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${paginationNumber}`);
       const data = response.data.items.reverse();
       const filteredNotifications = data.filter(notification => notification.type !== "post");
+      console.log(response.data.next);
+      if (response.data.next == null) {
+        setAnotherPage(false);
+      }
+      else {
+        setAnotherPage(true)
+      }
+      if (response.data.prev == null) {
+        setBackPage(false);
+      }
+      else {
+        setBackPage(true);
+      }
       setNonPostNotifications(filteredNotifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -53,8 +71,13 @@ function NotificationsPage() {
 
   useEffect(() => {
     if (!userId) return; 
+
     fetchNotifications();
   }, [userId]); 
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [paginationNumber]);
 
   const clearNotifications = async () => {
     try {
@@ -135,6 +158,10 @@ function NotificationsPage() {
             )}
           </Card>
         ))}
+        <Box display="flex" justifyContent="center" alignItems="center">
+            { backPage ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+            { anotherPage ? <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)} /> : "" }
+        </Box>
       </div>
     </Box>
   );

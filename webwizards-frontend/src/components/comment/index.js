@@ -77,7 +77,7 @@ export default function Comment ({ comment, post }) {
                         {comment.comment}
                     </Typography>
                 </CardContent>
-                <CardActions disableSpacing>
+                {/* <CardActions disableSpacing>
                         <Box display="flex" alignItems="flex-start">
                             <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
                                 <Tooltip title="Like">
@@ -90,7 +90,7 @@ export default function Comment ({ comment, post }) {
                                 </Typography>
                             </Box>
                         </Box>
-                    </CardActions>
+                    </CardActions> */}
             </Card>
         </div>
     )
