@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Card, CardContent, Typography, Avatar, IconButton } from '@mui/material';
+import { Box, Card, CardContent, Typography, Avatar, IconButton, Button } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -47,7 +47,7 @@ function NotificationsPage() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?page=${paginationNumber}`);
+      const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${paginationNumber}`);
       const data = response.data.items.reverse();
       const filteredNotifications = data.filter(notification => notification.type !== "post");
       console.log(response.data.next);
@@ -78,6 +78,18 @@ function NotificationsPage() {
   useEffect(() => {
     fetchNotifications();
   }, [paginationNumber]);
+
+  const clearNotifications = async () => {
+    try {
+      const response = await axios.delete(`http://localhost:8000/api/authors/${userId}/inbox`);
+      // const data = response.data.items.reverse();
+      // const filteredNotifications = data.filter(notification => notification.type !== "post");
+      // setNonPostNotifications(filteredNotifications);
+      fetchNotifications();
+    } catch (error) {
+      console.error("Failed to delete notifications:", error);
+    }
+  }
 
   const handleAcceptFollow = async (notification) => {
     console.log(`Accepting follow request from ${notification.actor.id}`);
@@ -111,6 +123,11 @@ function NotificationsPage() {
   return (
     <Box sx={{ pt: 9 }}>
       <div style={{ maxWidth: '1000px', margin: 'auto' }}>
+        <Box sx={{ display: 'flex', justifyContent:"flex-end"}}>
+          <Button variant='outlined' onClick={clearNotifications} sx={{alignItems: 'flex-end', display:'flex',justify: 'flex-end'}}>
+            Clear Notifications
+          </Button>
+        </Box>
         {nonPostNotifications.map((notification, index) => (
           <Card key={index} sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
