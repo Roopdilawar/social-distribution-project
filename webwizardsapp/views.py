@@ -174,7 +174,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
                 # For every follower of the author, iterate through THEIR followers
                 base_url = follower_info['host']
 
-                followers_followers_list_url = f"{base_url}/api/authors/{follower_info['id'].split('/').pop()}/followers"
+                followers_followers_list_url = f"{base_url}/api/authors/{follower_info['id'].split('/').pop()}/followers?all=true"
 
                 try :
                     # Get list of follower followers
