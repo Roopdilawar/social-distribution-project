@@ -86,8 +86,14 @@ class PostSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        post_id = instance.id
-        representation['id'] = f"{instance.author.host}/authors/{instance.author.id}/posts/{post_id}"
+        post_id = str(instance.id)
+        post_id_url = f"{instance.author.host}/authors/{instance.author.id}/posts/{post_id}"
+        representation['id'] = post_id_url
+
+        if representation['source'] == 'http://localhost:8000':
+            representation['source'] = post_id_url
+        if representation['origin'] == 'http://localhost:8000':
+            representation['origin'] = post_id_url
         representation['count'] = instance.comments.all().count()
 
         return representation

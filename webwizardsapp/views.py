@@ -204,8 +204,6 @@ class AuthorPostsView(generics.ListCreateAPIView):
                         
                         try:
                             # Post to their inbox
-                            import pdb
-                            pdb.set_trace()
                             response = requests.post(
                                 inbox_url,
                                 json=post_data,
@@ -682,14 +680,9 @@ class InboxView(APIView):
         return Response(response_data)
     
     def post(self, request, author_id, *args, **kwargs):
-        import pdb
-        pdb.set_trace()
 
         friend = get_object_or_404(User, id=author_id)
         inbox, created = Inbox.objects.get_or_create(user=friend)
-
-        import pdb
-        pdb.set_trace()
 
         if request.data.get('type') == 'Like':
             post_url = request.data.get('object', '')

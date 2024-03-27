@@ -38,8 +38,8 @@ class Post(models.Model):
     ]
     type = models.CharField(default='post', max_length=200)
     title = models.CharField(max_length=200, blank=True)
-    source = models.URLField(max_length=200, default='https://uofa-cmput404.github.io/general/project.html')
-    origin = models.CharField(max_length=200, default='https://uofa-cmput404.github.io/general/project.html')
+    source = models.URLField(max_length=200, default='http://localhost:8000')
+    origin = models.CharField(max_length=200, default='http://localhost:8000')
     description = models.CharField(max_length=200, default='This is a post')
     contentType = models.CharField(max_length=200, default='text/plain')
     content = models.TextField()
