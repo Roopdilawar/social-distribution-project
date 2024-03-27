@@ -13,8 +13,8 @@ class User(AbstractUser):
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
-    url = models.CharField(max_length=500, default='http://localhost:8000/')
-    host = models.CharField(max_length=500, default='http://localhost:8000/')
+    url = models.CharField(max_length=500, default='http://localhost:8000')
+    host = models.CharField(max_length=500, default='http://localhost:8000')
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
@@ -41,10 +41,10 @@ class Post(models.Model):
     source = models.URLField(max_length=200, default='https://uofa-cmput404.github.io/general/project.html')
     origin = models.CharField(max_length=200, default='https://uofa-cmput404.github.io/general/project.html')
     description = models.CharField(max_length=200, default='This is a post')
-    content_type = models.CharField(max_length=200, default='text/plain')
+    contentType = models.CharField(max_length=200, default='text/plain')
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    comment_counts = models.IntegerField(default=0)
+    count = models.IntegerField(default=0)
     likes = models.IntegerField(default=0)
     liked_by = JSONField(default=list, blank=True)
     likes_objects = JSONField(default=list, blank=True)
@@ -70,8 +70,8 @@ class Comments(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     author = models.JSONField(default=dict)
-    content = models.TextField()
-    created = models.DateTimeField(default=timezone.now)
+    comment = models.TextField()
+    published = models.DateTimeField(default=timezone.now)
     likes = models.IntegerField(default=0)
     liked_by = JSONField(default=list, blank=True)
 

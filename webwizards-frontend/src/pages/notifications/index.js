@@ -45,7 +45,7 @@ function NotificationsPage() {
 
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/?all=true`);
+        const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?all=true`);
         const data = response.data.items.reverse();
         const filteredNotifications = data.filter(notification => notification.type !== "post");
         setNonPostNotifications(filteredNotifications);

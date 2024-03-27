@@ -22,6 +22,7 @@ export function UserProfileViewOnly() {
     const [isFollowing, setIsFollowing] = useState(false);
     const [userId, setUserId] = useState(null);
     const [followers, setFollowers] = useState({ items: [] });
+    const [serverCredentials, setServerCredentials] = useState([]);
 
     const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -41,6 +42,24 @@ export function UserProfileViewOnly() {
         }
     };
 
+    const fetchServerCredentials = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+            setServerCredentials(response.data);
+        } catch (error) {
+            console.error("Error fetching server credentials:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchInitialData = async () => {
             const token = localStorage.getItem('token');
@@ -54,12 +73,23 @@ export function UserProfileViewOnly() {
                 if (userId != null) {
                     setCurrentProfilePic(author_info.profileImage);
                     setDisplayName(author_info.displayName);
-    
-                    const postsResponse = await axios.get(`${author_info.host}api/authors/${id}/posts/?all=true`);
+                    const serverAuth = serverCredentials[author_info.host];
+
+                    const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?all=true`, {
+                        auth: {
+                            username: serverAuth.outgoing_username,
+                            password: serverAuth.outgoing_password
+                        }
+                    });
                     const publicPosts = postsResponse.data.items.filter(post => post.visibility === "PUBLIC");
                     setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
     
-                    const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers/`);
+                    const followersResponse = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
+                        auth: {
+                            username: serverAuth.outgoing_username,
+                            password: serverAuth.outgoing_password
+                        }
+                    });
                     console.log(followersResponse.data.items)
                     const isUserFollowing = followersResponse.data.items.some(follower => follower.id === `http://localhost:8000/authors/${userId}`);
                     setIsFollowing(isUserFollowing);
@@ -70,13 +100,20 @@ export function UserProfileViewOnly() {
         };
 
         fetchUserId();
+        fetchServerCredentials();
         fetchInitialData();
         fetchFollowers();
     }, [id, userId]);
 
     const fetchFollowers = async () => {
         try {
-            const response = await axios.get(`${author_info.host}api/authors/${id}/followers/`);
+            const serverAuth = serverCredentials[author_info.host];
+            const response = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
+                auth: {
+                    username: serverAuth.outgoing_username,
+                    password: serverAuth.outgoing_password
+                }
+            });
             setFollowers(response.data);
             } 
         catch (error) {
@@ -94,7 +131,8 @@ export function UserProfileViewOnly() {
         if (!userId) return; 
         const token = localStorage.getItem('token');
         const config = { headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' }};
-        const inboxUrl = `${author_info.host}api/authors/${id}/inbox/`;
+        const inboxUrl = `${author_info.host}/api/authors/${id}/inbox`;
+        const serverAuth = serverCredentials[author_info.host];
     
         if (isFollowing) {
             const actorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
@@ -106,7 +144,12 @@ export function UserProfileViewOnly() {
                 object: author_info
             };
             try {
-                await axios.post(inboxUrl, unfollowData, config);
+                await axios.post(inboxUrl, unfollowData, {
+                    auth: {
+                        username: serverAuth.outgoing_username,
+                        password: serverAuth.outgoing_password
+                    }
+                });
                 setIsFollowing(false);
             } catch (error) {
                 console.error("Error sending unfollow request: ", error.response?.data || error.message);
@@ -114,7 +157,7 @@ export function UserProfileViewOnly() {
         } else {
             const data = { "to_follow": author_info };
             try {
-                await axios.post(`http://localhost:8000/api/authors/${id}/sendfollowrequest/`, data, config);
+                await axios.post(`http://localhost:8000/api/authors/${userId}/sendfollowrequest/`, data, config);
                 setIsFollowing(true); 
             } catch (error) {
                 console.error("Error sending follow request: ", error.response?.data || error.message);

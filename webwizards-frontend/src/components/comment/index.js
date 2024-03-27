@@ -36,7 +36,7 @@ export default function Comment ({ comment, post }) {
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
         const commentId = comment.id
-        const endpointUrl = post.id.split('/authors')[0];
+        const endpointUrl = post.id.replace("/api", "").split('/authors')[0];
     
         const config = {
             headers: {
@@ -70,11 +70,11 @@ export default function Comment ({ comment, post }) {
                 <CardHeader
                     avatar={<Avatar src={comment.author.profileImage} alt={comment.author.displayName} />}
                     title={<Typography variant="subtitle2" color="primary">{comment.author.displayName}</Typography>}
-                    subheader={<Typography variant="caption">{new Date(comment.created).toLocaleString()}</Typography>}                    
+                    subheader={<Typography variant="caption">{new Date(comment.published).toLocaleString()}</Typography>}                    
                 />
                 <CardContent class-name="comment-content">
                     <Typography variant="body2">
-                        {comment.content}
+                        {comment.comment}
                     </Typography>
                 </CardContent>
                 <CardActions disableSpacing>

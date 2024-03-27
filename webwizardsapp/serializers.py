@@ -52,10 +52,10 @@ class AuthorSerializer(serializers.ModelSerializer):
     profileImage = serializers.URLField(source='profile_picture')
     
     def get_id(self, obj):
-        return f"{obj.host}authors/{obj.id}"
+        return f"{obj.host}/authors/{obj.id}"
     
     def get_url(self, obj):
-        return f"{obj.host}authors/{obj.id}"
+        return f"{obj.host}/authors/{obj.id}"
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
@@ -82,13 +82,13 @@ class PostSerializer(serializers.ModelSerializer):
     type = serializers.CharField(default='post',read_only=True)
     class Meta:
         model = Post
-        fields = ['type', 'id', 'title', 'source', 'origin', 'description', 'content_type', 'content', 'author', 'comment_counts', 'likes', 'published', 'visibility']
+        fields = ['type', 'id', 'title', 'source', 'origin', 'description', 'contentType', 'content', 'author', 'count', 'likes', 'published', 'visibility']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         post_id = instance.id
-        representation['id'] = f"{instance.author.host}authors/{instance.author.id}/posts/{post_id}"
-        representation['comment_counts'] = instance.comments.all().count()
+        representation['id'] = f"{instance.author.host}/authors/{instance.author.id}/posts/{post_id}"
+        representation['count'] = instance.comments.all().count()
 
         return representation
 
@@ -101,12 +101,27 @@ class LikedItemSerializer(serializers.ModelSerializer):
 
         
 class CommentSerializer(serializers.ModelSerializer):
-    # author = AuthorSerializer(read_only=True)
-    
+    type = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
+    contentType = serializers.SerializerMethodField(method_name='get_content_type')
     
     class Meta:
         model = Comments
-        fields = ['id', 'post', 'author', 'content', 'created', 'likes']
+        fields = ['type', 'id', 'author', 'comment', 'contentType', 'published']
+    
+    def get_type(self, instance):
+        return "comment"
+    
+    def get_id(self, instance):
+        return f"{instance.post.author.host}/authors/{instance.post.author.id}/posts/{instance.post.id}/comments/{instance.id}"
+    
+    def get_content_type(self, instance):
+        return "plain/text"
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return representation
+
     
 class InboxSerializer(serializers.ModelSerializer):
     post=PostSerializer(read_only=True)

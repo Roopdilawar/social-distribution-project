@@ -59,7 +59,7 @@ const TimelinePage = () => {
 
             if (isFollowingView) {
                 try {
-                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox/`, {
+                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox`, {
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`
                         }
@@ -74,8 +74,7 @@ const TimelinePage = () => {
 
             else {
                 for (let [url, credentials] of Object.entries(serverCredentials)) {
-                    let tempEndpoint = url + "/api/posts/?all=true";
-                  
+                    let tempEndpoint = url + `/api/posts/${url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? 'public/' : ''}?all=true`;                  
                     try {
                         const response = await axios.get(tempEndpoint, {
                             auth: {

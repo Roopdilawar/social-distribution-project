@@ -130,7 +130,7 @@ export function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get(`http://localhost:8000/api/authors/${userId}/followers/`,{
+            const response = await axios.get(`http://localhost:8000/api/authors/${userId}/followers`,{
             headers: {
                 'Authorization': `Token ${token}`
             }

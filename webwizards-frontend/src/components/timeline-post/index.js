@@ -24,7 +24,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnly }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likes || 0);
-    const [commentsCount, setCommentsCount] = useState(post.comment_counts || 0);
+    const [commentsCount, setCommentsCount] = useState(post.count || 0);
     const [userId, setUserId] = useState(null);
     const [userData, setUserData] = useState({});
     const [postAuthorId, setpostAuthorId] = useState(null);
@@ -33,6 +33,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
     const [comments, setComments] = useState([]);
     const [commentsPage, setCommentsPage] = useState(0);
+    const [serverCredentials, setServerCredentials] = useState({});
 
     const navigate = useNavigate();
 
@@ -50,13 +51,50 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     <Route path="/profile" element={<UserProfile />} />
     <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
     </Routes>
+    
+    useEffect(() => {
+        const fetchServerCredentials = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return console.log('No token found');
+            
+            try {
+                const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                    headers: { 'Authorization': `Token ${token}` }
+                });
+                setServerCredentials(response.data);
+            } catch (error) {
+                console.error("Error fetching server credentials:", error);
+            }
+        };
+
+        fetchServerCredentials();
+    }, []);
+
+    useEffect(() => {
+        if (Object.keys(serverCredentials).length > 0) {
+            fetchLikesAndComments();
+        }
+    }, [serverCredentials]);
+
 
     const fetchLikesAndComments = async () => {
-        const endpointUrl = post.id.split('/authors')[0];
+        const endpointUrl = post.author.host;
         try {
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${post.id.split('/').pop()}/`);
-            setLikesCount(response.data.likes)
-            setCommentsCount(response.data.comment_counts)
+            const serverAuth = serverCredentials[post.author.host];
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.author.id.split('/').pop()}/posts/${post.id.split('/').pop()}`, {
+                auth: {
+                    username: serverAuth.outgoing_username,
+                    password: serverAuth.outgoing_password
+                }
+            });
+            setCommentsCount(response.data.count)
+            const response_likes = await axios.get(`${endpointUrl}/api/authors/${post.author.id.split('/').pop()}/posts/${post.id.split('/').pop()}/likes`, {
+                auth: {
+                    username: serverAuth.outgoing_username,
+                    password: serverAuth.outgoing_password
+                }
+            });
+            setLikesCount(response_likes.data.length)
             
         } catch (error) {
             console.error("Error fetching post information: ", error);
@@ -83,8 +121,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
 
         fetchUserId();
-        fetchLikesAndComments();
-    }, []);
+    }, [serverCredentials]);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -114,10 +151,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const handleUsernameClick = () => {
         const id = post.author.id.split('/').pop();
         const isCurrentUser = id.toString() === userId.toString();
-        const baseUrl = post.id.split("/authors/")[0];
+        const baseUrl = post.id.replace("/api", "").split("/authors/")[0];
         const same_url = baseUrl === "http://localhost:8000"
         const author_info = post.author;
-        console.log(author_info)
         if (isCurrentUser && same_url) {
             navigate("/profile");
         } else {
@@ -147,13 +183,18 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     }
 
     const fetchComments = async () => {
-        const endpointUrl = post.id.split('/authors')[0];
+        const endpointUrl = post.author.host;
         const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
-
         try {
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments/?all=true`);
-            const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
+            const serverAuth = serverCredentials[post.author.host];
+            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?all=true`, {
+                auth: {
+                    username: serverAuth.outgoing_username,
+                    password: serverAuth.outgoing_password
+                }
+            });
+            const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
             console.error("Errror fetching comments: ", error);
@@ -161,7 +202,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     };
 
     const handleCommentSubmit = async (event) => {
-        const endpointUrl = post.id.split('/authors')[0];
+        const endpointUrl = post.author.host;
         const postId = post.id.split('/').pop();
         const token = localStorage.getItem('token');
         const config = {
@@ -173,15 +214,20 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         try {
             const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
             const authorData = authorResponse.data;
-            console.log(authorData)
             const commentData = {
-                post: postId,
-                content: newCommentInput,
-                created: new Date().toISOString(),
+                object: post,
+                comment: newCommentInput,
+                published: new Date().toISOString(),
                 author: authorData
             };
+            const serverAuth = serverCredentials["http://localhost:8000"];
            
-            const response = await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments/`, commentData);
+            const response = await axios.post(`http://localhost:8000/api/authors/${userId}/addcomment`, commentData, {
+                auth: {
+                    username: serverAuth.outgoing_username,
+                    password: serverAuth.outgoing_password
+                }
+            });
             fetchComments();
             setNewCommentInput("");
         } catch (error) {
@@ -201,7 +247,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         };
     
         try {
-            await axios.delete(`http://localhost:8000/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/`, config);
+            await axios.delete(`http://localhost:8000/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}`, config);
             console.log("Post deleted successfully");
             handleMenuClose();
         } catch (error) {
@@ -214,7 +260,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
         const postId = post.id.split('/').pop(); 
         const authorId = post.author.id.split('/').pop();
-        const endpointUrl = post.id.split('/authors')[0];
+        const endpointUrl = post.id.replace("/api", "").split('/authors')[0];
 
     
         const config = {
@@ -230,8 +276,8 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 "actor": authorData,
                 "object": post
             };
-            await axios.post(`http://localhost:8000/api/authors/${userId}/liked/`, { "object_id": post.id }, config);
-            await axios.post(`${endpointUrl}/api/authors/${userId}/like/`, likeData);
+            await axios.post(`http://localhost:8000/api/authors/${userId}/liked`, { "object_id": post.id }, config);
+            await axios.post(`http://localhost:8000/api/authors/${userId}/like/`, likeData, config);
             setIsLiked(true);
             setLikesCount(likesCount + 1); 
         } catch (error) {
@@ -258,12 +304,12 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const handleRepost = async () => {
         if (post.visibility === 'PUBLIC') {
             const token = localStorage.getItem('token');
-            const postLink = post.id;
+            const postLink = post.id.replace("/api", "");
             let newTitle = `Repost: ${post.title}`;
             let newContent = post.content;
-            let newContentType = post.content_type;
+            let newContentType = post.contentType;
 
-            if (post.content_type != "image/base64") {
+            if (post.contentType != "image/base64") {
                 let parsedString = parseISO(post.published);
                 let repostString = `
 
@@ -278,9 +324,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 source: postLink,
                 origin: post.origin, 
                 description: post.description, 
-                content_type: newContentType,
+                contentType: newContentType,
                 content: newContent,
-                comment_counts: post.comment_counts, 
+                count: post.count, 
                 published: new Date().toISOString(), 
                 visibility: post.visibility
             };
@@ -295,7 +341,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     
             try {
                 const response = await axios.post(`http://localhost:8000/api/authors/${userId}/posts/`, postData, config);
-                console.log(response.data);
             } catch (error) {
                 console.error("Error submitting post: ", error);
             }
@@ -303,7 +348,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     }
 
     const renderContent = () => {
-        switch (post.content_type) {
+        switch (post.contentType) {
             case 'text/plain':
                 return <Typography variant="body2">{post.content}</Typography>;
             case 'text/markdown':
