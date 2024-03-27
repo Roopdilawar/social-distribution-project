@@ -35,6 +35,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [comments, setComments] = useState([]);
     const [paginationNumber, setPaginationNumber] = useState(1);
     const [anotherPageAvailble, setAnotherPageAvailble] = useState(true);
+    const [prevPageAvailble, setPrevPageAvailble] = useState(false);
     const [serverCredentials, setServerCredentials] = useState({});
 
     const navigate = useNavigate();
@@ -182,7 +183,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         setExpanded(!expanded);
         setNewCommentVisible(true);
         fetchComments();
-        checkNextCommentPage();
+        // checkNextCommentPage();
     }
 
     const fetchComments = async () => {
@@ -197,6 +198,20 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                     password: serverAuth.outgoing_password
                 }
             });
+            if (response.data.next != null) {
+                setAnotherPageAvailble(true);
+            }
+            else {
+                setAnotherPageAvailble(false);
+            }
+
+            if (response.data.prev != null) {
+                setPrevPageAvailble(true);
+            }
+
+            else {
+                setPrevPageAvailble(false);
+            }
             const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
             setComments(orderedComments);
         } catch (error) {
@@ -204,23 +219,24 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         }
     };
 
-    const checkNextCommentPage = async () => {
-        const endpointUrl = post.id.split('/authors')[0];
-        const postId = post.id.split('/').pop();
-        const token = localStorage.getItem('token');
-        const nextPageNumber = paginationNumber + 1;
+    // const checkNextCommentPage = async () => {
+    //     const endpointUrl = post.id.split('/authors')[0];
+    //     const postId = post.id.split('/').pop();
+    //     const token = localStorage.getItem('token');
+    //     const nextPageNumber = paginationNumber + 1;
 
-        try {
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments?page=${nextPageNumber}`);
-            setAnotherPageAvailble(true);
-        } catch (error) {
-            setAnotherPageAvailble(false);
-        }
-    };
+    //     try {
+    //         const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments?page=${nextPageNumber}`);
+            
+    //         setAnotherPageAvailble(true);
+    //     } catch (error) {
+    //         setAnotherPageAvailble(false);
+    //     }
+    // };
 
     useEffect(() => {
         fetchComments();
-        checkNextCommentPage();
+        // checkNextCommentPage();
     }, [paginationNumber])
 
     const handleCommentSubmit = async (event) => {
@@ -251,7 +267,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 }
             });
             fetchComments();
-            checkNextCommentPage();
+            // checkNextCommentPage();
             setNewCommentInput("");
         } catch (error) {
             console.error("Error submitting post: ", error);
@@ -488,7 +504,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                             <Comment comment={comment} key={comment.id} post={post} />
                         )) : <Typography>No comments.</Typography>}
                         <Box display="flex" justifyContent="center" alignItems="center">
-                            { paginationNumber > 1 ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
+                            { prevPageAvailble ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
                             {
                                 anotherPageAvailble ? 
                                 <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
