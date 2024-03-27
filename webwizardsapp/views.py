@@ -754,20 +754,17 @@ class InboxView(APIView):
             return Response({"message": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, author_id, *args, **kwargs):
-
         friend = get_object_or_404(User, id=author_id)
         inbox = Inbox.objects.get(user=friend)
 
-        item_to_delete_id = request.data.get('id') 
         initial_length = len(inbox.content)
-
-        inbox.content = [item for item in inbox.content if item.get('id') != item_to_delete_id]
+        inbox.content = [item for item in inbox.content if item.get('type', None) == 'post']
 
         if len(inbox.content) < initial_length:
             inbox.save()
-            return Response({"message": "Item deleted successfully."}, status=status.HTTP_200_OK)
+            return Response({"message": "Items deleted successfully."}, status=status.HTTP_200_OK)
         else:
-            return Response({"message": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "No items to delete."}, status=status.HTTP_404_NOT_FOUND)
 
     
 
