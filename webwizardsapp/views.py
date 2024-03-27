@@ -166,15 +166,24 @@ class AuthorPostsView(generics.ListCreateAPIView):
 
             # Iterate through author's followers
             for follower_info in follower_list_instance.followers:
+                try:
+                    credentials = ServerCredentials.objects.get(server_url=follower_info['host'])
+                except ServerCredentials.DoesNotExist:
+                    return Response({"error": "Server credentials for the post author's server not found."}, status=status.HTTP_404_NOT_FOUND)
 
                 # For every follower of the author, iterate through THEIR followers
                 base_url = follower_info['host']
 
-                followers_followers_list_url = f"{base_url}api/authors/{follower_info['id'].split('/').pop()}/followers"
+                followers_followers_list_url = f"{base_url}/api/authors/{follower_info['id'].split('/').pop()}/followers"
 
                 try :
                     # Get list of follower followers
-                    response = requests.get(followers_followers_list_url)
+                    response = requests.get(
+                        followers_followers_list_url,
+                        auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+                    )
+                    if response.status_code not in [200, 201]:
+                        return Response({"error": "Failed to send comment to the post author's inbox.", "status_code": response.status_code}, status=status.HTTP_400_BAD_REQUEST)
 
                     followers_followers_list = response.json()['items']
 
@@ -182,7 +191,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
                     
                     # Iterate through all of their followers and check if we are a member of the list
                     for follower_followers_info in followers_followers_list:
-                        if author.id == int(follower_followers_info['id'].split('/').pop()):
+                        if str(author.id) == follower_followers_info['id'].split('/').pop():
                             am_follower = True
                             break
                     
@@ -190,12 +199,19 @@ class AuthorPostsView(generics.ListCreateAPIView):
                     if am_follower == True:
                         print('gooood')
                         # Get the inbox url
-                        base_url, author_segment = follower_info['id'].rsplit('/authors/', 1)
+                        _, author_segment = follower_info['id'].rsplit('/authors/', 1)
                         inbox_url = f"{base_url}/api/authors/{author_segment}/inbox"
                         
                         try:
                             # Post to their inbox
-                            response = requests.post(inbox_url, json=post_data, headers={"Content-Type": "application/json"})
+                            import pdb
+                            pdb.set_trace()
+                            response = requests.post(
+                                inbox_url,
+                                json=post_data,
+                                headers={"Content-Type": "application/json"},
+                                auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+                            )
                             if response.status_code not in (200, 201):
                                 print(f"Failed to post to {inbox_url}. Status code: {response.status_code}")
                         except requests.exceptions.RequestException as e:
@@ -358,7 +374,6 @@ class AddCommentView(APIView):
             return Response({"error": "Server credentials for the post author's server not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Send the comment object to the post author's inbox
-        print(author_inbox_url)
         try:
             response = requests.post(
                 author_inbox_url,
@@ -667,8 +682,14 @@ class InboxView(APIView):
         return Response(response_data)
     
     def post(self, request, author_id, *args, **kwargs):
+        import pdb
+        pdb.set_trace()
+
         friend = get_object_or_404(User, id=author_id)
         inbox, created = Inbox.objects.get_or_create(user=friend)
+
+        import pdb
+        pdb.set_trace()
 
         if request.data.get('type') == 'Like':
             post_url = request.data.get('object', '')
@@ -780,9 +801,9 @@ class AcceptFollowRequest(APIView):
         actor_id = data['actor']['id'].split('/')[-1]
         
         # Update the inbox to remove the follow request
-        # updated_content = [item for item in inbox.content if item != data]
-        # inbox.content = updated_content
-        # inbox.save()
+        updated_content = [item for item in inbox.content if item != data]
+        inbox.content = updated_content
+        inbox.save()
 
         if actor_id == str(author_id):
             return Response({"error": "You can't follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
@@ -799,9 +820,6 @@ class AcceptFollowRequest(APIView):
         # Add the requester to the follower list
         follower_list.add_follower(requester_info)
         accepted = True
-
-        import pdb
-        pdb.set_trace()
 
         follow_response_data = {
             "type": "FollowResponse",
