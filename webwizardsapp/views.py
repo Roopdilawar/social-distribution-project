@@ -10,7 +10,7 @@ from rest_framework import generics
 from rest_framework.generics import UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import CreateAPIView
-from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer,ServerCredentialsSerializer
+from .serializers import RegisterSerializer,AuthorSerializer,PostSerializer,CommentSerializer,InboxSerializer,LikedItemSerializer,ServerCredentialsSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
@@ -29,6 +29,8 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 import re
+from django.views import View
+
 
 
 def index(request):
@@ -856,3 +858,17 @@ class ServerCredentialsView(APIView):
         serializer = ServerCredentialsSerializer(credentials, many=True)
         response_data = {item['server_url']: {'outgoing_username': item['outgoing_username'], 'outgoing_password': item['outgoing_password']} for item in serializer.data}
         return Response(response_data)
+    
+class SearchUsersView(View):
+    def get(self, request, *args, **kwargs):
+        # Get the username query parameter from the request
+        username = request.GET.get('username', '')
+
+        # Query the database to find users with usernames containing the provided query
+        users = User.objects.filter(username__icontains=username)
+
+        # Serialize the queryset of users
+        serializer = UserSerializer(users, many=True)
+
+        # Return the serialized data as JSON response
+        return JsonResponse(serializer.data, safe=False)

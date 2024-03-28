@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Box, InputBase, Button } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -18,11 +18,13 @@ import { ThemeProvider } from './components/theme-context/index.js';
 import Tooltip from '@mui/material/Tooltip';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import UserProfileViewOnly from './pages/friend-profile/index.js';
+import axios from 'axios';
 
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
 
@@ -58,6 +60,35 @@ function App() {
     navigate('/signin'); 
   };
 
+  const handleSearch = () => {
+    // Handle search action
+    console.log('Search query:', searchQuery);
+
+    const url = `http://localhost:8000/search-users/?username=${searchQuery}`;
+    console.log(url);
+    
+    axios.get(url, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log(response);
+        const userID = response.data[0].id;
+        const author_info = response.data[0];
+        author_info.displayName = author_info.username;
+        console.log(author_info);
+        console.log(userID);
+        navigate(`/friend-profile/${userID}`, { state: { author_info } });
+    })
+    .catch(error => {
+        alert("User not found! Please check the usrname again!");
+        console.log("Error occurred: ", error);
+    });
+
+    // then use navigate(`/friend-profile/${id}`, { state: { author_info } });
+  };
+
   return (
     <ThemeProvider>
       <CssBaseline /> 
@@ -87,6 +118,17 @@ function App() {
         SocialDistribution
       </Typography>
     </Box>
+
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <InputBase
+        placeholder="Search..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        sx={{ color: '#FFFFFF', marginRight: '8px' }}
+        />
+        <Button variant="contained" color="primary" onClick={handleSearch}>Search</Button>
+    </Box>
+
     {!isAuthPage && (
       <>
         <Tooltip title="Add Post">

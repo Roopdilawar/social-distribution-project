@@ -2,7 +2,7 @@ from django.urls import path
 from django.urls import re_path
 from . import views
 
-from .views import (LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PublicPostsView, DetailPostView, LikePostView, LikesView, CommentView, CommentDetailView, GetImageView, GetUserIDView, ListFollowersView, InboxView, UserBioView, UserProfilePictureView, FriendRequestView, AcceptFollowRequest, AuthorPostsView, LikedItemsView, LikeCommentView, ServerCredentialsView, AddCommentView)
+from .views import (LoginAPIView, RegisterView, AuthorsListView, AuthorDetailView, PublicPostsView, DetailPostView, LikePostView, LikesView, CommentView, CommentDetailView, GetImageView, GetUserIDView, ListFollowersView, InboxView, UserBioView, UserProfilePictureView, FriendRequestView, AcceptFollowRequest, AuthorPostsView, LikedItemsView, LikeCommentView, ServerCredentialsView, AddCommentView, SearchUsersView)
 
 urlpatterns = [
     path('api/login/', LoginAPIView.as_view(), name='api_login'),
@@ -28,6 +28,8 @@ urlpatterns = [
     path('api/user-profile-picture/', UserProfilePictureView.as_view(), name='get_profile_picture'),
     path('api/authors/<uuid:author_id>/acceptFollowRequest/', AcceptFollowRequest.as_view(), name='accept_follow_request'),
     path('api/server-credentials/', ServerCredentialsView.as_view(), name='server-credentials'),
+    path('search-users/', SearchUsersView.as_view(), name='search_users'),
+
 
     re_path('', views.index),  # This should be the last pattern
 ]
