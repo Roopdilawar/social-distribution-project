@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, IconButton, Box, InputBase, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Box, InputBase, Button, Modal } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -23,9 +23,11 @@ import axios from 'axios';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   const location = useLocation();
+  const [openModal, setOpenModal] = useState(false);
+  const [usersData, setUsersData] = useState([]);
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
 
   useEffect(() => {
@@ -74,12 +76,19 @@ function App() {
     })
     .then(response => {
         console.log(response);
-        const userID = response.data[0].id;
-        const author_info = response.data[0];
-        author_info.displayName = author_info.username;
-        console.log(author_info);
-        console.log(userID);
-        navigate(`/friend-profile/${userID}`, { state: { author_info } });
+        
+        response.data.forEach(author => {
+            const userID = author.id;
+            const author_info = author;
+            author_info.displayName = author_info.username;
+            console.log(author_info);
+            console.log(userID);
+        });
+
+        setUsersData(response.data);
+        setOpenModal(true);
+
+        // navigate(`/friend-profile/${userID}`, { state: { author_info } });
     })
     .catch(error => {
         alert("User not found! Please check the usrname again!");
@@ -87,6 +96,14 @@ function App() {
     });
 
     // then use navigate(`/friend-profile/${id}`, { state: { author_info } });
+  };
+
+  const handleClickingSearchedUser = (author) => {
+    const userID = author.id;
+    const author_info = author;
+    author_info.displayName = author_info.username;
+    navigate(`/friend-profile/${userID}`, { state: { author_info } });
+    setOpenModal(false);
   };
 
   return (
@@ -119,18 +136,48 @@ function App() {
       </Typography>
     </Box>
 
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <InputBase
-        placeholder="Search..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        sx={{ color: '#FFFFFF', marginRight: '8px' }}
-        />
-        <Button variant="contained" color="primary" onClick={handleSearch}>Search</Button>
-    </Box>
-
     {!isAuthPage && (
       <>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <InputBase
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ color: '#FFFFFF', marginRight: '8px' }}
+            />
+            <Button variant="contained" color="primary" onClick={handleSearch}>Search</Button>
+            <Modal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    bgcolor: 'background.paper',
+                    border: '2px solid #000',
+                    boxShadow: 24,
+                    p: 4,
+                }}>
+                    <h2 style = {{marginTop: '0px', textAlign: 'center'}}> Search Results</h2>
+                    {usersData.map(author => (
+                        <div key={author.id} style = {{backgroundColor: '#282828', margin: '8px', borderRadius: '10px', paddingRight: '10px'}} >
+                            {/* <p>User ID: {author.id}</p> */}
+                            <Button 
+                                onClick={() => handleClickingSearchedUser(author)
+                            }>
+                                <img src = {author.profile_picture}  style = {{ margin:'10px 20px 10px 0'}} />
+                                Username: {author.username} 
+                            </Button>
+                            {/* Add other user information as needed */}
+                        </div>
+                    ))}
+                </Box>
+            </Modal>
+        </Box>
         <Tooltip title="Add Post">
           <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
             <AddBoxIcon />
@@ -152,7 +199,7 @@ function App() {
             <ExitToAppIcon />
           </IconButton>
         </Tooltip>
-          </>
+      </>
         )}
       </Toolbar>
     </AppBar>
@@ -167,7 +214,7 @@ function App() {
           <Route path="signin" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
           <Route path="/" element={<TimelinePage />} />
-          <Route path="/posts/:postId/:authorId" element={<PostViewPage/>} />
+          <Route path="/posts/:postId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="friend-profile/:id" element={<UserProfileViewOnly />} />
           <Route path="inbox" element={<NotificationsPage />} />
