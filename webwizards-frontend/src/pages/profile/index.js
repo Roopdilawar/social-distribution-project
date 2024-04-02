@@ -19,7 +19,7 @@ import { useTheme } from '../../components/theme-context/index.js';
 import LightModeIcon from '@mui/icons-material/LightMode'; 
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { styled } from '@mui/system';
-
+import './styles.css';
 
 const ThemeSwitchButton = styled(IconButton)(({ theme }) => ({
     transition: theme.transitions.create('transform', {

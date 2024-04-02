@@ -63,7 +63,7 @@ function App() {
       <CssBaseline /> 
       <div className="App">
       <AppBar position="fixed" sx={{
-        backgroundColor: 'rgba(25, 118, 210, 0.9)',
+        backgroundColor: '#22685C',
         backdropFilter: 'blur(10px)',
         boxShadow: 'none',
         color: 'rgba(0, 0, 0, 0.7)',
