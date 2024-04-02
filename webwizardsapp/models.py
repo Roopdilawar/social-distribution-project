@@ -9,7 +9,7 @@ import uuid
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    profile_picture = models.TextField(blank=True, default='https://imgur.com/a/i9xknax')
+    profile_picture = models.TextField(blank=True, default='https://i.imgur.com/WxNkK7J.png')
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
     is_approved = models.BooleanField(default=False)

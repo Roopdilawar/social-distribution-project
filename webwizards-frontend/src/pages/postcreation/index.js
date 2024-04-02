@@ -10,7 +10,7 @@ function NewPost({ isOpen, handleClose }) {
     const [useMarkdown, setUseMarkdown] = useState(false);
     const [title, setTitle] = useState('');
     const [visibility, setVisibility] = useState('PUBLIC');
-    const [base64Image, setBase64Image] = useState('');
+    const [base64Image, setBase64Image] = useState(''); //find a way to compress images when hosting them before being converted to base64
     const [userId, setUserId] = useState(null);
 
     const handleInputChange = (event) => {

@@ -5,6 +5,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
+import SearchIcon from '@mui/icons-material/Search';
 import './App.css';
 import UserProfile from './pages/profile/index.js';
 import SignIn from './pages/signin/index.js';
@@ -28,7 +29,26 @@ function App() {
   const location = useLocation();
   const [openModal, setOpenModal] = useState(false);
   const [usersData, setUsersData] = useState([]);
+  const [serverCredentials, setServerCredentials] = useState([]);
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
+
+    const fetchServerCredentials = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+            setServerCredentials(response.data);
+        } catch (error) {
+            console.error("Error fetching server credentials:", error);
+        }
+    }; 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -65,35 +85,45 @@ function App() {
   const handleSearch = () => {
     // Handle search action
     console.log('Search query:', searchQuery);
+    fetchServerCredentials();
+    setUsersData([]);
 
-    const url = `http://localhost:8000/search-users/?username=${searchQuery}`;
-    console.log(url);
-    
-    axios.get(url, {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        console.log(response);
+    for (let [serverUrl, credentials] of Object.entries(serverCredentials)) {
         
-        response.data.forEach(author => {
-            const userID = author.id;
-            const author_info = author;
-            author_info.displayName = author_info.username;
-            console.log(author_info);
-            console.log(userID);
+        console.log(serverUrl);
+        console.log(credentials);
+
+        const url = serverUrl + `/search-users/?username=${searchQuery}`;
+        console.log(url);
+        
+        axios.get(url, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log(response);
+            
+            response.data.forEach(author => {
+                const userID = author.id;
+                const author_info = author;
+                author_info.displayName = author_info.username;
+                author_info.profileImage = author_info.profile_picture;
+
+                console.log(author_info);
+                console.log(userID);
+            });
+            
+            setUsersData(prevUsers => [...prevUsers, ...response.data]);
+            setOpenModal(true);
+
+            // navigate(`/friend-profile/${userID}`, { state: { author_info } });
+        })
+        .catch(error => {
+            alert("User not found! Please check the usrname again!");
+            console.log("Error occurred: ", error);
         });
-
-        setUsersData(response.data);
-        setOpenModal(true);
-
-        // navigate(`/friend-profile/${userID}`, { state: { author_info } });
-    })
-    .catch(error => {
-        alert("User not found! Please check the usrname again!");
-        console.log("Error occurred: ", error);
-    });
+    }
 
     // then use navigate(`/friend-profile/${id}`, { state: { author_info } });
   };
@@ -102,7 +132,8 @@ function App() {
     const userID = author.id;
     const author_info = author;
     author_info.displayName = author_info.username;
-    navigate(`/friend-profile/${userID}`, { state: { author_info } });
+    author_info.profileImage = author_info.profile_picture;
+    navigate(`/user-profile/${userID}`, { state: { author_info } });
     setOpenModal(false);
   };
 
@@ -135,49 +166,69 @@ function App() {
         SocialDistribution
       </Typography>
     </Box>
-
+    {/* style={{maxHeight: '500px', overflowY: 'auto'}} */}
     {!isAuthPage && (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <InputBase
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ color: '#FFFFFF', marginRight: '8px' }}
-            />
-            <Button variant="contained" color="primary" onClick={handleSearch}>Search</Button>
-            <Modal
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    bgcolor: 'background.paper',
-                    border: '2px solid #000',
-                    boxShadow: 24,
-                    p: 4,
-                }}>
-                    <h2 style = {{marginTop: '0px', textAlign: 'center'}}> Search Results</h2>
-                    {usersData.map(author => (
-                        <div key={author.id} style = {{backgroundColor: '#282828', margin: '8px', borderRadius: '10px', paddingRight: '10px'}} >
-                            {/* <p>User ID: {author.id}</p> */}
-                            <Button 
-                                onClick={() => handleClickingSearchedUser(author)
-                            }>
-                                <img src = {author.profile_picture}  style = {{ margin:'10px 20px 10px 0'}} />
-                                Username: {author.username} 
-                            </Button>
-                            {/* Add other user information as needed */}
-                        </div>
-                    ))}
-                </Box>
-            </Modal>
+            <IconButton style= {{margin: '0px'}} variant="text" color="inherit" onClick={handleSearch}><SearchIcon/></IconButton>
         </Box>
+        <Modal
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+        >   
+            <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                bgcolor: 'background.paper',
+                border: '2px solid #000',
+                boxShadow: 24,
+                p: 4,
+                width: '40%', 
+                '@media (max-width: 600px)': {
+                    width: '80%', // Adjust width for smaller screens
+                },
+            }}>
+                
+                <h2 style = {{marginTop: '0px', textAlign: 'center'}}> Search Box</h2>
+                <span style = {{display: 'flex', justifyContent: 'space-around', }} >
+                    <InputBase
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    sx={{
+                        color: '#FFFFFF',
+                        marginRight: '8px',
+                        marginBottom: '16px',
+                        border: '1px solid #CCCCCC', // Adding a border
+                        padding: '8px', // Adding padding
+                        borderRadius: '4px', // Optionally add border-radius for rounded corners
+                        width: '80%'
+                    }}
+                    />
+                    <IconButton style ={{paddingBottom: '20px'}} variant="contained" color="primary" onClick={handleSearch}><SearchIcon/></IconButton>
+                </span>
+                
+                <div style={{maxHeight: '500px', overflowY: 'auto'}}>
+                {usersData.map(author => (
+                    <div key={author.id} style = {{backgroundColor: '#282828', margin: '8px', borderRadius: '10px', paddingRight: ' 0 10px'}} >
+                        {/* <p>User ID: {author.id}</p> */}
+                        <Button 
+
+                            onClick={() => handleClickingSearchedUser(author)
+                        }>  
+                            <img src = {author.profileImage}  style = {{ margin:'10px 20px 10px 0', width: '40px', height: '40px', borderRadius: '30px'}} />
+                            {author.username} 
+                        </Button>
+                        {/* Add other user information as needed */}
+                    </div>
+                ))}
+                </div>
+            </Box>
+        </Modal>
         <Tooltip title="Add Post">
           <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
             <AddBoxIcon />
@@ -216,7 +267,7 @@ function App() {
           <Route path="/" element={<TimelinePage />} />
           <Route path="/posts/:postId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
-          <Route path="friend-profile/:id" element={<UserProfileViewOnly />} />
+          <Route path="user-profile/:id" element={<UserProfileViewOnly />} />
           <Route path="inbox" element={<NotificationsPage />} />
         </Routes>
         </CSSTransition>
