@@ -219,24 +219,8 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         }
     };
 
-    // const checkNextCommentPage = async () => {
-    //     const endpointUrl = post.id.split('/authors')[0];
-    //     const postId = post.id.split('/').pop();
-    //     const token = localStorage.getItem('token');
-    //     const nextPageNumber = paginationNumber + 1;
-
-    //     try {
-    //         const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1][0]}/posts/${postId}/comments?page=${nextPageNumber}`);
-            
-    //         setAnotherPageAvailble(true);
-    //     } catch (error) {
-    //         setAnotherPageAvailble(false);
-    //     }
-    // };
-
     useEffect(() => {
         fetchComments();
-        // checkNextCommentPage();
     }, [paginationNumber])
 
     const handleCommentSubmit = async (event) => {
@@ -267,7 +251,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 }
             });
             fetchComments();
-            // checkNextCommentPage();
             setNewCommentInput("");
         } catch (error) {
             console.error("Error submitting post: ", error);

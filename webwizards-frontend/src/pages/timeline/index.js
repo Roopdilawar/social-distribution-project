@@ -53,12 +53,58 @@ const TimelinePage = () => {
         fetchServerCredentials();
     }, []);
 
+    const fetchFirstPage = async () => {
+        let tempPosts = [];
+
+        if (isFollowingView) {
+            try {
+                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=1&size=5`, {
+                    headers: {
+                        'Authorization': `Token ${localStorage.getItem('token')}`
+                    }
+                });
+                const filteredPosts = response.data.items.filter(item => item.type === 'post');
+                const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                for (let sortedPost of orderedPosts) {
+                    tempPosts.push(sortedPost)
+                }
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+            }
+        }
+
+        else {
+            for (let [url, credentials] of Object.entries(serverCredentials)) {
+                let tempEndpoint = url + `/api/posts/${url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? 'public/' : ''}?page=1&size=5`;                
+                
+                try {
+                    const response = await axios.get(tempEndpoint, {
+                        auth: {
+                            username: credentials.outgoing_username,
+                            password: credentials.outgoing_password
+                        }
+                    });
+                    const filteredPosts = response.data.items
+                    const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                    for (let sortedPost of orderedPosts) {
+                        tempPosts.push(sortedPost)
+                    }
+                } catch (error) {
+                    console.error(`Error fetching posts from ${url}:`, error);
+                }                
+            }
+        }
+        setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+    }
+
     const fetchPosts = async () => {
         let tempPosts = [];
+        let tempOverflowPosts = [];
 
         if (isFollowingView) {
             let tempPaginationNumber = 1;
             let morePages = true;
+
             try {
                 while (morePages) {
                     const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${tempPaginationNumber}`, {
@@ -116,7 +162,7 @@ const TimelinePage = () => {
     useEffect(() => {
         if (!userId) return;
         fetchServerCredentials();
-
+        fetchFirstPage();
         fetchPosts();
     }, [isFollowingView, userId]);
 
