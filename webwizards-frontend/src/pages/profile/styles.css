@@ -1,45 +1,6 @@
-/* Base and Background Colors */
-body, .MuiContainer-root {
-    background-color: #fafafa; /* Updated lighter gray */
-    color: #37474f; /* Updated darker gray for text */
-  }
-  
-  /* Primary Color - Updated Shade of Blue */
-  .MuiTypography-h5, .MuiButton-containedPrimary {
-    color: #5c6bc0; /* A deeper, more elegant blue */
-  }
-  
-  /* Accent Colors */
-  .MuiButton-containedSecondary {
-    background-color: #ff8a65; /* Warmer coral */
-  }
-  
-  .MuiIconButton-root, .MuiListItem-button:hover {
-    color: #6b8e23; /* Deeper olive green */
-  }
-  
-  /* Text Fields and Borders */
-  .MuiTextField-root .MuiOutlinedInput-root {
-    border-color: #5c6bc0; /* Matching the deeper blue */
-  }
-  
-  /* Hover Effects for Buttons and Icons */
-  .MuiButtonBase-root:hover, .MuiPaper-elevation:hover {
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16); /* Slightly more pronounced shadow */
-  }
-  
-  /* Icons and Text */
-  .MuiSvgIcon-root {
-    color: #37474f; /* Matching the text color for consistency */
-  }
-  
-  /* Link and Button Colors for Better Visibility */
-  a, .MuiButton-textPrimary {
-    color: #42a5f5; /* Brighter blue for links and text buttons */
-  }
-  
-  /* Additional Styles for Specific UI Elements */
-  .MuiAppBar-colorPrimary {
-    background-color: #546e7a; /* A darker shade for app bar for better contrast with text */
-  }
-  
+.timeline-page {
+    font-family: 'Arial', sans-serif;
+    max-width: 85%;
+    margin: auto;
+    color: #333;
+}
