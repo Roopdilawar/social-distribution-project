@@ -8,13 +8,18 @@ import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import './styles.css';
+import { styled } from '@mui/system';
+import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
+import { useTheme } from '../../components/theme-context/index.js';
+import LightModeIcon from '@mui/icons-material/LightMode'; 
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { useNavigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 
 // Define a theme for styling
 const theme = createTheme({
@@ -50,23 +55,12 @@ const theme = createTheme({
 	},
   });
   
-function Copyright(props) {
-	return (
-	  <Typography variant="body2" color="text.secondary" align="center" {...props}>
-		{'Copyright © '}
-		<Link color="inherit" href="https://github.com/uofa-cmput404">
-		  WebWizards
-		</Link>{' '}
-		{new Date().getFullYear()}
-		{'.'}
-	  </Typography>
-	);
-  }
 
 
 export default function SignIn() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { themeMode, toggleTheme } = useTheme();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -95,45 +89,48 @@ export default function SignIn() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{
-        position: 'fixed', // or 'absolute', depending on your needs
+        position: 'fixed',
         top: 0,
         left: 0,
         width: '100vw',
         height: '100vh',
         display: 'flex',
+        backgroundColor: 'white',
+        flexDirection: 'column', // Adjust this to column to stack children vertically
         justifyContent: 'center',
         alignItems: 'center',
-        overflow: 'hidden',
-        zIndex: 1, // Ensure it's above other content, adjust as needed
+        overflow: 'hidden', 
+        zIndex: 1,
       }}>
-        <video autoPlay loop muted style={{
+        <video autoPlay loop muted preload="auto" style={{
           position: 'absolute',
           width: '100%',
-          left: '50%',
-          top: '50%',
           height: '100%',
           objectFit: 'cover',
           transform: 'translate(-50%, -50%)',
+          left: '50%',
+          top: '50%',
           zIndex: -1,
         }}>
           <source src={`${process.env.PUBLIC_URL}/loginhd.mp4`} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+
+        
         <Paper elevation={10} sx={{
-              p: 4,
-
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent background
-              backdropFilter: 'blur(30px)', 
-
-              minWidth: 300, // Ensure the form has a minimum width
-              maxWidth: 450, 
-            }}>
+          p: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          borderRadius: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(30px)',
+          minWidth: 300,
+          maxWidth: 450,
+          zIndex: 2, // Ensure it's above the video
+        }}>
               <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
-                <LockOutlinedIcon />
+                <LockOutlinedIcon sx={{ color: 'white' }} />
               </Avatar>
               <Typography component="h1" variant="h5" sx={{ textAlign: 'center', my: 2, color: 'primary.main' }}>
                 Have an account?
@@ -191,18 +188,24 @@ export default function SignIn() {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
+                    sx={{ mt: 3, mb: 2,  color: 'white' }}
                   >
                     Get Started
                   </Button>
                 </Stack>
               </Box>
+
             </Paper>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2, mb: 4, zIndex: 2, width: '100%' }}>
+              {'Copyright © '}
+              <Link color="inherit" href="https://github.com/uofa-cmput404">
+                WebWizards
+              </Link>{' '}
+              {new Date().getFullYear()}
+              {'.'}
+            </Typography>
             </Box>
-        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 'auto', width: '100%', pt: 4 }}>
-		<Copyright sx={{ mt: 8, mb: 4 }} />
-        </Typography>
-                  
     </ThemeProvider>
+    
   );
 }
