@@ -183,7 +183,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         setExpanded(!expanded);
         setNewCommentVisible(true);
         fetchComments();
-        // checkNextCommentPage();
     }
 
     const fetchComments = async () => {
@@ -192,28 +191,31 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const token = localStorage.getItem('token');
         try {
             const serverAuth = serverCredentials[post.author.host];
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?page=${paginationNumber}`, {
-                auth: {
-                    username: serverAuth.outgoing_username,
-                    password: serverAuth.outgoing_password
+
+            if (serverAuth) {
+                const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?page=${paginationNumber}`, {
+                    auth: {
+                        username: serverAuth.outgoing_username,
+                        password: serverAuth.outgoing_password
+                    }
+                });
+                if (response.data.next != null) {
+                    setAnotherPageAvailble(true);
                 }
-            });
-            if (response.data.next != null) {
-                setAnotherPageAvailble(true);
+                else {
+                    setAnotherPageAvailble(false);
+                }
+    
+                if (response.data.prev != null) {
+                    setPrevPageAvailble(true);
+                }
+    
+                else {
+                    setPrevPageAvailble(false);
+                }
+                const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
+                setComments(orderedComments);
             }
-            else {
-                setAnotherPageAvailble(false);
-            }
-
-            if (response.data.prev != null) {
-                setPrevPageAvailble(true);
-            }
-
-            else {
-                setPrevPageAvailble(false);
-            }
-            const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
-            setComments(orderedComments);
         } catch (error) {
             console.error("Errror fetching comments: ", error);
         }
