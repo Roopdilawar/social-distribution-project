@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, IconButton, Box, InputBase, Button, Modal } from '@mui/material';
+import { TextField, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -93,36 +94,35 @@ function App() {
         console.log(serverUrl);
         console.log(credentials);
 
-        const url = serverUrl + `/search-users/?username=${searchQuery}`;
-        console.log(url);
-        
-        axios.get(url, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            console.log(response);
-            
-            response.data.forEach(author => {
-                const userID = author.id;
-                const author_info = author;
-                author_info.displayName = author_info.username;
-                author_info.profileImage = author_info.profile_picture;
+        if (serverUrl === "http://localhost:8000")   {
+          const url = serverUrl + `/search-users/?username=${searchQuery}`;
+          console.log(url);
+          
+          axios.get(url, {
+              headers: {
+                  'Content-Type': 'application/json'
+              }
+          })
+          .then(response => {
+              console.log(response);
+              
+              response.data.forEach(author => {
+                  const userID = author.id;
+                  const author_info = author;
+                  console.log(author_info);
+                  console.log(userID);
+              });
+              
+              setUsersData(prevUsers => [...prevUsers, ...response.data]);
+              setOpenModal(true);
 
-                console.log(author_info);
-                console.log(userID);
-            });
-            
-            setUsersData(prevUsers => [...prevUsers, ...response.data]);
-            setOpenModal(true);
-
-            // navigate(`/friend-profile/${userID}`, { state: { author_info } });
-        })
-        .catch(error => {
-            alert("User not found! Please check the usrname again!");
-            console.log("Error occurred: ", error);
-        });
+              // navigate(`/friend-profile/${userID}`, { state: { author_info } });
+          })
+          .catch(error => {
+              alert("User not found! Please check the usrname again!");
+              console.log("Error occurred: ", error);
+          });
+        }
     }
 
     // then use navigate(`/friend-profile/${id}`, { state: { author_info } });
@@ -162,69 +162,79 @@ function App() {
         SocialDistribution
       </Typography>
     </Box>
-    {/* style={{maxHeight: '500px', overflowY: 'auto'}} */}
     {!isAuthPage && (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton style= {{margin: '0px'}} variant="text" color="inherit" onClick={handleSearch}><SearchIcon/></IconButton>
         </Box>
         <Modal
-            open={openModal}
-            onClose={() => setOpenModal(false)}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
         >   
-            <Box sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                bgcolor: 'background.paper',
-                border: '2px solid #000',
-                boxShadow: 24,
-                p: 4,
-                width: '40%', 
-                '@media (max-width: 600px)': {
-                    width: '80%', // Adjust width for smaller screens
-                },
-            }}>
-                
-                <h2 style = {{marginTop: '0px', textAlign: 'center'}}> Search Box</h2>
-                <span style = {{display: 'flex', justifyContent: 'space-around', }} >
-                    <InputBase
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    sx={{
-                        color: '#FFFFFF',
-                        marginRight: '8px',
-                        marginBottom: '16px',
-                        border: '1px solid #CCCCCC', // Adding a border
-                        padding: '8px', // Adding padding
-                        borderRadius: '4px', // Optionally add border-radius for rounded corners
-                        width: '80%'
-                    }}
-                    />
-                    <IconButton style ={{paddingBottom: '20px'}} variant="contained" color="primary" onClick={handleSearch}><SearchIcon/></IconButton>
-                </span>
-                
-                <div style={{maxHeight: '500px', overflowY: 'auto'}}>
-                {usersData.map(author => (
-                    <div key={author.id} style = {{backgroundColor: '#282828', margin: '8px', borderRadius: '10px', paddingRight: ' 0 10px'}} >
-                        {/* <p>User ID: {author.id}</p> */}
-                        <Button 
-
-                            onClick={() => handleClickingSearchedUser(author)
-                        }>  
-                            <img src = {author.profileImage}  style = {{ margin:'10px 20px 10px 0', width: '40px', height: '40px', borderRadius: '30px'}} />
-                            {author.username} 
-                        </Button>
-                        {/* Add other user information as needed */}
-                    </div>
-                ))}
-                </div>
-            </Box>
-        </Modal>
+          <Box
+              sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: { xs: '80%', md: '50%' },
+                  bgcolor: 'background.paper',
+                  border: '2px solid #000',
+                  boxShadow: 24,
+                  p: 4,
+                  overflowY: 'auto',
+                  maxHeight: '80%',
+              }}
+          >
+              <Typography id="modal-modal-title" variant="h6" component="h2" textAlign="center" marginBottom={2}>
+                  Search for Users
+              </Typography>
+              
+              <Box
+                  sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 2,
+                  }}
+              >
+                  <TextField
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      sx={{ mr: 1, flex: 1 }}
+                  />
+                  <IconButton color="primary" onClick={handleSearch}><SearchIcon /></IconButton>
+              </Box>
+              
+              <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                  {usersData.length > 0 ? usersData.map((author) => (
+                      <ListItem 
+                          alignItems="flex-start" 
+                          key={author.id} 
+                          onClick={() => handleClickingSearchedUser(author)}
+                          sx={{ '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', borderRadius: '4px', mb: 1 }}
+                      >
+                          <ListItemAvatar>
+                              <Avatar src={author.profile_picture} alt={author.username}/>
+                          </ListItemAvatar>
+                          <ListItemText
+                              primary={author.username}
+                              secondary="Local"
+                          />
+                      </ListItem>
+                  )) : (
+                      <Typography textAlign="center" color="text.secondary">
+                          No users found
+                      </Typography>
+                  )}
+              </List>
+          </Box>
+      </Modal>
         <Tooltip title="Add Post">
           <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
             <AddBoxIcon />
