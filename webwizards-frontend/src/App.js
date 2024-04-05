@@ -50,9 +50,6 @@ function App() {
       }
   }; 
   
-  const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
-
-
   useEffect(() => {
     const token = localStorage.getItem('token');
     
