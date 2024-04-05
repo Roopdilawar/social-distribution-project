@@ -24,7 +24,9 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,7 +37,7 @@ function App() {
     if (location.pathname === '/signin' && token) {
       navigate('/');
     }
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, isAuthPage]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -62,13 +64,9 @@ function App() {
     <ThemeProvider>
       <CssBaseline /> 
       <div className="App">
-      <AppBar position="fixed" sx={{
-        backgroundColor: 'rgba(25, 118, 210, 0.9)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: 'none',
-        color: 'rgba(0, 0, 0, 0.7)',
-      }}>
-  <Toolbar>
+      {!isAuthPage && (
+          <AppBar position="fixed" sx={{ backgroundColor: '#22685C', backdropFilter: 'blur(10px)', boxShadow: 'none', color: 'rgba(0, 0, 0, 0.7)' }}>
+            <Toolbar>
     <Box
       sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }}
       onClick={handleLogoClick}
@@ -112,8 +110,10 @@ function App() {
         </Tooltip>
           </>
         )}
-      </Toolbar>
-    </AppBar>
+     
+     </Toolbar>
+          </AppBar>
+        )}
   
     <TransitionGroup>
       <CSSTransition
@@ -125,7 +125,7 @@ function App() {
           <Route path="signin" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
           <Route path="/" element={<TimelinePage />} />
-          <Route path="/posts/:postId/:authorId" element={<PostViewPage/>} />
+          <Route path="/posts/:postId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="friend-profile/:id" element={<UserProfileViewOnly />} />
           <Route path="inbox" element={<NotificationsPage />} />
