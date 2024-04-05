@@ -147,6 +147,41 @@ export function UserProfile() {
         }
     };
 
+    const fetchPosts = async () => {
+        try {                
+            let allPosts = [];                
+            const postsResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/?all=true`, {
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`
+                }
+            });
+
+            const filteredPosts = postsResponse.data.items.filter(item => item.type === 'post');
+            const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+            for (let sortedPost of orderedPosts) {
+                allPosts.push(sortedPost)
+            }
+
+            const userPosts = allPosts.filter(post => {
+                const authorId = post.author.id.split('/').pop();
+                const userIdString = userId ? userId.toString() : ''; 
+                
+                return authorId === userIdString; 
+            });
+
+            if (userPosts.length === 0) {
+                console.log('No posts found for this user.');
+                setPosts([]); 
+            } else {
+                const orderedPosts = userPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                setPosts(orderedPosts);
+            }
+            
+        } catch (error) {
+            console.error("Error fetching posts: ", error);
+        }
+    };
+
     useEffect(() => {
         if (userId) {
           fetchFollowers();
@@ -154,55 +189,8 @@ export function UserProfile() {
       }, [userId]);
 
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/?all=true`);
-                
-                let morePages = true;
-                let allPosts = [];
-                let tempPaginationNumber = 1;
-                    
-                while (morePages) {
-                    const postsResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/?page=${tempPaginationNumber}`, {
-                        headers: {
-                            'Authorization': `Token ${localStorage.getItem('token')}`
-                        }
-                    });
-
-                    const filteredPosts = postsResponse.data.items.filter(item => item.type === 'post');
-                    const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    for (let sortedPost of orderedPosts) {
-                        allPosts.push(sortedPost)
-                    }
-                    if (postsResponse.data.next == null) {
-                        console.log("YIPEE)")
-                        morePages = false;
-                    }
-                    tempPaginationNumber++;
-                }
-                // const allPosts = response.data.items;
-    
-                const userPosts = allPosts.filter(post => {
-                    const authorId = post.author.id.split('/').pop();
-                    const userIdString = userId ? userId.toString() : ''; 
-                    
-                    return authorId === userIdString; 
-                });
-    
-                if (userPosts.length === 0) {
-                    console.log('No posts found for this user.');
-                    setPosts([]); 
-                } else {
-                    const orderedPosts = userPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
-                    setPosts(orderedPosts);
-                }
-                
-            } catch (error) {
-                console.error("Error fetching posts: ", error);
-            }
-        };
-
         fetchPosts();
+
         const intervalId = setInterval(fetchPosts, 1000);
         return () => clearInterval(intervalId);
     }, [userId]);     

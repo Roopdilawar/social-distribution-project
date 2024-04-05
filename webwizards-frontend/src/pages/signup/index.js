@@ -2,28 +2,56 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
+import './styles.css';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
+import { useTheme } from '../../components/theme-context/index.js';
+import LightModeIcon from '@mui/icons-material/LightMode'; 
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { styled } from '@mui/system';
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://github.com/uofa-cmput404">
-        WebWizards
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+
+
+const theme = createTheme({
+	palette: {
+	  primary: {
+		main: '#22685C', // Metallic Purple
+		contrastText: '#000000', // Ensuring text on primary color is white
+	  },
+	  secondary: {
+		main: '#2F3020', // Deep Green
+	  },
+	  info: {
+		main: '#465048', // Faded Green
+	  },
+	  background: {
+		default: '#465048', // Deep Green background
+	  },
+	  text: {
+		primary: '#465048',
+		secondary: '#000000', // Faded Green for less prominent text
+		}},	
+	shape: {
+	  borderRadius: 8, // Rounded corners for elements
+	},
+	components: {
+	  MuiButton: {
+		styleOverrides: {
+		  root: {
+			borderRadius: 20, // More rounded corners for buttons
+		  },
+		},
+	  },
+	},
+  });
 
 
 export default function SignUp() {
@@ -58,21 +86,52 @@ export default function SignUp() {
       };
 
   return (
-      <Box sx={{ pt: 9 }}>
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
+    <ThemeProvider theme={theme}>
+    <CssBaseline />
+      <Box sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'white',
+        display: 'flex',
+        flexDirection: 'column', // Adjust this to column to stack children vertically
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflowY: 'auto', // Allow vertical scrolling
+        zIndex: 1,
+      }}>
+        <video autoPlay loop muted style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          transform: 'translate(-50%, -50%)',
+          left: '50%',
+          top: '50%',
+          zIndex: -1,
+        }}>
+          <source src={`${process.env.PUBLIC_URL}/loginhd.mp4`} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        <Paper elevation={10} sx={{
+          p: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          borderRadius: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(30px)',
+          minWidth: 300,
+          maxWidth: 450,
+          zIndex: 2, // Ensure it's above the video
+        }}>
+          <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+          <LockOutlinedIcon sx={{ color: 'white' }} />
           </Avatar>
-          <Typography component="h1" variant="h5">
+          <Typography component="h1" variant="h5" sx={{ textAlign: 'center', my: 2, color: 'primary.main' }}>
             Sign up
           </Typography>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -145,7 +204,7 @@ export default function SignUp() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 3, mb: 2,  color: 'white' }}
             >
               Sign Up
             </Button>
@@ -157,9 +216,18 @@ export default function SignUp() {
               </Grid>
             </Grid>
           </Box>
-        </Box>
-        <Copyright sx={{ mt: 5 }} />
-      </Container>
-      </Box>
+          </Paper>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2, mb: 4, zIndex: 2, width: '100%' }}>
+              {'Copyright © '}
+              <Link color="inherit" href="https://github.com/uofa-cmput404">
+                WebWizards
+              </Link>{' '}
+              {new Date().getFullYear()}
+              {'.'}
+            </Typography>
+
+          </Box>
+
+      </ThemeProvider>
   );
 }

@@ -32,23 +32,26 @@ function App() {
   const [serverCredentials, setServerCredentials] = useState([]);
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
 
-    const fetchServerCredentials = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.log('No token found');
-            return;
-        }
-        try {
-            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
-                headers: {
-                    'Authorization': `Token ${token}`
-                }
-            });
-            setServerCredentials(response.data);
-        } catch (error) {
-            console.error("Error fetching server credentials:", error);
-        }
-    }; 
+  const fetchServerCredentials = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+          console.log('No token found');
+          return;
+      }
+      try {
+          const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+              headers: {
+                  'Authorization': `Token ${token}`
+              }
+          });
+          setServerCredentials(response.data);
+      } catch (error) {
+          console.error("Error fetching server credentials:", error);
+      }
+  }; 
+  
+  const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -59,7 +62,7 @@ function App() {
     if (location.pathname === '/signin' && token) {
       navigate('/');
     }
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, isAuthPage]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -141,13 +144,9 @@ function App() {
     <ThemeProvider>
       <CssBaseline /> 
       <div className="App">
-      <AppBar position="fixed" sx={{
-        backgroundColor: 'rgba(25, 118, 210, 0.9)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: 'none',
-        color: 'rgba(0, 0, 0, 0.7)',
-      }}>
-  <Toolbar>
+      {!isAuthPage && (
+          <AppBar position="fixed" sx={{ backgroundColor: '#22685C', backdropFilter: 'blur(10px)', boxShadow: 'none', color: 'rgba(0, 0, 0, 0.7)' }}>
+            <Toolbar>
     <Box
       sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }}
       onClick={handleLogoClick}
@@ -252,8 +251,10 @@ function App() {
         </Tooltip>
       </>
         )}
-      </Toolbar>
-    </AppBar>
+     
+     </Toolbar>
+          </AppBar>
+        )}
   
     <TransitionGroup>
       <CSSTransition

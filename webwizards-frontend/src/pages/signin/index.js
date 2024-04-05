@@ -1,146 +1,211 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Avatar from '@mui/material/Avatar'
-import Button from '@mui/material/Button'
-import CssBaseline from '@mui/material/CssBaseline'
-import TextField from '@mui/material/TextField'
-import Link from '@mui/material/Link'
-import Grid from '@mui/material/Grid'
-import Box from '@mui/material/Box'
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
-import Typography from '@mui/material/Typography'
-import Container from '@mui/material/Container'
-import { useNavigate} from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import Link from '@mui/material/Link';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import './styles.css';
+import { styled } from '@mui/system';
+import IconButton from '@mui/material/IconButton';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '../../components/theme-context/index.js';
+import LightModeIcon from '@mui/icons-material/LightMode'; 
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { useNavigate } from 'react-router-dom';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 
-function Copyright(props) {
-	return (
-		<Typography
-			variant="body2"
-			color="text.secondary"
-			align="center"
-			{...props}
-		>
-			{'Copyright © '}
-			<Link color="inherit" href="https://github.com/uofa-cmput404">
-				WebWizards
-			</Link>{' '}
-			{new Date().getFullYear()}
-			{'.'}
-		</Typography>
-	)
-}
+// Define a theme for styling
+const theme = createTheme({
+	palette: {
+	  primary: {
+		main: '#22685C', // Metallic Purple
+		contrastText: '#000000', // Ensuring text on primary color is white
+	  },
+	  secondary: {
+		main: '#2F3020', // Deep Green
+	  },
+	  info: {
+		main: '#465048', // Faded Green
+	  },
+	  background: {
+		default: '#465048', // Deep Green background
+	  },
+	  text: {
+		primary: '#465048',
+		secondary: '#000000', // Faded Green for less prominent text
+		}},	
+	shape: {
+	  borderRadius: 8, // Rounded corners for elements
+	},
+	components: {
+	  MuiButton: {
+		styleOverrides: {
+		  root: {
+			borderRadius: 20, // More rounded corners for buttons
+		  },
+		},
+	  },
+	},
+  });
+  
 
 
 export default function SignIn() {
-	const [error, setError] = useState(''); 
-	const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { themeMode, toggleTheme } = useTheme();
 
-	const handleSubmit = async (event) => {
-        event.preventDefault();
-		setError(''); 
-        const data = new FormData(event.currentTarget);
-        
-        try {
-            const response = await axios.post('http://localhost:8000/api/login/', {
-                username: data.get('username'),
-                password: data.get('password')
-            });
-            console.log(response.data);
-			localStorage.setItem('token', response.data.token);
-			navigate('/');
-        } catch (error) {
-            if (error.response && error.response.data && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                console.error('Login error', error);
-                setError('An error occurred during login.');
-            }
-        }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    const data = new FormData(event.currentTarget);
+
+    try {
+      const response = await axios.post('http://localhost:8000/api/login/', {
+        username: data.get('username'),
+        password: data.get('password'),
+      });
+      console.log(response.data);
+      localStorage.setItem('token', response.data.token);
+      navigate('/');
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.error) {
+        setError(error.response.data.error);
+      } else {
+        console.error('Login error', error);
+        setError('An error occurred during login.');
+      }
     }
+  };
 
-	return (
-			<Box sx={{ pt: 9 }}>
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        backgroundColor: 'white',
+        flexDirection: 'column', // Adjust this to column to stack children vertically
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden', 
+        zIndex: 1,
+      }}>
+        <video autoPlay loop muted preload="auto" style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          transform: 'translate(-50%, -50%)',
+          left: '50%',
+          top: '50%',
+          zIndex: -1,
+        }}>
+          <source src={`${process.env.PUBLIC_URL}/loginhd.mp4`} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
 
-			<div style={{ textAlign: 'right', marginRight : '20px'}}>
-				<a 
-				style={{color: '#90CAF9'}}
-				href="http://localhost:8000/admin/" target="_blank" rel="noopener noreferrer">
-					Admin Login
-				</a>
-			</div>
+        
+        <Paper elevation={10} sx={{
+          p: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          borderRadius: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(30px)',
+          minWidth: 300,
+          maxWidth: 450,
+          zIndex: 2, // Ensure it's above the video
+        }}>
+              <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+                <LockOutlinedIcon sx={{ color: 'white' }} />
+              </Avatar>
+              <Typography component="h1" variant="h5" sx={{ textAlign: 'center', my: 2, color: 'primary.main' }}>
+                Have an account?
+              </Typography>
+              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="username"
+                  label="Username"
+                  name="username"
+                  autoComplete="username"
+                  autoFocus
+                  variant="outlined"
+                  InputLabelProps={{
+                    style: { color: theme.palette.text.secondary },
+                  }}
+                  InputProps={{
+                    style: {
+                      borderColor: theme.palette.info.main,
+                      color: theme.palette.text.primary,
+                    },
+                  }}
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="current-password"
+                  variant="outlined"
+                  InputLabelProps={{
+                    style: { color: theme.palette.text.secondary },
+                  }}
+                  InputProps={{
+                    style: {
+                      borderColor: theme.palette.info.main,
+                      color: theme.palette.text.primary,
+                    },
+                  }}
+                />
+                {error && <Typography color="error">{error}</Typography>}
+                <Stack direction="column" justifyContent="space-between" spacing={2} sx={{ width: '100%' }}>
+                  <Link href="#" variant="body2" sx={{ alignSelf: 'center', color: 'info.main' }}>
+                    Forgot password?
+                  </Link>
+                  <Link href="signup" variant="body2" sx={{ alignSelf: 'center', color: 'info.main' }}>
+                    Don't have an account? Sign Up
+                  </Link>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    sx={{ mt: 3, mb: 2,  color: 'white' }}
+                  >
+                    Get Started
+                  </Button>
+                </Stack>
+              </Box>
 
-			<Container component="main" maxWidth="xs">
-
-				<CssBaseline />
-
-				<Box
-					sx={{
-						marginTop: 8,
-						display: 'flex',
-						flexDirection: 'column',
-						alignItems: 'center'
-					}}
-				>
-					<Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-						<LockOutlinedIcon />
-					</Avatar>
-					<Typography component="h1" variant="h5">
-						Sign in
-					</Typography>
-					<Box
-						component="form"
-						onSubmit={handleSubmit}
-						noValidate
-						sx={{ mt: 1 }}
-					>
-						<TextField
-							margin="normal"
-							required
-							fullWidth
-							id="username"
-							label="Username"
-							name="username"
-							autoComplete="username"
-							autoFocus
-						/>
-						<TextField
-							margin="normal"
-							required
-							fullWidth
-							name="password"
-							label="Password"
-							type="password"
-							id="password"
-							autoComplete="current-password"
-						/>
-                		{error && <Typography color="error">{error}</Typography>}
-						<Button
-							type="submit"
-							fullWidth
-							variant="contained"
-							sx={{ mt: 3, mb: 2 }}
-						>
-							Sign In
-						</Button>
-						<Grid container>
-							<Grid item xs>
-								<Link href="#" variant="body2">
-									Forgot password?
-								</Link>
-							</Grid>
-							<Grid item>
-								<Link href="signup" variant="body2">
-									{"Don't have an account? Sign Up"}
-								</Link>
-							</Grid>
-						</Grid>
-					</Box>
-				</Box>
-
-				<Copyright sx={{ mt: 8, mb: 4 }} />
-			</Container>
-
-			</Box>
-	)
+            </Paper>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2, mb: 4, zIndex: 2, width: '100%' }}>
+              {'Copyright © '}
+              <Link color="inherit" href="https://github.com/uofa-cmput404">
+                WebWizards
+              </Link>{' '}
+              {new Date().getFullYear()}
+              {'.'}
+            </Typography>
+            </Box>
+    </ThemeProvider>
+    
+  );
 }

@@ -68,8 +68,7 @@ export function UserProfileViewOnly() {
                 console.log('No token found');
                 return;
             }
-            const headers = { 'Authorization': `Token ${token}` };
-
+            
             try {
                 if (userId != null) {
                     setCurrentProfilePic(author_info.profileImage);
@@ -81,11 +80,6 @@ export function UserProfileViewOnly() {
                     let tempPosts= [];
                     
                     while (morePages) {
-                        // const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${tempPaginationNumber}`, {
-                        //     headers: {
-                        //         'Authorization': `Token ${localStorage.getItem('token')}`
-                        //     }
-                        // });
                         const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?page=${tempPaginationNumber}`, {
                             auth: {
                                 username: serverAuth.outgoing_username,
@@ -103,14 +97,6 @@ export function UserProfileViewOnly() {
                         tempPaginationNumber++;
                     }
 
-                    // const postsResponse = await axios.get(`${author_info.host}/api/authors/${id}/posts/?all=true`, {
-                    //     auth: {
-                    //         username: serverAuth.outgoing_username,
-                    //         password: serverAuth.outgoing_password
-                    //     }
-                    // });
-                    // const publicPosts = postsResponse.data.items.filter(post => post.visibility === "PUBLIC");
-                    // setPosts(publicPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
                     setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
 
                     const followersResponse = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
@@ -119,7 +105,6 @@ export function UserProfileViewOnly() {
                             password: serverAuth.outgoing_password
                         }
                     });
-                    console.log(followersResponse.data.items)
                     const isUserFollowing = followersResponse.data.items.some(follower => follower.id === `http://localhost:8000/authors/${userId}`);
                     setIsFollowing(isUserFollowing);
                 }
