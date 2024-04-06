@@ -75,8 +75,10 @@ const TimelinePage = () => {
 
         else {
             for (let [url, credentials] of Object.entries(serverCredentials)) {
-                let tempEndpoint = url + `/api/posts/${url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? 'public/' : ''}?page=1&size=5`;                
-                
+                let tempEndpoint = url + 
+                (url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? '/api/posts/public/' : 
+                url === 'https://depresso-espresso-7e0a859d2d18.herokuapp.com' ? '/api/posts' : '/api/posts/') + 
+                `?page=1&size=5`;                
                 try {
                     const response = await axios.get(tempEndpoint, {
                         auth: {
@@ -134,8 +136,10 @@ const TimelinePage = () => {
                 let morePages = true;
 
                 while (morePages) {
-                    let tempEndpoint = url + `/api/posts/${url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? 'public/' : ''}?page=${tempPaginationNumber}`;                
-                    try {
+                    let tempEndpoint = url + 
+                    (url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com' ? '/api/posts/public/' : 
+                    url === 'https://depresso-espresso-7e0a859d2d18.herokuapp.com' ? '/api/posts' : '/api/posts/') + 
+                    `?page=${tempPaginationNumber}`;                    try {
                         const response = await axios.get(tempEndpoint, {
                             auth: {
                                 username: credentials.outgoing_username,
