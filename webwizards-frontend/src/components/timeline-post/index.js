@@ -50,10 +50,6 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
     const [newCommentVisible, setNewCommentVisible] = useState(false);
     const [newCommentInput, setNewCommentInput] = useState([]);
 
-    <Routes>
-    <Route path="/profile" element={<UserProfile />} />
-    <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
-    </Routes>
     
     useEffect(() => {
         const fetchServerCredentials = async () => {
