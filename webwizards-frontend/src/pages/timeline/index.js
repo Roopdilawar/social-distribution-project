@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Switch, Pagination } from '@mui/material';
 import { TimelinePost } from '../../components/timeline-post';
+import { TimelineRepost } from '../../components/timeline-repost';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
@@ -177,37 +178,46 @@ const TimelinePage = () => {
     };
 
     return (
-        <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto', paddingBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Typography variant="body1" sx={{ marginRight: 2 }}>Explore</Typography>
-                <Switch checked={isFollowingView} onChange={(event) => setIsFollowingView(event.target.checked)} />
-                <Typography variant="body1" sx={{ marginLeft: 2 }}>Following</Typography>
-            </Box>
-            {posts.length > 0 ? (
-                <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
-                    {posts.map((post, index) => (
-                        <TimelinePost key={post.id || index} post={post} detailedView={false} />
-                    ))}
-                </Box>
-            ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
-                    <Typography>Loading posts...</Typography>
-                </Box>
-            )}
-            {posts.length > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 2, marginBottom: 2}}>
-                    <Pagination
-                        count={Math.ceil(posts.length / 5)}
-                        page={postsPage + 1}
-                        onChange={(event, value) => setPostsPage(value - 1)}
-                        variant="outlined"
-                        color="primary"
-                        showFirstButton
-                        showLastButton
-                    />
-                </Box>
-            )}
-        </Box>
+      <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto', paddingBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Typography variant="body1" sx={{ marginRight: 2 }}>Explore</Typography>
+              <Switch checked={isFollowingView} onChange={(event) => setIsFollowingView(event.target.checked)} />
+              <Typography variant="body1" sx={{ marginLeft: 2 }}>Following</Typography>
+          </Box>
+          {posts.length > 0 ? (
+              <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
+                  {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => {
+                      if (post.origin == post.source) {
+                          return <TimelinePost key={post.id} post={post} detailedView={false}/>;
+                      }
+                      else {
+                          let originalPost = posts.filter((ogPost) => ogPost.origin === post.origin && ogPost.id != post.id);
+
+                          if (originalPost.length > 0) {
+                              return <TimelineRepost key={post.id} post={post} detailedView={false} originalPost={originalPost[0]}/>;
+                          }
+                      }
+                  })}
+              </Box>
+          ) : (
+              <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
+                  <Typography>No posts to display or Loading posts...</Typography>
+              </Box>
+          )}
+          {posts.length > 0 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 2, mb: 2 }}>
+                  <Pagination
+                      count={Math.ceil(posts.length / 5)}
+                      page={postsPage + 1}
+                      onChange={(event, value) => setPostsPage(value - 1)}
+                      variant="outlined"
+                      color="primary"
+                      showFirstButton
+                      showLastButton
+                  />
+              </Box>
+          )}
+      </Box>
     );
 };
 
