@@ -284,7 +284,6 @@ function App() {
           <Route path="/" element={<TimelinePage />} />
           <Route path="/posts/:postId" element={<PostViewPage/>} />
           <Route path="profile" element={<UserProfile />} />
-          <Route path="user-profile/:id" element={<UserProfileViewOnly />} />
           <Route path="inbox" element={<NotificationsPage />} />
           <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
         </Routes>
