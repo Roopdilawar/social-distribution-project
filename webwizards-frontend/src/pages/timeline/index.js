@@ -168,11 +168,9 @@ const TimelinePage = () => {
 
     useEffect(() => {
         if (!userId) return;
-        setLoading(true);
         fetchServerCredentials();
         fetchFirstPage();
         fetchPosts();
-        setLoading(false)
         const intervalId = setInterval(fetchPosts, 1000);
         return () => clearInterval(intervalId);
     }, [isFollowingView, userId]);
