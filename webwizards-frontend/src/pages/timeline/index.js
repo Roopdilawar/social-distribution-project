@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Switch, Pagination } from '@mui/material';
 import { TimelinePost } from '../../components/timeline-post';
+import { TimelineRepost } from '../../components/timeline-repost';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
@@ -187,9 +188,17 @@ const TimelinePage = () => {
                 </Typography>
             </div>
             <div style={{ maxWidth: '1000px', margin: 'auto' }}>
-                {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => (
-                    <TimelinePost key={post.id} post={post} detailedView={false} />
-                ))}
+                {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => {
+                    if (post.origin == post.source) {
+                        return <TimelinePost key={post.id} post={post} detailedView={false}/>;
+                    }
+                    else {
+                        console.log(post.source);
+                        let originalPost = posts.filter(function (ogPost) { return (ogPost.origin === post.origin && ogPost.id != post.id)});
+                        return <TimelineRepost key={post.id} post={post} detailedView={false} originalPost={originalPost[0]}/>;
+                    }
+                }
+                )}
             </div>
             { posts.length > 0 ? 
                 <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
