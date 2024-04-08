@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, IconButton, Box, InputBase, Button, Modal, TextField, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Box, Chip, InputBase, Button, Modal, TextField, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -130,6 +130,18 @@ function App() {
     setOpenModal(false);
   };
 
+  const getHostTag = (host) => {
+    let tag = { text: 'Local', color: 'dark-grey' };
+    if (host.includes('deadly-bird')) {
+        tag = { text: 'Deadly-Bird', color: 'red' };
+    } else if (host.includes('y-com')) {
+        tag = { text: 'Y.com', color: 'blue' };
+    } else if (host.includes('espresso')) {
+        tag = { text: 'Espresso', color: 'brown' };
+    }
+    return tag;
+  };
+
   return (
     <ThemeProvider>
       <CssBaseline /> 
@@ -221,8 +233,8 @@ function App() {
                       <Avatar src={author.profileImage} alt={author.displayName}/>
                   </ListItemAvatar>
                   <ListItemText
-                      primary={author.displayName}
-                      secondary="Local" // Replace "Local" with any other relevant information if available
+                    primary={<Box sx={{ display: 'flex', alignItems: 'center' }}>{author.displayName}</Box>}
+                    secondary={<Chip label={getHostTag(author.host).text} size="small" style={{ backgroundColor: getHostTag(author.host).color, color: 'white', marginLeft: '0px' }} />}
                   />
               </ListItem>
           )) : (

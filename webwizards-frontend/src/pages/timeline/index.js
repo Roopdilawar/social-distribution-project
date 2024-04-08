@@ -201,7 +201,7 @@ const TimelinePage = () => {
               </Box>
           ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
-                  <Typography>No posts to display or Loading posts...</Typography>
+                  <Typography>No posts to display...</Typography>
               </Box>
           )}
           {posts.length > 0 && (
