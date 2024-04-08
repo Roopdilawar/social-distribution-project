@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 import axios from "axios";
-import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar, Collapse, Pagination, FormControl, InputLabel, OutlinedInput } from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar, Collapse, Pagination, FormControl, InputLabel, OutlinedInput, InputAdornment, Chip } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import Badge from '@mui/material/Badge';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -385,33 +387,52 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         return formatDistanceToNow(date, { addSuffix: true });
     };
 
+    const getHostTag = (host) => {
+        let tag = { text: 'Local', color: 'dark-grey' };
+        if (host.includes('deadly-bird')) {
+            tag = { text: 'Deadly-Bird', color: 'red' };
+        } else if (host.includes('y-com')) {
+            tag = { text: 'Y.com', color: 'blue' };
+        } else if (host.includes('espresso')) {
+            tag = { text: 'Espresso', color: 'brown' };
+        }
+        return tag;
+    };
+    
+
     return (
         <>
-            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } }}>
-                <CardHeader
-                    avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
-                    title={
-                        <Typography variant="subtitle2" color="primary" onClick={!isViewOnly ? handleUsernameClick : null} style={{ cursor: !isViewOnly ? 'pointer' : 'default' }}>
-                            {post.author.displayName}
-                        </Typography>}
-                    subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
-                    action={!isViewOnly && isProfilePage && (
-                        <>
-                            <IconButton onClick={handleMenuClick}>
-                                <MoreVertIcon />
-                            </IconButton>
-                            <Menu
-                                anchorEl={anchorEl}
-                                keepMounted
-                                open={Boolean(anchorEl)}
-                                onClose={handleMenuClose}
-                            >
-                                <MenuItem onClick={handleEdit}>Edit</MenuItem>
-                                <MenuItem onClick={handleDelete}>Delete</MenuItem>
-                            </Menu>
-                        </>
-                    )}
-                />
+            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } , width: '82%', mx: 'auto'}}>
+            <CardHeader
+                avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
+                title={
+                    <Typography variant="subtitle2" color="primary" onClick={!isViewOnly ? handleUsernameClick : null} style={{ cursor: !isViewOnly ? 'pointer' : 'default' }}>
+                        {post.author.displayName}
+                    </Typography>
+                }
+                subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
+                action={
+                    <Box display="flex" alignItems="center">
+                        <Chip label={getHostTag(post.author.host).text} size="small" style={{ backgroundColor: getHostTag(post.author.host).color, color: 'white', marginLeft: '8px' }} />
+                        {!isViewOnly && isProfilePage && (
+                            <>
+                                <IconButton onClick={handleMenuClick}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    keepMounted
+                                    open={Boolean(anchorEl)}
+                                    onClose={handleMenuClose}
+                                >
+                                    <MenuItem onClick={handleEdit}>Edit</MenuItem>
+                                    <MenuItem onClick={handleDelete}>Delete</MenuItem>
+                                </Menu>
+                            </>
+                        )}
+                    </Box>
+                }
+            />
                 <CardContent>
                     <Typography variant="h6" color="textPrimary" gutterBottom>
                         {post.title}
@@ -419,36 +440,37 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                     {renderContent()}
                 </CardContent>
                 
-                    <CardActions disableSpacing>
-                        <Box display="flex" alignItems="flex-start">
-                            <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                <CardActions disableSpacing>
+                    <Box display="flex" justifyContent="space-between" width="100%" px={1}>
+                        <Box display="flex" justifyContent="space-around" width="100%">
+                            <Box display="flex" flexDirection="column" alignItems="center">
                                 <Tooltip title="Like">
-                                    <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
-                                        {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                                    </IconButton>
+                                    <Badge badgeContent={likesCount} color="primary">
+                                        <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
+                                            {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                        </IconButton>
+                                    </Badge>
                                 </Tooltip>
-                                <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}
-                                </Typography>
                             </Box>
-                            <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                            
+                            <Box display="flex" flexDirection="column" alignItems="center">
                                 <Tooltip title="Comment">
-                                    <IconButton aria-label="comment" onClick={handleExpandComments}>
-                                        <ChatBubbleOutlineIcon />
-                                    </IconButton>
+                                    <Badge badgeContent={commentsCount} color="primary">
+                                        <IconButton aria-label="comment" onClick={handleExpandComments}>
+                                            <ChatBubbleOutlineIcon />
+                                        </IconButton>
+                                    </Badge>
                                 </Tooltip>
-                                <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
-                                </Typography>
                             </Box>
-                            <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
+                            
+                            <Box display="flex" flexDirection="column" alignItems="center">
                                 <Tooltip title="Repost">
                                     <IconButton aria-label="repost" onClick={handleRepost}>
                                         <RepeatIcon />
                                     </IconButton>
                                 </Tooltip>
                             </Box>
-                            <Box display="flex" alignItems="center">
+                            <Box display="flex" flexDirection="column" alignItems="center">
                                 <Tooltip title="Share">
                                     <IconButton aria-label="share" onClick={handleShareClick}>
                                         <Share />
@@ -456,45 +478,65 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                                 </Tooltip>
                             </Box>
                         </Box>
-                    </CardActions>
-                
+                    </Box>
+                </CardActions>
+
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     {newCommentVisible && (
-                        <div className="new-comment-container">
-                            <Avatar src={userData.profileImage} alt={userData.displayName} className="new-comment-avatar" />
-                            <div className="comment-info">
-                                <span className="comment-input">
-                                    <FormControl fullWidth>
-                                        <InputLabel>New Comment</InputLabel>
-                                        <OutlinedInput
-                                            id="outlined-adornment-amount"
-                                            label="New Comment"
-                                            onChange={(event) => setNewCommentInput(event.target.value)}
-                                            value={newCommentInput}
-                                        />
-                                    </FormControl>
-                                </span>
-                                <span>
-                                    <FontAwesomeIcon icon={faPaperPlane} className="submit-button" size="lg" onClick={handleCommentSubmit} />
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                    <div className="all-comments-container">
-                        {comments.length > 0 ? comments.map((comment) => (
-                            <Comment comment={comment} key={comment.id} post={post} />
-                        )) : <Typography>No comments.</Typography>}
-                        <Box display="flex" justifyContent="center" alignItems="center">
-                            { prevPageAvailble ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-                            {
-                                anotherPageAvailble ? 
-                                <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
-                                :
-                                ""
-                            }
+                        <Box sx={{ display: 'flex', alignItems: 'center', padding: 2 }}>
+                            <Avatar src={userData.profileImage} alt={userData.displayName} sx={{ marginRight: 2 }} />
+                            <Box sx={{ width: '100%' }}>
+                                <FormControl fullWidth variant="outlined" size="small">
+                                    <InputLabel htmlFor="new-comment">New Comment</InputLabel>
+                                    <OutlinedInput
+                                        id="new-comment"
+                                        label="New Comment"
+                                        multiline
+                                        maxRows={4}
+                                        value={newCommentInput}
+                                        onChange={(event) => setNewCommentInput(event.target.value)}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="submit comment"
+                                                    onClick={handleCommentSubmit}
+                                                    edge="end"
+                                                >
+                                                    <SendIcon />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                    />
+                                </FormControl>
+                            </Box>
                         </Box>
-                    </div>
+                    )}
+                    <Box sx={{ padding: 2 }}>
+                        {comments.length > 0 ? (
+                            comments.map((comment) => (
+                                <Comment comment={comment} key={comment.id} post={post} />
+                            ))
+                        ) : (
+                            <Typography variant="body2" color="textSecondary" align="center">
+                                No comments.
+                            </Typography>
+                        )}
+                        <Box display="flex" justifyContent="center" alignItems="center" marginTop={2}>
+                            {prevPageAvailble && (
+                                <IconButton onClick={() => setPaginationNumber(paginationNumber - 1)}>
+                                    <ArrowBackIosNewIcon />
+                                </IconButton>
+                            )}
+                            {anotherPageAvailble && (
+                                <IconButton onClick={() => setPaginationNumber(paginationNumber + 1)}>
+                                    <ArrowForwardIosIcon />
+                                </IconButton>
+                            )}
+                        </Box>
+                    </Box>
                 </Collapse>
+
+
             </Card>
             {!isViewOnly && (
                 <EditPost

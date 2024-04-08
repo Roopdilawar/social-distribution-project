@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Card, CardContent, Typography, Avatar, IconButton, Button } from '@mui/material';
+import { Box, Card, Typography, Avatar, IconButton, Button, Tooltip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
+import ClearAllIcon from '@mui/icons-material/ClearAll'; 
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
@@ -121,48 +122,45 @@ function NotificationsPage() {
   };
 
   return (
-    <Box sx={{ pt: 9 }}>
-      <div style={{ maxWidth: '1000px', margin: 'auto' }}>
-        <Box sx={{ display: 'flex', justifyContent:"flex-end"}}>
-          <Button variant='outlined' onClick={clearNotifications} sx={{alignItems: 'flex-end', display:'flex',justify: 'flex-end'}}>
-            Clear Notifications
-          </Button>
-        </Box>
-        {nonPostNotifications.map((notification, index) => (
-          <Card key={index} sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar alt={notification.author?.displayName || notification.actor?.displayName} src={notification.author?.profileImage || notification.actor?.profileImage} sx={{ marginRight: 2 }}/>
-              <Box>
-                <Typography variant="body1" sx={{ mt: 1 }}>
-                  {notification.type === "Comment" ? `${notification.summary} - "${notification.comment}"` : notification.summary}
-                </Typography>
-              </Box>
-            </CardContent>
+    <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box sx={{ maxWidth: '600px', width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <Button variant="outlined" startIcon={<ClearAllIcon />} onClick={clearNotifications}>
+          Clear all notifications
+        </Button>
+      </Box>
+      {nonPostNotifications.length > 0 ? (
+        nonPostNotifications.map((notification, index) => (
+          <Card key={index} sx={{ mb: 2, width: '60%', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: { xs: 1, sm: 0 } }}>
+              <Avatar alt={notification.actor?.displayName} src={notification.actor?.profileImage} sx={{ marginRight: 2 }}/>
+              <Typography variant="body1">
+                {notification.summary}
+              </Typography>
+            </Box>
             {notification.type === "Follow" && (
-              <IconButton 
-                color="primary" 
-                onClick={() => handleAcceptFollow(notification)}
-                sx={{ 
-                  margin: 'auto 16px auto 0',
-                  transition: 'transform 0.3s ease-in-out',
-                  '&:hover': { 
-                    transform: 'scale(1.2)' 
-                  },
-                  '.MuiSvgIcon-root': { 
-                    fontSize: '2rem'
-                  }
-                }}
-              >
-                <CheckCircleIcon />
-              </IconButton>
+              <Box>
+                <Button variant="contained" color="primary" onClick={() => handleAcceptFollow(notification)} startIcon={<CheckCircleIcon />}>
+                  Accept
+                </Button>
+              </Box>
             )}
           </Card>
-        ))}
-        <Box display="flex" justifyContent="center" alignItems="center">
-            { backPage ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-            { anotherPage ? <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)} /> : "" }
-        </Box>
-      </div>
+        ))
+      ) : (
+        <Typography sx={{ mt: 2 }}>No notifications</Typography>
+      )}
+      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: '600px', mt: 2 }}>
+        {backPage && (
+          <IconButton onClick={() => setPaginationNumber(paginationNumber - 1)} size="large">
+            <ArrowBackIosNewIcon />
+          </IconButton>
+        )}
+        {anotherPage && (
+          <IconButton onClick={() => setPaginationNumber(paginationNumber + 1)} size="large">
+            <ArrowForwardIosIcon />
+          </IconButton>
+        )}
+      </Box>
     </Box>
   );
 }
