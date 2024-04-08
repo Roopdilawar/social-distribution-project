@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 import axios from "axios";
-import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar, Collapse, Pagination, FormControl, InputLabel, OutlinedInput } from '@mui/material';
+import { Card, CardHeader, Avatar, CardContent, Typography, IconButton, Tooltip, CardActions, Menu, MenuItem, Box, Snackbar, Collapse, Pagination, FormControl, InputLabel, OutlinedInput, Chip, Badge, InputAdornment } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Share from '@mui/icons-material/Share';
@@ -353,7 +354,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
 
     return (
         <>
-            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } }}>
+            <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } , width: '82%', mx: 'auto'}}>
                 <CardHeader
                     avatar={<Avatar src={post.author.profileImage} alt={post.author.displayName} />}
                     title={
@@ -361,7 +362,9 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                             {post.author.displayName}
                         </Typography>}
                     subheader={<Typography variant="caption">{timeAgo(post.published)}</Typography>}
-                    action={!isViewOnly && isProfilePage && (
+                    action={<Box display="flex" alignItems="center">
+                        <Chip label="Repost" color="default" size="small" />
+                        {!isViewOnly && isProfilePage && (
                         <>
                             <IconButton onClick={handleMenuClick}>
                                 <MoreVertIcon />
@@ -376,10 +379,12 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                                 <MenuItem onClick={handleDelete}>Delete</MenuItem>
                             </Menu>
                         </>
-                    )}
+                        )}
+                    </Box> 
+                    }
                 />
                 <CardContent>
-                    <Card sx={{ marginBottom: 1, '&:hover': { boxShadow: detailedView ? 0 : 6 } }}>
+                    <Card sx={{ marginBottom: 1, boxShadow: '0px 0px 5px rgba(0,0,0,0.5)', '&:hover': { boxShadow: detailedView ? 3 : 6 } }}>
                         <CardHeader
                             avatar={<Avatar src={originalPost.author.profileImage} alt={originalPost.author.displayName} />}
                             title={
@@ -397,72 +402,90 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                     </Card>
                 </CardContent>
                 <CardActions disableSpacing>
-                    <Box display="flex" alignItems="flex-start">
-                        <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
-                            <Tooltip title="Like">
-                                <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
-                                    {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                                </IconButton>
-                            </Tooltip>
-                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}
-                            </Typography>
-                        </Box>
-                        <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
-                            <Tooltip title="Comment">
-                                <IconButton aria-label="comment" onClick={handleExpandComments}>
-                                    <ChatBubbleOutlineIcon />
-                                </IconButton>
-                            </Tooltip>
-                            <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                {commentsCount} {commentsCount === 1 ? 'Comment' : 'Comments'}
-                            </Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center">
-                            <Tooltip title="Share">
-                                <IconButton aria-label="share" onClick={handleShareClick}>
-                                    <Share />
-                                </IconButton>
-                            </Tooltip>
+                    <Box display="flex" justifyContent="space-between" width="100%" px={1}>
+                        <Box display="flex" justifyContent="space-around" width="100%">
+                            <Box display="flex" flexDirection="column" alignItems="center">
+                                <Tooltip title="Like">
+                                    <Badge badgeContent={likesCount} color="primary">
+                                        <IconButton aria-label="like" onClick={handleLike} color={isLiked ? "error" : "default"}>
+                                            {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                        </IconButton>
+                                    </Badge>
+                                </Tooltip>
+                            </Box>
+                            
+                            <Box display="flex" flexDirection="column" alignItems="center">
+                                <Tooltip title="Comment">
+                                    <Badge badgeContent={commentsCount} color="primary">
+                                        <IconButton aria-label="comment" onClick={handleExpandComments}>
+                                            <ChatBubbleOutlineIcon />
+                                        </IconButton>
+                                    </Badge>
+                                </Tooltip>
+                            </Box>
+                            <Box display="flex" flexDirection="column" alignItems="center">
+                                <Tooltip title="Share">
+                                    <IconButton aria-label="share" onClick={handleShareClick}>
+                                        <Share />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
                         </Box>
                     </Box>
-                </CardActions>          
+                </CardActions>       
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     {newCommentVisible && (
-                        <div className="new-comment-container">
-                            <Avatar src={userData.profileImage} alt={userData.displayName} className="new-comment-avatar" />
-                            <div className="comment-info">
-                                <span className="comment-input">
-                                    <FormControl fullWidth>
-                                        <InputLabel>New Comment</InputLabel>
-                                        <OutlinedInput
-                                            id="outlined-adornment-amount"
-                                            label="New Comment"
-                                            onChange={(event) => setNewCommentInput(event.target.value)}
-                                            value={newCommentInput}
-                                        />
-                                    </FormControl>
-                                </span>
-                                <span>
-                                    <FontAwesomeIcon icon={faPaperPlane} className="submit-button" size="lg" onClick={handleCommentSubmit} />
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                    <div className="all-comments-container">
-                        {comments.length > 0 ? comments.map((comment) => (
-                            <Comment comment={comment} key={comment.id} post={post} />
-                        )) : <Typography>No comments.</Typography>}
-                        <Box display="flex" justifyContent="center" alignItems="center">
-                            { prevPageAvailble ? <ArrowBackIosNewIcon onClick={() => setPaginationNumber(paginationNumber - 1)}/> : ""}
-                            {
-                                anotherPageAvailble ? 
-                                <ArrowForwardIosIcon onClick={() => setPaginationNumber(paginationNumber + 1)}/>
-                                :
-                                ""
-                            }
+                        <Box sx={{ display: 'flex', alignItems: 'center', padding: 2 }}>
+                            <Avatar src={userData.profileImage} alt={userData.displayName} sx={{ marginRight: 2 }} />
+                            <Box sx={{ width: '100%' }}>
+                                <FormControl fullWidth variant="outlined" size="small">
+                                    <InputLabel htmlFor="new-comment">New Comment</InputLabel>
+                                    <OutlinedInput
+                                        id="new-comment"
+                                        label="New Comment"
+                                        multiline
+                                        maxRows={4}
+                                        value={newCommentInput}
+                                        onChange={(event) => setNewCommentInput(event.target.value)}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="submit comment"
+                                                    onClick={handleCommentSubmit}
+                                                    edge="end"
+                                                >
+                                                    <SendIcon />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                    />
+                                </FormControl>
+                            </Box>
                         </Box>
-                    </div>
+                    )}
+                    <Box sx={{ padding: 2 }}>
+                        {comments.length > 0 ? (
+                            comments.map((comment) => (
+                                <Comment comment={comment} key={comment.id} post={post} />
+                            ))
+                        ) : (
+                            <Typography variant="body2" color="textSecondary" align="center">
+                                No comments.
+                            </Typography>
+                        )}
+                        <Box display="flex" justifyContent="center" alignItems="center" marginTop={2}>
+                            {prevPageAvailble && (
+                                <IconButton onClick={() => setPaginationNumber(paginationNumber - 1)}>
+                                    <ArrowBackIosNewIcon />
+                                </IconButton>
+                            )}
+                            {anotherPageAvailble && (
+                                <IconButton onClick={() => setPaginationNumber(paginationNumber + 1)}>
+                                    <ArrowForwardIosIcon />
+                                </IconButton>
+                            )}
+                        </Box>
+                    </Box>
                 </Collapse>
             </Card>
             {!isViewOnly && (

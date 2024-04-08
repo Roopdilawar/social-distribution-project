@@ -218,10 +218,6 @@ const TimelinePage = () => {
               </Box>
           )}
       </Box>
-
-                </Box>
-            )}
-        </Box>
     );
 };
 
