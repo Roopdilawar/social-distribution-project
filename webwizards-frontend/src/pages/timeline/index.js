@@ -193,9 +193,11 @@ const TimelinePage = () => {
                         return <TimelinePost key={post.id} post={post} detailedView={false}/>;
                     }
                     else {
-                        console.log(post.source);
                         let originalPost = posts.filter(function (ogPost) { return (ogPost.origin === post.origin && ogPost.id != post.id)});
-                        return <TimelineRepost key={post.id} post={post} detailedView={false} originalPost={originalPost[0]}/>;
+                        
+                        if (originalPost.length > 0) {
+                            return <TimelineRepost key={post.id} post={post} detailedView={false} originalPost={originalPost[0]}/>;
+                        }
                     }
                 }
                 )}
