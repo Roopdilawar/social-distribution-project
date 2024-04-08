@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { createTheme, ThemeProvider as MUIThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -12,20 +12,37 @@ export const ThemeProvider = ({ children }) => {
     return savedMode ? savedMode : 'dark';
   });
 
+  const scrollbarStyles = `
+    ::-webkit-scrollbar {
+      width: 10px; /* Adjusting for a slimmer scrollbar */
+    }
+    ::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #A0A0A0; 
+      border-radius: 20px; /* Making it more rounded to ensure a pill shape */
+      border: 3px solid transparent; /* Adjusting border size for floating effect */
+      background-clip: padding-box; /* This might help in getting the desired visual */
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #909090;
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #A0A0A0 transparent;
+    }
+  `;
+
   const theme = createTheme({
     palette: {
       mode: themeMode,
     },
     components: {
-        MuiCard: {
-          styleOverrides: {
-            root: {
-              borderRadius: 12,
-            },
-          },
-        },
+      MuiCssBaseline: {
+        styleOverrides: scrollbarStyles,
       },
-      
+    },
   });
 
   const toggleTheme = () => {

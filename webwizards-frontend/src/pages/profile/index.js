@@ -45,7 +45,7 @@ export function UserProfile() {
     const [posts, setPosts] = useState([]);
     const { themeMode, toggleTheme } = useTheme();
     const [followers, setFollowers] = useState({ items: [] });
-    const [postsPage, setPostsPage] = useState(0);
+    const [postsPage, setPostsPage] = useState(1);
 
     const fetchUserBio = async () => {
         const token = localStorage.getItem('token');
@@ -299,6 +299,10 @@ export function UserProfile() {
       p: 4,
     };
 
+    const handleChangePage = (event, value) => {
+        setPostsPage(value); 
+    };
+
     return (
         <Box sx={{ pt: 8 }}>
             <Container component="main">
@@ -443,7 +447,6 @@ export function UserProfile() {
                                     <List>
                                         {followers.items.map((follower, index) => (
                                             <ListItem key={index}>
-                                                {/* Assuming 'name' is an attribute of follower. Adjust as necessary. */}
                                                 <ListItemText primary={follower.displayName || 'Unnamed Follower'} />
                                             </ListItem>
                                         ))}
@@ -457,29 +460,32 @@ export function UserProfile() {
 
       
 
-                <div style={{ marginTop: '40px' }} />
-                <div style={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
+                <div style={{ marginTop: '2px', maxWidth: '1000px', width: '82%', margin: 'auto' }}>
                     {posts.length > 0 ? (
-                        posts.slice(postsPage * 5, (postsPage * 5) + 5).map(post => (
+                        posts.slice((postsPage - 1) * 5, (postsPage - 1) * 5 + 5).map(post => (
                             <TimelinePost key={post.id} post={post} isViewOnly={false}/>
                         ))
                     ) : (
-                        <Typography variant="subtitle1" style={{ textAlign: 'center' }}>
-                            No posts found!
-                        </Typography>
+                        <Typography textAlign="center">No posts found!</Typography>
                     )}
                 </div>
+                {posts.length > 0 && (
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
+                        <Pagination
+                            count={Math.ceil(posts.length / 5)}
+                            page={postsPage}
+                            onChange={handleChangePage}
+                            variant="outlined"
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                        />
+                    </Box>
+                )}
             </Box>
-            { posts.length > 0 ? 
-                        <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
-                            <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
-                        </Box>
-                    :
-                    ""}
-        </Container>
+            </Container>
         </Box>
-);
+    );
 };
-
 
 export default UserProfile;

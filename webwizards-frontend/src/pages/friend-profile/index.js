@@ -23,7 +23,7 @@ export function UserProfileViewOnly() {
     const [userId, setUserId] = useState(null);
     const [followers, setFollowers] = useState({ items: [] });
     const [serverCredentials, setServerCredentials] = useState([]);
-    const [postsPage, setPostsPage] = useState(0);
+    const [postsPage, setPostsPage] = useState(1);
 
     const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -212,6 +212,10 @@ export function UserProfileViewOnly() {
         p: 4,
       };
 
+    const handleChangePage = (event, value) => {
+        setPostsPage(value);
+    };
+
     return (
         <Box sx={{ pt: 8 }}>
             <Container component="main">
@@ -299,14 +303,25 @@ export function UserProfileViewOnly() {
                         {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
                     <div style={{ marginTop: '2px', maxWidth: '1000px', width: '100%', margin: 'auto' }}>
-                        {posts.length > 0 ? posts.slice(postsPage * 5, (postsPage * 5) + 5).map(post => <TimelinePost key={post.id} post={post} isViewOnly={true} />) : <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>}
+                    {posts.length > 0 ? posts.slice((postsPage - 1) * 5, (postsPage - 1) * 5 + 5).map(post => (
+                        <TimelinePost key={post.id} post={post} isViewOnly={true} />
+                    )) : (
+                        <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>
+                    )}
                     </div>
-                    { posts.length > 0 ? 
-                        <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
-                            <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
-                        </Box>
-                    :
-                    ""}
+                {posts.length > 0 && (
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', marginBottom: 2}}>
+                        <Pagination
+                            count={Math.ceil(posts.length / 5)}
+                            page={postsPage}
+                            onChange={handleChangePage}
+                            variant="outlined"
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                        />
+                    </Box>
+                )}
                 </Box>
             </Container>
         </Box>

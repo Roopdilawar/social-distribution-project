@@ -172,31 +172,41 @@ const TimelinePage = () => {
         return () => clearInterval(intervalId);
     }, [isFollowingView, userId]);
 
+    const handleChangePage = (event, value) => {
+        setPostsPage(value - 1);
+    };
+
     return (
-        <Box sx={{ pt: 9 }}>
-            <div style={{ maxWidth: '1000px', margin: 'auto', paddingBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Typography variant="body1" sx={{ marginRight: 2 }}>
-                    Explore
-                </Typography>
-                <Switch
-                    checked={isFollowingView}
-                    onChange={(event) => setIsFollowingView(event.target.checked)}
-                />
-                <Typography variant="body1" sx={{ marginLeft: 2 }}>
-                    Following
-                </Typography>
-            </div>
-            <div style={{ maxWidth: '1000px', margin: 'auto' }}>
-                {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => (
-                    <TimelinePost key={post.id} post={post} detailedView={false} />
-                ))}
-            </div>
-            { posts.length > 0 ? 
-                <Box sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
-                    <Pagination count={Math.ceil(posts.length / 5)} page={postsPage + 1} onChange={(event, page) => setPostsPage(page - 1)} />
+        <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto', paddingBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Typography variant="body1" sx={{ marginRight: 2 }}>Explore</Typography>
+                <Switch checked={isFollowingView} onChange={(event) => setIsFollowingView(event.target.checked)} />
+                <Typography variant="body1" sx={{ marginLeft: 2 }}>Following</Typography>
+            </Box>
+            {posts.length > 0 ? (
+                <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
+                    {posts.map((post, index) => (
+                        <TimelinePost key={post.id || index} post={post} detailedView={false} />
+                    ))}
                 </Box>
-            :
-            ""}
+            ) : (
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
+                    <Typography>Loading posts...</Typography>
+                </Box>
+            )}
+            {posts.length > 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 2, marginBottom: 2}}>
+                    <Pagination
+                        count={Math.ceil(posts.length / 5)}
+                        page={postsPage + 1}
+                        onChange={(event, value) => setPostsPage(value - 1)}
+                        variant="outlined"
+                        color="primary"
+                        showFirstButton
+                        showLastButton
+                    />
+                </Box>
+            )}
         </Box>
     );
 };

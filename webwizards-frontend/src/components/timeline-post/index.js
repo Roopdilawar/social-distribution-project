@@ -392,7 +392,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         if (host.includes('deadly-bird')) {
             tag = { text: 'Deadly-Bird', color: 'red' };
         } else if (host.includes('y-com')) {
-            tag = { text: 'Y', color: 'blue' };
+            tag = { text: 'Y.com', color: 'blue' };
         } else if (host.includes('espresso')) {
             tag = { text: 'Espresso', color: 'brown' };
         }

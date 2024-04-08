@@ -128,35 +128,39 @@ function NotificationsPage() {
           Clear all notifications
         </Button>
       </Box>
-      {nonPostNotifications.map((notification, index) => (
-        <Card key={index} sx={{ mb: 2, width: '60%', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: { xs: 1, sm: 0 } }}>
-            <Avatar alt={notification.actor?.displayName} src={notification.actor?.profileImage} sx={{ marginRight: 2 }}/>
-            <Typography variant="body1">
-              {notification.summary}
-            </Typography>
-          </Box>
-          {notification.type === "Follow" && (
-            <Box>
-              <Button variant="contained" color="primary" onClick={() => handleAcceptFollow(notification)} startIcon={<CheckCircleIcon />}>
-                Accept
-              </Button>
+      {nonPostNotifications.length > 0 ? (
+        nonPostNotifications.map((notification, index) => (
+          <Card key={index} sx={{ mb: 2, width: '60%', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: { xs: 1, sm: 0 } }}>
+              <Avatar alt={notification.actor?.displayName} src={notification.actor?.profileImage} sx={{ marginRight: 2 }}/>
+              <Typography variant="body1">
+                {notification.summary}
+              </Typography>
             </Box>
-          )}
-        </Card>
-      ))}
+            {notification.type === "Follow" && (
+              <Box>
+                <Button variant="contained" color="primary" onClick={() => handleAcceptFollow(notification)} startIcon={<CheckCircleIcon />}>
+                  Accept
+                </Button>
+              </Box>
+            )}
+          </Card>
+        ))
+      ) : (
+        <Typography sx={{ mt: 2 }}>No notifications</Typography>
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: '600px', mt: 2 }}>
-      {backPage && (
-        <IconButton onClick={() => setPaginationNumber(paginationNumber - 1)} size="large">
-          <ArrowBackIosNewIcon />
-        </IconButton>
-      )}
-      {anotherPage && (
-        <IconButton onClick={() => setPaginationNumber(paginationNumber + 1)} size="large">
-          <ArrowForwardIosIcon />
-        </IconButton>
-      )}
-    </Box>
+        {backPage && (
+          <IconButton onClick={() => setPaginationNumber(paginationNumber - 1)} size="large">
+            <ArrowBackIosNewIcon />
+          </IconButton>
+        )}
+        {anotherPage && (
+          <IconButton onClick={() => setPaginationNumber(paginationNumber + 1)} size="large">
+            <ArrowForwardIosIcon />
+          </IconButton>
+        )}
+      </Box>
     </Box>
   );
 }
