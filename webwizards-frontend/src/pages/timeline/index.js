@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Switch, Pagination, CircularProgress } from '@mui/material';
+import { Box, Typography, Switch, Pagination, CircularProgress, Grow } from '@mui/material';
 import { TimelinePost } from '../../components/timeline-post';
 import { TimelineRepost } from '../../components/timeline-repost';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -164,17 +164,23 @@ const TimelinePage = () => {
             }
         }
         setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
-        setLoading(false);
     };
 
     useEffect(() => {
         if (!userId) return;
+        setLoading(true);
         fetchServerCredentials();
         fetchFirstPage();
         fetchPosts();
+        setLoading(false)
         const intervalId = setInterval(fetchPosts, 1000);
         return () => clearInterval(intervalId);
     }, [isFollowingView, userId]);
+
+    useEffect(() => {
+        setLoading(true);
+        setPostsPage(0);
+    }, [isFollowingView])
 
     const handleChangePage = (event, value) => {
         setPostsPage(value - 1);
@@ -209,6 +215,7 @@ const TimelinePage = () => {
           :
           <>
           {posts.length > 0 ? (
+            <Grow in={!loading} timeout={1000}>
               <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
                   {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => {
                       if (post.origin == post.source) {
@@ -223,6 +230,7 @@ const TimelinePage = () => {
                       }
                   })}
               </Box>
+            </Grow>
           ) : (
               <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
                   <Typography>No posts to display...</Typography>
