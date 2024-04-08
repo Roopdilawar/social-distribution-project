@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, IconButton, Box, InputBase, Button, Modal } from '@mui/material';
-import { TextField, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -30,27 +29,28 @@ function App() {
   const location = useLocation();
   const [openModal, setOpenModal] = useState(false);
   const [usersData, setUsersData] = useState([]);
+  const [filteredUsersData, setFilteredUsersData] = useState([]);
   const [serverCredentials, setServerCredentials] = useState([]);
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
 
-  const fetchServerCredentials = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-          console.log('No token found');
-          return;
-      }
-      try {
-          const response = await axios.get('http://localhost:8000/api/server-credentials/', {
-              headers: {
-                  'Authorization': `Token ${token}`
-              }
-          });
-          setServerCredentials(response.data);
-      } catch (error) {
-          console.error("Error fetching server credentials:", error);
-      }
-  }; 
-  
+    const fetchServerCredentials = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found');
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+            setServerCredentials(response.data);
+        } catch (error) {
+            console.error("Error fetching server credentials:", error);
+        }
+    }; 
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     
@@ -60,7 +60,7 @@ function App() {
     if (location.pathname === '/signin' && token) {
       navigate('/');
     }
-  }, [navigate, location.pathname, isAuthPage]);
+  }, [navigate, location.pathname]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -83,57 +83,56 @@ function App() {
     navigate('/signin'); 
   };
 
-  const handleSearch = () => {
-    // Handle search action
-    console.log('Search query:', searchQuery);
+  const handleNavSearch = () => {
     fetchServerCredentials();
     setUsersData([]);
+    setFilteredUsersData([]);
 
-    for (let [serverUrl, credentials] of Object.entries(serverCredentials)) {
+    const fetchAllUsers = async () => {
+        try {
+            for (let [serverUrl, credentials] of Object.entries(serverCredentials)) {
         
-        console.log(serverUrl);
-        console.log(credentials);
-
-        if (serverUrl === "http://localhost:8000")   {
-          const url = serverUrl + `/search-users/?username=${searchQuery}`;
-          console.log(url);
-          
-          axios.get(url, {
-              headers: {
-                  'Content-Type': 'application/json'
-              }
-          })
-          .then(response => {
-              console.log(response);
-              
-              response.data.forEach(author => {
-                  const userID = author.id;
-                  const author_info = author;
-                  console.log(author_info);
-                  console.log(userID);
-              });
-              
-              setUsersData(prevUsers => [...prevUsers, ...response.data]);
-              setOpenModal(true);
-
-              // navigate(`/friend-profile/${userID}`, { state: { author_info } });
-          })
-          .catch(error => {
-              alert("User not found! Please check the usrname again!");
-              console.log("Error occurred: ", error);
-          });
+                // console.log(serverUrl);
+                // console.log(credentials);
+        
+                let url = serverUrl + `/api/authors/`;
+                console.log(url);
+    
+                while (url){
+                    const response = await axios.get(url, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    // console.log(response);
+                    url = response.data.next;
+                    setUsersData(prevUsers => [...prevUsers, ...response.data.items]);
+                    setFilteredUsersData(prevUsers => [...prevUsers, ...response.data.items]);
+                    setOpenModal(true);
+                }
+                   
+            }
         }
+        catch (error) {
+            console.log(error);
+        }
+
     }
 
-    // then use navigate(`/friend-profile/${id}`, { state: { author_info } });
+    fetchAllUsers();
+
   };
 
-  const handleClickingSearchedUser = (author) => {
-    const userID = author.id;
-    const author_info = author;
-    author_info.displayName = author_info.username;
-    author_info.profileImage = author_info.profile_picture;
-    navigate(`/user-profile/${userID}`, { state: { author_info } });
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    const filtered = usersData.filter(author => author.displayName.toLowerCase().includes(query.toLowerCase()));
+    setFilteredUsersData(filtered);
+  };
+
+  const handleClickingSearchedUser = (author_info) => {
+    const id = author_info.id.split('/').pop();
+    navigate(`/user-profile/${id}`, { state: { author_info } });
     setOpenModal(false);
   };
 
@@ -141,9 +140,13 @@ function App() {
     <ThemeProvider>
       <CssBaseline /> 
       <div className="App">
-      {!isAuthPage && (
-          <AppBar position="fixed" sx={{ backgroundColor: '#22685C', backdropFilter: 'blur(10px)', boxShadow: 'none', color: 'rgba(0, 0, 0, 0.7)' }}>
-            <Toolbar>
+      <AppBar position="fixed" sx={{
+        backgroundColor: 'rgba(25, 118, 210, 0.9)',
+        backdropFilter: 'blur(10px)',
+        boxShadow: 'none',
+        color: 'rgba(0, 0, 0, 0.7)',
+      }}>
+  <Toolbar>
     <Box
       sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }}
       onClick={handleLogoClick}
@@ -162,79 +165,67 @@ function App() {
         SocialDistribution
       </Typography>
     </Box>
+    {/* style={{maxHeight: '500px', overflowY: 'auto'}} */}
     {!isAuthPage && (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton style= {{margin: '0px'}} variant="text" color="inherit" onClick={handleSearch}><SearchIcon/></IconButton>
+            <IconButton style= {{margin: '0px'}} variant="text" color="inherit" onClick={handleNavSearch}><SearchIcon/></IconButton>
         </Box>
         <Modal
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
         >   
-          <Box
-              sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: { xs: '80%', md: '50%' },
-                  bgcolor: 'background.paper',
-                  border: '2px solid #000',
-                  boxShadow: 24,
-                  p: 4,
-                  overflowY: 'auto',
-                  maxHeight: '80%',
-              }}
-          >
-              <Typography id="modal-modal-title" variant="h6" component="h2" textAlign="center" marginBottom={2}>
-                  Search for Users
-              </Typography>
-              
-              <Box
-                  sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: 2,
-                  }}
-              >
-                  <TextField
-                      fullWidth
-                      variant="outlined"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      sx={{ mr: 1, flex: 1 }}
-                  />
-                  <IconButton color="primary" onClick={handleSearch}><SearchIcon /></IconButton>
-              </Box>
-              
-              <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                  {usersData.length > 0 ? usersData.map((author) => (
-                      <ListItem 
-                          alignItems="flex-start" 
-                          key={author.id} 
-                          onClick={() => handleClickingSearchedUser(author)}
-                          sx={{ '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', borderRadius: '4px', mb: 1 }}
-                      >
-                          <ListItemAvatar>
-                              <Avatar src={author.profile_picture} alt={author.username}/>
-                          </ListItemAvatar>
-                          <ListItemText
-                              primary={author.username}
-                              secondary="Local"
-                          />
-                      </ListItem>
-                  )) : (
-                      <Typography textAlign="center" color="text.secondary">
-                          No users found
-                      </Typography>
-                  )}
-              </List>
-          </Box>
-      </Modal>
+            <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                bgcolor: 'background.paper',
+                border: '2px solid #000',
+                boxShadow: 24,
+                p: 4,
+                width: '40%', 
+                '@media (max-width: 600px)': {
+                    width: '80%', // Adjust width for smaller screens
+                },
+            }}>
+                
+                <h2 style = {{marginTop: '0px', textAlign: 'center'}}> Search Box</h2>
+                <span style = {{display: 'flex', justifyContent: 'space-around', }} >
+                    <InputBase
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    sx={{
+                        color: '#FFFFFF',
+                        marginRight: '8px',
+                        marginBottom: '16px',
+                        border: '1px solid #CCCCCC', // Adding a border
+                        padding: '8px', // Adding padding
+                        borderRadius: '4px', // Optionally add border-radius for rounded corners
+                        width: '80%'
+                    }}
+                    />
+                </span>
+                
+                <div style={{maxHeight: '500px', overflowY: 'auto'}}>
+                {filteredUsersData.map(author => (
+                    <div key={author.id} style = {{backgroundColor: '#282828', margin: '8px', borderRadius: '10px', paddingRight: ' 0 10px'}} >
+                        {/* <p>User ID: {author.id}</p> */}
+                        <Button 
+                            onClick={() => handleClickingSearchedUser(author)
+                        }>  
+                            <img src = {author.profileImage}  style = {{ margin:'10px 20px 10px 0', width: '40px', height: '40px', borderRadius: '30px'}} />
+                            {author.displayName} 
+                        </Button>
+                        {/* Add other user information as needed */}
+                    </div>
+                ))}
+                </div>
+            </Box>
+        </Modal>
         <Tooltip title="Add Post">
           <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
             <AddBoxIcon />
@@ -258,10 +249,8 @@ function App() {
         </Tooltip>
       </>
         )}
-     
-     </Toolbar>
-          </AppBar>
-        )}
+      </Toolbar>
+    </AppBar>
   
     <TransitionGroup>
       <CSSTransition
@@ -277,7 +266,6 @@ function App() {
           <Route path="profile" element={<UserProfile />} />
           <Route path="user-profile/:id" element={<UserProfileViewOnly />} />
           <Route path="inbox" element={<NotificationsPage />} />
-          <Route path="/friend-profile/:id" element={<UserProfileViewOnly />} />
         </Routes>
         </CSSTransition>
       </TransitionGroup>
