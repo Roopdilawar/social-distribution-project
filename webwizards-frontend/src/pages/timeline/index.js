@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Switch, Pagination } from '@mui/material';
+import { Box, Typography, Switch, Pagination, CircularProgress } from '@mui/material';
 import { TimelinePost } from '../../components/timeline-post';
 import { TimelineRepost } from '../../components/timeline-repost';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -12,6 +12,7 @@ const TimelinePage = () => {
     const [userId, setUserId] = useState(null);
     const [serverCredentials, setServerCredentials] = useState([]);
     const [postsPage, setPostsPage] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     const fetchServerCredentials = async () => {
         const token = localStorage.getItem('token');
@@ -98,6 +99,7 @@ const TimelinePage = () => {
             }
         }
         setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+        setLoading(false);
     }
 
     const fetchPosts = async () => {
@@ -162,6 +164,7 @@ const TimelinePage = () => {
             }
         }
         setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -184,6 +187,27 @@ const TimelinePage = () => {
               <Switch checked={isFollowingView} onChange={(event) => setIsFollowingView(event.target.checked)} />
               <Typography variant="body1" sx={{ marginLeft: 2 }}>Following</Typography>
           </Box>
+          {loading 
+          ?
+            <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
+                <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+                <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{
+                    fontWeight: 'bold',
+                    color: '#1976d2',
+                    fontFamily: 'Lexend',
+                    paddingBottom: '20px',
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+                    }}
+                >
+                    SocialDistribution
+                </Typography>
+                <CircularProgress className='loading-screen'/> 
+            </Box>
+          :
+          <>
           {posts.length > 0 ? (
               <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
                   {posts.slice(postsPage * 5, (postsPage * 5) + 5).map((post) => {
@@ -217,6 +241,8 @@ const TimelinePage = () => {
                   />
               </Box>
           )}
+          </>
+        }
       </Box>
     );
 };
