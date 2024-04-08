@@ -1,97 +1,71 @@
 import React, { useState, useEffect } from "react";
-import { Avatar, Card, Box, IconButton, Tooltip, CardActions, CardHeader, CardContent, Typography } from "@mui/material"
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { Avatar, Card, Box, CardHeader, CardContent, Typography, Chip } from "@mui/material";
 import axios from "axios";
-import "./styles.css"
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import "./styles.css";
 
-export default function Comment ({ comment, post }) {
-    const [likesCount, setLikesCount] = useState(comment.likes || 0);
-    const [isLiked, setIsLiked] = useState(false);
+const getHostTag = (host) => {
+    let tag = { text: 'Local', color: 'dark-grey' };
+    if (host.includes('deadly-bird')) {
+        tag = { text: 'Deadly-Bird', color: 'red' };
+    } else if (host.includes('y-com')) {
+        tag = { text: 'Y', color: 'blue' };
+    } else if (host.includes('espresso')) {
+        tag = { text: 'Espresso', color: 'brown' };
+    }
+    return tag;
+};
+
+export default function Comment({ comment, post }) {
     const [userId, setUserId] = useState(null);
 
     useEffect(() => {
         const fetchUserId = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.log('No token found');
-            return;
-        }
-        try {
-            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
-            headers: {
-                'Authorization': `Token ${token}`
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.log('No token found');
+                return;
             }
-            });
-            setUserId(response.data.user_id);
-        } catch (error) {
-            console.error("Error fetching user ID: ", error);
-        }
+            try {
+                const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+                setUserId(response.data.user_id);
+            } catch (error) {
+                console.error("Error fetching user ID: ", error);
+            }
         };
 
         fetchUserId();
     }, []);
 
-    const handleLike = async () => {    
-        const token = localStorage.getItem('token');
-        const postId = post.id.split('/').pop(); 
-        const commentId = comment.id
-        const endpointUrl = post.id.replace("/api", "").split('/authors')[0];
-    
-        const config = {
-            headers: {
-                'Authorization': `Token ${token}`
-            }
-        };
-    
-        try {
-            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
-            const authorData = authorResponse.data;
+    const hostTag = getHostTag(comment.author.host);
 
-            console.log("AUTHOR DATA");
-            console.log(authorData);
-
-            const likeData = {
-                "author": authorData,
-                "object": comment
-            };
-            console.log(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments/${commentId}/like/`)
-            await axios.post(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments/${commentId}/like/`, likeData);
-            setIsLiked(true); 
-            setLikesCount(likesCount + 1);
-        } catch (error) {
-            console.error("Error liking post:", error);
-        }
-    };
-
-    return(
-        <div className="card-container">
-            <Card className="comment-card" variant="outlined">
+    return (
+        <div>
+            <Card variant="outlined" style={{ padding: '8px', marginBottom: '0px' }}>
                 <CardHeader
                     avatar={<Avatar src={comment.author.profileImage} alt={comment.author.displayName} />}
-                    title={<Typography variant="subtitle2" color="primary">{comment.author.displayName}</Typography>}
-                    subheader={<Typography variant="caption">{new Date(comment.published).toLocaleString()}</Typography>}                    
+                    title={
+                        <Box display="flex" alignItems="center">
+                            <Typography variant="subtitle2" color="primary" component="span">
+                                {comment.author.displayName}
+                            </Typography>
+                            <Chip label={hostTag.text} size="small" style={{ marginLeft: '8px', backgroundColor: hostTag.color, color: 'white' }} />
+                        </Box>
+                    }
+                    subheader={<Typography variant="caption">
+                        {formatDistanceToNow(parseISO(comment.published), { addSuffix: true })}
+                    </Typography>}
                 />
-                <CardContent class-name="comment-content">
+                <CardContent>
                     <Typography variant="body2">
                         {comment.comment}
                     </Typography>
                 </CardContent>
-                {/* <CardActions disableSpacing>
-                        <Box display="flex" alignItems="flex-start">
-                            <Box display="flex" flexDirection="column" alignItems="center" marginRight={2}>
-                                <Tooltip title="Like">
-                                    <IconButton aria-label="like" color={isLiked ? "error" : "default"} onClick={handleLike}>
-                                        {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                                    </IconButton>
-                                </Tooltip>
-                                <Typography variant="caption" style={{ userSelect: 'none', fontSize: '0.75rem' }}>
-                                    {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </CardActions> */}
             </Card>
         </div>
-    )
+    );
 }
