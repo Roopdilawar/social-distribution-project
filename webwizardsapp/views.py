@@ -176,7 +176,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
                 # For every follower of the author, iterate through THEIR followers
                 base_url = follower_info['host']
 
-                followers_followers_list_url = f"{base_url}/api/authors/{follower_info['id'].split('/').pop()}/followers?all=true"
+                followers_followers_list_url = f"{base_url}api/authors/{follower_info['id'].split('/').pop()}/followers?all=true"
 
                 try :
                     # Get list of follower followers
@@ -202,7 +202,7 @@ class AuthorPostsView(generics.ListCreateAPIView):
                         print('gooood')
                         # Get the inbox url
                         _, author_segment = follower_info['id'].rsplit('/authors/', 1)
-                        inbox_url = f"{base_url}/api/authors/{author_segment}/inbox"
+                        inbox_url = f"{base_url}api/authors/{author_segment}/inbox"
                         
                         try:
                             # Post to their inbox
@@ -365,7 +365,7 @@ class AddCommentView(APIView):
         }
 
         # Construct the URL for the post author's inbox
-        author_inbox_url = f"{post_author_data['host']}/api/authors/{post_author_data['id'].split('/').pop()}/inbox"
+        author_inbox_url = f"{post_author_data['host']}api/authors/{post_author_data['id'].split('/').pop()}/inbox"
 
         # Retrieve server credentials for the post author's server
         try:

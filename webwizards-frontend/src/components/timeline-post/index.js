@@ -82,14 +82,14 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
         const endpointUrl = post.author.host;
         try {
             const serverAuth = serverCredentials[post.author.host];
-            const response = await axios.get(`${endpointUrl}/api/authors/${post.author.id.split('/').pop()}/posts/${post.id.split('/').pop()}`, {
+            const response = await axios.get(`${endpointUrl}api/authors/${post.author.id.split('/').pop()}/posts/${post.id.split('/').pop()}`, {
                 auth: {
                     username: serverAuth.outgoing_username,
                     password: serverAuth.outgoing_password
                 }
             });
             setCommentsCount(response.data.count)
-            const response_likes = await axios.get(`${endpointUrl}/api/authors/${post.author.id.split('/').pop()}/posts/${post.id.split('/').pop()}/likes`, {
+            const response_likes = await axios.get(`${endpointUrl}api/authors/${post.author.id.split('/').pop()}/posts/${post.id.split('/').pop()}/likes`, {
                 auth: {
                     username: serverAuth.outgoing_username,
                     password: serverAuth.outgoing_password
@@ -191,7 +191,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
             const serverAuth = serverCredentials[post.author.host];
 
             if (serverAuth) {
-                const response = await axios.get(`${endpointUrl}/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?page=${paginationNumber}`, {
+                const response = await axios.get(`${endpointUrl}api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}/comments?page=${paginationNumber}`, {
                     auth: {
                         username: serverAuth.outgoing_username,
                         password: serverAuth.outgoing_password
@@ -242,7 +242,7 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 published: new Date().toISOString(),
                 author: authorData
             };
-            const serverAuth = serverCredentials["http://localhost:8000"];
+            const serverAuth = serverCredentials["http://localhost:8000/"];
            
             const response = await axios.post(`http://localhost:8000/api/authors/${userId}/addcomment`, commentData, {
                 auth: {

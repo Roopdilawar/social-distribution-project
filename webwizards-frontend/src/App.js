@@ -126,7 +126,7 @@ function App() {
 
   const handleClickingSearchedUser = (author_info) => {
     const id = author_info.id.split('/').pop();
-    navigate(`/user-profile/${id}`, { state: { author_info } });
+    navigate(`/friend-profile/${id}`, { state: { author_info } });
     setOpenModal(false);
   };
 
