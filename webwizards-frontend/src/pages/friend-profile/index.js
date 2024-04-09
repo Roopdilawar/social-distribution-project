@@ -99,7 +99,7 @@ export function UserProfileViewOnly() {
 
                     setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
 
-                    const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers`, {
+                    const followersResponse = await axios.get(`${author_info.host}api/authors/${id}/followers?size=100`, {
                         auth: {
                             username: serverAuth.outgoing_username,
                             password: serverAuth.outgoing_password
@@ -122,7 +122,7 @@ export function UserProfileViewOnly() {
     const fetchFollowers = async () => {
         try {
             const serverAuth = serverCredentials[author_info.host];
-            const response = await axios.get(`${author_info.host}api/authors/${id}/followers`, {
+            const response = await axios.get(`${author_info.host}api/authors/${id}/followers?size=100`, {
                 auth: {
                     username: serverAuth.outgoing_username,
                     password: serverAuth.outgoing_password
