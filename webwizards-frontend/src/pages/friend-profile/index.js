@@ -105,7 +105,9 @@ export function UserProfileViewOnly() {
                             password: serverAuth.outgoing_password
                         }
                     });
-                    const isUserFollowing = followersResponse.data.items.some(follower => follower.id === `http://localhost:8000/authors/${userId}`);
+                    const isUserFollowing = followersResponse.data.items.some(follower => 
+                        follower.id === `http://localhost:8000/authors/${userId}` ||
+                        follower.id === `http://localhost:8000/api/authors/${userId}`);
                     setIsFollowing(isUserFollowing);
                 }
             } catch (error) {
