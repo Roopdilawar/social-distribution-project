@@ -222,7 +222,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                 else {
                     setPrevPageAvailble(false);
                 }
-                const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
+                const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
                 setComments(orderedComments);
             }
         } catch (error) {

@@ -332,7 +332,7 @@ class CommentView(generics.ListCreateAPIView):
             "id": post_id,
             "next": self.paginator.get_next_link(),
             "prev": self.paginator.get_previous_link(),
-            "items": data,
+            "comments": data,
             "page": self.paginator.page.number,
             "size": self.paginator.page_size
         })

@@ -91,7 +91,7 @@ function App() {
     const fetchAllUsers = async () => {
         try {
             for (let [serverUrl, credentials] of Object.entries(serverCredentials)) {
-                let url = serverUrl + `/api/authors/`;    
+                let url = serverUrl + `api/authors/`;    
                 while (url){
                     const response = await axios.get(url, {
                       auth: {
