@@ -93,7 +93,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                     password: serverAuth.outgoing_password
                 }
             });
-            setLikesCount(response_likes.data.length)
+            setLikesCount(response_likes.data.items.length)
             
         } catch (error) {
             console.error("Error fetching post information: ", error);
@@ -222,7 +222,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                 else {
                     setPrevPageAvailble(false);
                 }
-                const orderedComments = response.data.comments.sort((a,b) => new Date(b.created) - new Date(a.created));
+                const orderedComments = response.data.items.sort((a,b) => new Date(b.created) - new Date(a.created));
                 setComments(orderedComments);
             }
         } catch (error) {

@@ -332,7 +332,7 @@ class CommentView(generics.ListCreateAPIView):
             "id": post_id,
             "next": self.paginator.get_next_link(),
             "prev": self.paginator.get_previous_link(),
-            "comments": data,
+            "items": data,
             "page": self.paginator.page.number,
             "size": self.paginator.page_size
         })
@@ -467,7 +467,10 @@ class LikePostView(APIView):
 class LikesView(APIView):
     def get(self, request, author_id, post_id, format=None):
         post = get_object_or_404(Post, author_id=author_id, id=post_id)
-        response_data = post.likes_objects
+        response_data = {
+            "type": "Like",
+            "items": post.likes_objects
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
 

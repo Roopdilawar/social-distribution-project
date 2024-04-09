@@ -34,8 +34,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             github=validated_data.get('github', ''),
-            url=validated_data.get('url', 'http://localhost:8000'),
-            host=validated_data.get('host', 'http://localhost:8000' ),
+            url=validated_data.get('url', 'http://localhost:8000/'),
+            host=validated_data.get('host', 'http://localhost:8000/' ),
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -52,10 +52,16 @@ class AuthorSerializer(serializers.ModelSerializer):
     profileImage = serializers.URLField(source='profile_picture')
     
     def get_id(self, obj):
-        return f"{obj.host}/authors/{obj.id}"
+        return f"{obj.host}authors/{obj.id}"
     
     def get_url(self, obj):
-        return f"{obj.host}/authors/{obj.id}"
+        return f"{obj.host}authors/{obj.id}"
+
+    def get_host(self, obj):
+        if not obj.host.endswith('/'):
+            return obj.host + '/'
+        else:
+            return obj.host
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
