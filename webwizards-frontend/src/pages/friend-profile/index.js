@@ -3,7 +3,7 @@ import axios from 'axios';
 import Grid from '@mui/material/Grid';
 import { Paper, ButtonBase } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
-import { Button, Box, Container, Typography } from '@mui/material';
+import { Button, Box, Container, Typography, Grow, CircularProgress } from '@mui/material';
 import { useLocation, useParams } from 'react-router-dom';
 import { Modal, List, ListItem, ListItemText, Pagination } from '@mui/material';
 import { useTheme } from '../../components/theme-context';
@@ -24,6 +24,7 @@ export function UserProfileViewOnly() {
     const [followers, setFollowers] = useState({ items: [] });
     const [serverCredentials, setServerCredentials] = useState([]);
     const [postsPage, setPostsPage] = useState(1);
+    const [loading, setLoading] = useState(true);
 
     const fetchUserId = async () => {
         const token = localStorage.getItem('token');
@@ -98,6 +99,7 @@ export function UserProfileViewOnly() {
                     }
 
                     setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
+                    setLoading(false);
 
                     const followersResponse = await axios.get(`${author_info.host}/api/authors/${id}/followers`, {
                         auth: {
@@ -302,26 +304,52 @@ export function UserProfileViewOnly() {
                     <Button onClick={toggleFollow} variant="outlined" sx={buttonStyles}>
                         {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
-                    <div style={{ marginTop: '2px', maxWidth: '1000px', width: '100%', margin: 'auto' }}>
-                    {posts.length > 0 ? posts.slice((postsPage - 1) * 5, (postsPage - 1) * 5 + 5).map(post => (
-                        <TimelinePost key={post.id} post={post} isViewOnly={true} />
-                    )) : (
-                        <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>
-                    )}
-                    </div>
-                {posts.length > 0 && (
-                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', marginBottom: 2}}>
-                        <Pagination
-                            count={Math.ceil(posts.length / 5)}
-                            page={postsPage}
-                            onChange={handleChangePage}
-                            variant="outlined"
-                            color="primary"
-                            showFirstButton
-                            showLastButton
-                        />
-                    </Box>
-                )}
+                    {loading ?
+                        <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
+                            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{
+                                fontWeight: 'bold',
+                                color: '#1976d2',
+                                fontFamily: 'Lexend',
+                                paddingBottom: '20px',
+                                textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+                                }}
+                            >
+                                SocialDistribution
+                            </Typography>
+                            <CircularProgress className='loading-screen'/> 
+                        </Box>
+                        :
+                        <>
+                        {posts.length > 0 ? (
+                            <Grow in={!loading} timeout={1000}>
+                                <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto' }}>
+                                    {posts.slice((postsPage - 1) * 5, (postsPage - 1) * 5 + 5).map(post => (
+                                    <TimelinePost key={post.id} post={post} isViewOnly={true} />
+                                    ))}
+                                </Box>
+                                </Grow>    
+                        ) : (
+                                    <Typography variant="subtitle1" style={{ textAlign: 'center' }}>No posts found!</Typography>
+                                )}
+                        {posts.length > 0 && (
+                            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', marginBottom: 2}}>
+                                <Pagination
+                                    count={Math.ceil(posts.length / 5)}
+                                    page={postsPage}
+                                    onChange={handleChangePage}
+                                    variant="outlined"
+                                    color="primary"
+                                    showFirstButton
+                                    showLastButton
+                                />
+                            </Box>
+                        )}
+                        </>
+                        }
                 </Box>
             </Container>
         </Box>
