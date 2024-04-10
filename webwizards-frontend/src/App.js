@@ -326,6 +326,7 @@ function App() {
         </CSSTransition>
       </TransitionGroup>
     </div>
+    <NewPost isOpen={isModalOpen} className="navbar-icon" handleClose={toggleModal} />
   </ThemeProvider>
 );
 }
