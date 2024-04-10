@@ -148,156 +148,165 @@ function App() {
     <ThemeProvider>
       <CssBaseline /> 
       <div className="App">
+      {!isAuthPage && (
       <AppBar position="fixed" sx={{
         backgroundColor: 'rgba(25, 118, 210, 0.9)',
         backdropFilter: 'blur(10px)',
         boxShadow: 'none',
         color: 'rgba(0, 0, 0, 0.7)',
+        minHeight: '64px', 
       }}>
-  <Toolbar>
-    <Box
-      sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexGrow: 1 }}
-      onClick={handleLogoClick}
-    >
-      <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
-      <Typography
-        variant="h6"
-        component="div"
-        sx={{
-          fontWeight: 'bold',
-          color: '#FFFFFF',
-          fontFamily: 'Lexend',
-          textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
-        }}
-      >
-        SocialDistribution
-      </Typography>
-    </Box>
-    {/* style={{maxHeight: '500px', overflowY: 'auto'}} */}
-    {!isAuthPage && (
-      <>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton style= {{margin: '0px'}} variant="text" color="inherit" onClick={handleNavSearch}><SearchIcon/></IconButton>
-        </Box>
-        <Modal
-  open={openModal}
-  onClose={() => setOpenModal(false)}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->   
-  <Box
-      sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: { xs: '80%', md: '50%' },
-          bgcolor: 'background.paper',
-          border: '2px solid #000',
-          boxShadow: 24,
-          p: 4,
-          overflowY: 'auto',
-          maxHeight: '80%',
-      }}
-  >
-      <Typography id="modal-modal-title" variant="h6" component="h2" textAlign="center" marginBottom={2}>
-          Search for Users
-      </Typography>
-      
-      <Box
-          sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 2,
-          }}
-      >
-          <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={handleSearch}
-              sx={{ mr: 1, flex: 1 }}
-          />
-          <IconButton color="primary" ><SearchIcon /></IconButton>
-      </Box>
+        <Toolbar sx={{ minHeight: '64px' }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            onClick={handleLogoClick}
+          >
+            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '50px', marginRight: '0px' }} />
+            <Typography
+              variant="h5" 
+              component="div"
+              sx={{
+                fontWeight: 'bold',
+                color: '#FFFFFF',
+                fontFamily: 'Lexend',
+                textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+              }}
+            >
+              SocialDistribution
+            </Typography>
+          </Box>
 
-      {
-        loading
-        ?
-        <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
-                <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
-                <Typography
-                    variant="h6"
-                    component="div"
-                    sx={{
-                    fontWeight: 'bold',
-                    color: '#1976d2',
-                    fontFamily: 'Lexend',
-                    paddingBottom: '20px',
-                    textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
-                    }}
-                >
-                    SocialDistribution
-                </Typography>
-                <CircularProgress className='loading-screen'/> 
-            </Box>
+          {/* Spacer to balance centering */}
+          <Box sx={{ flexGrow: 0.77 }}></Box>
 
-          :
-          <Grow in={!loading} timeout={1000}>
-            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-              {filteredUsersData.length > 0 ? filteredUsersData.map((author) => (
-                  <ListItem 
-                      alignItems="flex-start" 
-                      key={author.id} 
-                      onClick={() => handleClickingSearchedUser(author)}
-                      sx={{ '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', borderRadius: '4px', mb: 1 }}
-                  >
-                      <ListItemAvatar>
-                          <Avatar src={author.profileImage} alt={author.displayName}/>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={<Box sx={{ display: 'flex', alignItems: 'center' }}>{author.displayName}</Box>}
-                        secondary={<Chip label={getHostTag(author.host).text} size="small" style={{ backgroundColor: getHostTag(author.host).color, color: 'white', marginLeft: '0px' }} />}
-                      />
-                  </ListItem>
-              )) : (
-                  <Typography textAlign="center" color="text.secondary">
-                      No users found
+          {!isAuthPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', flexGrow: 2 }}>
+              <IconButton variant="text" color="inherit" onClick={handleNavSearch} sx={{ fontSize: '28px' }}><SearchIcon fontSize="large"/></IconButton>
+              <Modal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+              >   
+              <Box
+                  sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: { xs: '80%', md: '50%' },
+                      bgcolor: 'background.paper',
+                      border: '2px solid #000',
+                      boxShadow: 24,
+                      p: 4,
+                      overflowY: 'auto',
+                      maxHeight: '80%',
+                  }}
+              >
+                  <Typography id="modal-modal-title" variant="h6" component="h2" textAlign="center" marginBottom={2}>
+                      Search for Users
                   </Typography>
-              )}
-            </List>
-          </Grow>
-      }
-  </Box>
-</Modal>
+                  
+                  <Box
+                      sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: 2,
+                      }}
+                  >
+                      <TextField
+                          fullWidth
+                          variant="outlined"
+                          placeholder="Search..."
+                          value={searchQuery}
+                          onChange={handleSearch}
+                          sx={{ mr: 1, flex: 1 }}
+                      />
+                      <IconButton color="primary" ><SearchIcon /></IconButton>
+                  </Box>
+
+                  {
+                    loading
+                    ?
+                    <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
+                            <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{
+                                fontWeight: 'bold',
+                                color: '#1976d2',
+                                fontFamily: 'Lexend',
+                                paddingBottom: '20px',
+                                textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+                                }}
+                            >
+                                SocialDistribution
+                            </Typography>
+                            <CircularProgress className='loading-screen'/> 
+                        </Box>
+
+                      :
+                      <Grow in={!loading} timeout={1000}>
+                        <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                          {filteredUsersData.length > 0 ? filteredUsersData.map((author) => (
+                              <ListItem 
+                                  alignItems="flex-start" 
+                                  key={author.id} 
+                                  onClick={() => handleClickingSearchedUser(author)}
+                                  sx={{ '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', borderRadius: '4px', mb: 1 }}
+                              >
+                                  <ListItemAvatar>
+                                      <Avatar src={author.profileImage} alt={author.displayName}/>
+                                  </ListItemAvatar>
+                                  <ListItemText
+                                    primary={<Box sx={{ display: 'flex', alignItems: 'center' }}>{author.displayName}</Box>}
+                                    secondary={<Chip label={getHostTag(author.host).text} size="small" style={{ backgroundColor: getHostTag(author.host).color, color: 'white', marginLeft: '0px' }} />}
+                                  />
+                              </ListItem>
+                          )) : (
+                              <Typography textAlign="center" color="text.secondary">
+                                  No users found
+                              </Typography>
+                          )}
+                        </List>
+                      </Grow>
+                  }
+              </Box>
+        </Modal>
 
         <Tooltip title="Add Post">
-          <IconButton color="inherit" className="navbar-icon" onClick={toggleModal}>
-            <AddBoxIcon />
+          <IconButton color="inherit" onClick={toggleModal} sx={{ fontSize: '28px' }}>
+            <AddBoxIcon fontSize="large"/>
           </IconButton>
         </Tooltip>
-        <NewPost isOpen={isModalOpen} className="navbar-icon" handleClose={toggleModal} />
         <Tooltip title="Notifications">
-          <IconButton color="inherit" className="navbar-icon" onClick={handleNotificationsClick}>
-            <NotificationsIcon />
+          <IconButton color="inherit" onClick={handleNotificationsClick} sx={{ fontSize: '28px' }}>
+            <NotificationsIcon fontSize="large"/>
           </IconButton>
         </Tooltip>
         <Tooltip title="Profile">
-          <IconButton color="inherit" className="navbar-icon" onClick={handleProfileClick}>
-            <AccountCircle />
+          <IconButton color="inherit" onClick={handleProfileClick} sx={{ fontSize: '28px' }}>
+            <AccountCircle fontSize="large"/>
           </IconButton>
         </Tooltip>
-        <Tooltip title="Logout">
-          <IconButton color="inherit" className="navbar-icon" onClick={handleLogout}>
-            <ExitToAppIcon />
-          </IconButton>
-        </Tooltip>
-      </>
-        )}
-      </Toolbar>
-    </AppBar>
+      </Box>
+    )}
+
+    {/* Spacer to balance centering */}
+    <Box sx={{ flexGrow: 1.95 }}></Box>
+
+    {!isAuthPage && (
+      <Tooltip title="Logout">
+        <IconButton color="inherit" onClick={handleLogout} sx={{ fontSize: '28px' }}>
+          <ExitToAppIcon fontSize="large"/>
+        </IconButton>
+      </Tooltip>
+    )}
+  </Toolbar>
+</AppBar>
+)}
   
     <TransitionGroup>
       <CSSTransition

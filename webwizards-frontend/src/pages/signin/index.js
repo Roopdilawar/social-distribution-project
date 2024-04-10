@@ -25,20 +25,20 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 const theme = createTheme({
 	palette: {
 	  primary: {
-		main: '#22685C', // Metallic Purple
+		main: 'rgba(25, 118, 210, 1)', // Metallic Purple
 		contrastText: '#000000', // Ensuring text on primary color is white
 	  },
 	  secondary: {
-		main: '#2F3020', // Deep Green
+		main: '#000000', // Deep Green
 	  },
 	  info: {
-		main: '#465048', // Faded Green
+		main: 'rgba(25, 118, 210, 0.9)', // Faded Green
 	  },
 	  background: {
-		default: '#465048', // Deep Green background
+		default: '#000000', // Deep Green background
 	  },
 	  text: {
-		primary: '#465048',
+		primary: '#000000',
 		secondary: '#000000', // Faded Green for less prominent text
 		}},	
 	shape: {
@@ -96,7 +96,7 @@ export default function SignIn() {
         height: '100vh',
         display: 'flex',
         backgroundColor: 'white',
-        flexDirection: 'column', // Adjust this to column to stack children vertically
+        flexDirection: 'column', 
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden', 
@@ -127,7 +127,7 @@ export default function SignIn() {
           backdropFilter: 'blur(30px)',
           minWidth: 300,
           maxWidth: 450,
-          zIndex: 2, // Ensure it's above the video
+          zIndex: 2,
         }}>
               <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
                 <LockOutlinedIcon sx={{ color: 'white' }} />

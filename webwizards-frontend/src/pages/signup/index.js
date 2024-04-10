@@ -23,20 +23,20 @@ import { styled } from '@mui/system';
 const theme = createTheme({
 	palette: {
 	  primary: {
-		main: '#22685C', // Metallic Purple
+		main: 'rgba(25, 118, 210, 1)', // Metallic Purple
 		contrastText: '#000000', // Ensuring text on primary color is white
 	  },
 	  secondary: {
 		main: '#2F3020', // Deep Green
 	  },
 	  info: {
-		main: '#465048', // Faded Green
+		main: 'rgba(25, 118, 210, 0.9)', // Faded Green
 	  },
 	  background: {
 		default: '#465048', // Deep Green background
 	  },
 	  text: {
-		primary: '#465048',
+		primary: '#000000',
 		secondary: '#000000', // Faded Green for less prominent text
 		}},	
 	shape: {
