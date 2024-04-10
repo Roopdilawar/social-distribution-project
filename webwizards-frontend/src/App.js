@@ -53,6 +53,11 @@ function App() {
     }; 
 
   useEffect(() => {
+    fetchServerCredentials();
+  }, []);
+
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
     
     if (!token && location.pathname !== '/signin' && location.pathname !== '/signup') {
@@ -85,7 +90,6 @@ function App() {
   };
 
   const handleNavSearch = () => {
-    fetchServerCredentials();
     setUsersData([]);
     setFilteredUsersData([]);
 
@@ -116,7 +120,6 @@ function App() {
     }
 
     fetchAllUsers();
-
   };
 
   const handleSearch = (e) => {
