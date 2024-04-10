@@ -357,7 +357,7 @@ class AddCommentView(APIView):
         comment_content = self.request.data.get('comment')
         comment_data = {
             "type": "comment",
-            "id": post_data['id'],
+            "id": post_data['id'] + '/comments/3be8504f-837c-4f9f-8b6b-6efb5c56b316',
             "author": author_data,
             "comment": comment_content,
             "contentType": "text/plain",
