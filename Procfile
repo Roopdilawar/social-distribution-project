@@ -1,1 +1,1 @@
-web: gunicorn webwizards.wsgi --log-file -
+web: gunicorn webwizards.wsgi --log-file - --threads 4
