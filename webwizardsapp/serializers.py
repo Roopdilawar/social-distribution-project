@@ -123,7 +123,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return f"{instance.post.author.host}/authors/{instance.post.author.id}/posts/{instance.post.id}/comments/{instance.id}"
     
     def get_content_type(self, instance):
-        return "plain/text"
+        return "text/plain"
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
