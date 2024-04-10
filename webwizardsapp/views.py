@@ -360,7 +360,7 @@ class AddCommentView(APIView):
             "id": post_data['id'],
             "author": author_data,
             "comment": comment_content,
-            "contentType": "plain/text",
+            "contentType": "text/plain",
             "published": self.request.data.get('published')
         }
 
