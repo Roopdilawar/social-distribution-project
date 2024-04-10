@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Card, Typography, Avatar, IconButton, Button, Tooltip } from '@mui/material';
+import { Box, Card, Typography, Avatar, IconButton, Button, Tooltip, Grow, CircularProgress } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
 import ClearAllIcon from '@mui/icons-material/ClearAll'; 
@@ -24,6 +24,7 @@ function NotificationsPage() {
   const [paginationNumber, setPaginationNumber] = useState(1);
   const [anotherPage, setAnotherPage] = useState(true);
   const [backPage, setBackPage] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -65,6 +66,7 @@ function NotificationsPage() {
         setBackPage(true);
       }
       setNonPostNotifications(filteredNotifications);
+      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
@@ -83,9 +85,6 @@ function NotificationsPage() {
   const clearNotifications = async () => {
     try {
       const response = await axios.delete(`http://localhost:8000/api/authors/${userId}/inbox`);
-      // const data = response.data.items.reverse();
-      // const filteredNotifications = data.filter(notification => notification.type !== "post");
-      // setNonPostNotifications(filteredNotifications);
       fetchNotifications();
     } catch (error) {
       console.error("Failed to delete notifications:", error);
@@ -128,27 +127,53 @@ function NotificationsPage() {
           Clear all notifications
         </Button>
       </Box>
-      {nonPostNotifications.length > 0 ? (
-        nonPostNotifications.map((notification, index) => (
-          <Card key={index} sx={{ mb: 2, width: '60%', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: { xs: 1, sm: 0 } }}>
-              <Avatar alt={notification.actor?.displayName} src={notification.actor?.profileImage} sx={{ marginRight: 2 }}/>
-              <Typography variant="body1">
-                {notification.summary}
-              </Typography>
-            </Box>
-            {notification.type === "Follow" && (
-              <Box>
-                <Button variant="contained" color="primary" onClick={() => handleAcceptFollow(notification)} startIcon={<CheckCircleIcon />}>
-                  Accept
-                </Button>
-              </Box>
+      {
+        loading ?
+        <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
+                <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+                <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{
+                    fontWeight: 'bold',
+                    color: '#1976d2',
+                    fontFamily: 'Lexend',
+                    paddingBottom: '20px',
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+                    }}
+                >
+                    SocialDistribution
+                </Typography>
+                <CircularProgress className='loading-screen'/> 
+        </Box>
+
+          :
+          <>
+            {nonPostNotifications.length > 0 ? (
+                nonPostNotifications.map((notification, index) => (
+                  <Grow in={!loading} timeout={1000}>
+                    <Card key={index} sx={{ mb: 2, width: '60%', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: { xs: 1, sm: 0 } }}>
+                        <Avatar alt={notification.actor?.displayName} src={notification.actor?.profileImage} sx={{ marginRight: 2 }}/>
+                        <Typography variant="body1">
+                          {notification.summary}
+                        </Typography>
+                      </Box>
+                      {notification.type === "Follow" && (
+                        <Box>
+                          <Button variant="contained" color="primary" onClick={() => handleAcceptFollow(notification)} startIcon={<CheckCircleIcon />}>
+                            Accept
+                          </Button>
+                        </Box>
+                      )}
+                    </Card>
+                  </Grow>
+                ))
+            ) : (
+              <Typography sx={{ mt: 2 }}>No notifications</Typography>
             )}
-          </Card>
-        ))
-      ) : (
-        <Typography sx={{ mt: 2 }}>No notifications</Typography>
-      )}
+            </>
+      }
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: '600px', mt: 2 }}>
         {backPage && (
           <IconButton onClick={() => setPaginationNumber(paginationNumber - 1)} size="large">

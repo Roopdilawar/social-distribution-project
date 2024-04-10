@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, IconButton, Box, Chip, InputBase, Button, Modal, TextField, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Box, Chip, InputBase, Button, Modal, TextField, List, ListItem, ListItemAvatar, Avatar, ListItemText, Grow, CircularProgress } from '@mui/material';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -31,6 +31,7 @@ function App() {
   const [usersData, setUsersData] = useState([]);
   const [filteredUsersData, setFilteredUsersData] = useState([]);
   const [serverCredentials, setServerCredentials] = useState([]);
+  const [loading, setLoading] = useState(true);
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup';
 
     const fetchServerCredentials = async () => {
@@ -103,6 +104,7 @@ function App() {
                     setUsersData(prevUsers => [...prevUsers, ...response.data.items]);
                     setFilteredUsersData(prevUsers => [...prevUsers, ...response.data.items]);
                     setOpenModal(true);
+                    setLoading(false);
                 }
                    
             }
@@ -220,29 +222,54 @@ function App() {
           />
           <IconButton color="primary" ><SearchIcon /></IconButton>
       </Box>
-      
-      <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-          {filteredUsersData.length > 0 ? filteredUsersData.map((author) => (
-              <ListItem 
-                  alignItems="flex-start" 
-                  key={author.id} 
-                  onClick={() => handleClickingSearchedUser(author)}
-                  sx={{ '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', borderRadius: '4px', mb: 1 }}
-              >
-                  <ListItemAvatar>
-                      <Avatar src={author.profileImage} alt={author.displayName}/>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={<Box sx={{ display: 'flex', alignItems: 'center' }}>{author.displayName}</Box>}
-                    secondary={<Chip label={getHostTag(author.host).text} size="small" style={{ backgroundColor: getHostTag(author.host).color, color: 'white', marginLeft: '0px' }} />}
-                  />
-              </ListItem>
-          )) : (
-              <Typography textAlign="center" color="text.secondary">
-                  No users found
-              </Typography>
-          )}
-      </List>
+
+      {
+        loading
+        ?
+        <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
+                <img src="https://imgur.com/KX0kfY9.png" alt="Logo" style={{ height: '40px', marginRight: '0px' }} />
+                <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{
+                    fontWeight: 'bold',
+                    color: '#1976d2',
+                    fontFamily: 'Lexend',
+                    paddingBottom: '20px',
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+                    }}
+                >
+                    SocialDistribution
+                </Typography>
+                <CircularProgress className='loading-screen'/> 
+            </Box>
+
+          :
+          <Grow in={!loading} timeout={1000}>
+            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+              {filteredUsersData.length > 0 ? filteredUsersData.map((author) => (
+                  <ListItem 
+                      alignItems="flex-start" 
+                      key={author.id} 
+                      onClick={() => handleClickingSearchedUser(author)}
+                      sx={{ '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', borderRadius: '4px', mb: 1 }}
+                  >
+                      <ListItemAvatar>
+                          <Avatar src={author.profileImage} alt={author.displayName}/>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={<Box sx={{ display: 'flex', alignItems: 'center' }}>{author.displayName}</Box>}
+                        secondary={<Chip label={getHostTag(author.host).text} size="small" style={{ backgroundColor: getHostTag(author.host).color, color: 'white', marginLeft: '0px' }} />}
+                      />
+                  </ListItem>
+              )) : (
+                  <Typography textAlign="center" color="text.secondary">
+                      No users found
+                  </Typography>
+              )}
+            </List>
+          </Grow>
+      }
   </Box>
 </Modal>
 
