@@ -138,11 +138,9 @@ const TimelinePage = () => {
                 let tempPaginationNumber = 1;
                 let morePages = true;
 
-                while (morePages) {
-                    let tempEndpoint = url + 
-                    (url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/' ? 'api/posts/public/' : 
-                    url === 'https://depresso-espresso-7e0a859d2d18.herokuapp.com/' ? 'api/posts' : 'api/posts/') + 
-                    `?page=${tempPaginationNumber}`;                    try {
+                if (url ==='https://depresso-espresso-7e0a859d2d18.herokuapp.com/') {
+                    let tempEndpoint = url + 'api/posts';                    
+                    try {
                         const response = await axios.get(tempEndpoint, {
                             auth: {
                                 username: credentials.outgoing_username,
@@ -154,16 +152,40 @@ const TimelinePage = () => {
                         for (let sortedPost of orderedPosts) {
                             tempPosts.push(sortedPost)
                         }
-                        tempPaginationNumber++;
-                        if (response.data.next == null) {
-                            morePages = false;
-                        }
                     } catch (error) {
                         morePages = false;
                         console.error(`Error fetching posts from ${url}:`, error);
                     }
                 }
                 
+                else {
+                    while (morePages) {
+                        let tempEndpoint = url + 
+                        (url === 'https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/' ? 'api/posts/public/' : 
+                        url === 'https://depresso-espresso-7e0a859d2d18.herokuapp.com/' ? 'api/posts' : 'api/posts/') + 
+                        `?page=${tempPaginationNumber}`;                    
+                        try {
+                            const response = await axios.get(tempEndpoint, {
+                                auth: {
+                                    username: credentials.outgoing_username,
+                                    password: credentials.outgoing_password
+                                }
+                            });
+                            const filteredPosts = response.data.items
+                            const orderedPosts = filteredPosts.sort((a, b) => new Date(b.published) - new Date(a.published));
+                            for (let sortedPost of orderedPosts) {
+                                tempPosts.push(sortedPost)
+                            }
+                            tempPaginationNumber++;
+                            if (response.data.next == null) {
+                                morePages = false;
+                            }
+                        } catch (error) {
+                            morePages = false;
+                            console.error(`Error fetching posts from ${url}:`, error);
+                        }
+                    }
+                }
             }
         }
         setPosts(tempPosts.sort((a, b) => new Date(b.published) - new Date(a.published)));
