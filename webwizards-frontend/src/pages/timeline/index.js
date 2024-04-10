@@ -193,12 +193,10 @@ const TimelinePage = () => {
 
     useEffect(() => {
         if (!userId) return;
-        fetchServerCredentials();
+
         fetchFirstPage();
         fetchPosts();
-        const intervalId = setInterval(fetchPosts, 100000000000);
-        return () => clearInterval(intervalId);
-    }, [isFollowingView, userId]);
+    }, [isFollowingView, serverCredentials]);
 
     useEffect(() => {
         setLoading(true);
