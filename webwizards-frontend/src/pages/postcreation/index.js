@@ -67,7 +67,7 @@ function NewPost({ isOpen, handleClose }) {
             source: "http://localhost:8000/",
             origin: "http://localhost:8000/", 
             description: "Test Post", 
-            contentType: base64Image ? "image/base64" : (useMarkdown ? "text/markdown" : "text/plain"),
+            contentType: base64Image ? "image/jpeg;base64" : (useMarkdown ? "text/markdown" : "text/plain"),
             content: base64Image || postContent,
             count: 0, 
             published: new Date().toISOString(), 

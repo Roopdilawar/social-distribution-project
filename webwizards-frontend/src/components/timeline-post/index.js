@@ -377,6 +377,10 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
                 return <ReactMarkdown>{post.content}</ReactMarkdown>;
             case 'image/base64':
                 return <img src={post.content} alt="Post" style={{ maxWidth: '100%', marginTop: '20px' }} />;
+            case 'image/jpeg;base64':
+                return <img src={post.content} alt="Post" style={{ maxWidth: '100%', marginTop: '20px' }} />;
+            case 'image/png;base64':
+                return <img src={post.content} alt="Post" style={{ maxWidth: '100%', marginTop: '20px' }} />;
             default:
                 return <Typography variant="body2">Unsupported content type</Typography>;
         }
