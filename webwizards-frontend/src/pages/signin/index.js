@@ -133,7 +133,7 @@ export default function SignIn() {
                 <LockOutlinedIcon sx={{ color: 'white' }} />
               </Avatar>
               <Typography component="h1" variant="h5" sx={{ textAlign: 'center', my: 2, color: 'primary.main' }}>
-                Have an account?
+                Welcome to SocialDistribution!
               </Typography>
               <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
                 <TextField
