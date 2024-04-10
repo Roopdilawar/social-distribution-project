@@ -155,6 +155,9 @@ const TimelinePage = () => {
                             tempPosts.push(sortedPost)
                         }
                         tempPaginationNumber++;
+                        if (response.data.next == null) {
+                            morePages = false;
+                        }
                     } catch (error) {
                         morePages = false;
                         console.error(`Error fetching posts from ${url}:`, error);
