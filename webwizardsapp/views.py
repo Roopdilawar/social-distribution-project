@@ -389,7 +389,7 @@ class AddCommentView(APIView):
 
         # Construct the comment object with data provided by the frontend
         comment_content = self.request.data.get('comment')
-        if post.author.host == "https://y-com-e7b7e2a21ca1.herokuapp.com/":
+        if post_data.author.host == "https://y-com-e7b7e2a21ca1.herokuapp.com/":
             comment_data = {
                 "type": "comment",
                 "id": post_data['id'] + f'/comments/6a2806e3-d90f-4d7f-beea-3acbed33ebec',
