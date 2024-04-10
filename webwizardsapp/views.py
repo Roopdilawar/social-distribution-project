@@ -222,6 +222,39 @@ class AuthorPostsView(generics.ListCreateAPIView):
                     print(f"Request to {inbox_url} failed: {e}")
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+
+        elif post.visibility == 'PUBLIC':
+            try:
+                follower_list_instance = FollowerList.objects.get(user=author)
+            except FollowerList.DoesNotExist:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            post_data = PostSerializer(post).data
+
+            for follower_info in follower_list_instance.followers:
+                try:
+                    credentials = ServerCredentials.objects.get(server_url=follower_info['host'])
+                except ServerCredentials.DoesNotExist:
+                    return Response({"error": "Server credentials for the post author's server not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                base_url = follower_info['host']
+                _, author_segment = follower_info['id'].rsplit('/authors/', 1)
+                inbox_url = f"{base_url}api/authors/{author_segment}/inbox"
+
+                try:
+                    response = requests.post(
+                        inbox_url,
+                        json=post_data,
+                        headers={"Content-Type": "application/json"},
+                        auth=HTTPBasicAuth(credentials.outgoing_username, credentials.outgoing_password)
+                    )
+                    if response.status_code not in (200, 201):
+                        print(f"Failed to post to {inbox_url}. Status code: {response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    print(f"Request to {inbox_url} failed: {e}")
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
        
 
 
