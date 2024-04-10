@@ -196,7 +196,13 @@ const TimelinePage = () => {
 
         fetchFirstPage();
         fetchPosts();
-    }, [isFollowingView, serverCredentials]);
+    }, [isFollowingView]);
+
+    useEffect(() => {
+        if (!userId) return;
+        fetchFirstPage();
+        fetchPosts();
+    }, [serverCredentials, userId]);
 
     useEffect(() => {
         setLoading(true);
@@ -209,11 +215,11 @@ const TimelinePage = () => {
 
     return (
       <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto', paddingBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Typography variant="body1" sx={{ marginRight: 2 }}>Explore</Typography>
-              <Switch checked={isFollowingView} onChange={(event) => setIsFollowingView(event.target.checked)} />
-              <Typography variant="body1" sx={{ marginLeft: 2 }}>Following</Typography>
-          </Box>
+            <Box sx={{ maxWidth: '1000px', width: '100%', margin: 'auto', paddingBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Typography variant="body1" sx={{ marginRight: 2 }}>Explore</Typography>
+                <Switch checked={isFollowingView} onChange={(event) => setIsFollowingView(event.target.checked)} />
+                <Typography variant="body1" sx={{ marginLeft: 2 }}>Following</Typography>
+            </Box>
           {loading 
           ?
             <Box sx={{ pt: 9, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: "12%" }}>
