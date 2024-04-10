@@ -389,14 +389,24 @@ class AddCommentView(APIView):
 
         # Construct the comment object with data provided by the frontend
         comment_content = self.request.data.get('comment')
-        comment_data = {
-            "type": "comment",
-            "id": post_data['id'] + f'/comments/{uuid.uuid4()}',
-            "author": author_data,
-            "comment": comment_content,
-            "contentType": "text/plain",
-            "published": self.request.data.get('published')
-        }
+        if post.author.host == "https://y-com-e7b7e2a21ca1.herokuapp.com/":
+            comment_data = {
+                "type": "comment",
+                "id": post_data['id'] + f'/comments/6a2806e3-d90f-4d7f-beea-3acbed33ebec',
+                "author": author_data,
+                "comment": comment_content,
+                "contentType": "text/plain",
+                "published": self.request.data.get('published')
+            }
+        else:
+            comment_data = {
+                "type": "comment",
+                "id": post_data['id'] + f'/comments/{uuid.uuid4()}',
+                "author": author_data,
+                "comment": comment_content,
+                "contentType": "text/plain",
+                "published": self.request.data.get('published')
+            }
 
         # Construct the URL for the post author's inbox
         author_inbox_url = f"{post_author_data['host']}api/authors/{post_author_data['id'].split('/').pop()}/inbox"
