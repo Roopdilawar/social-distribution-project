@@ -171,7 +171,7 @@ const TimelinePage = () => {
         fetchServerCredentials();
         fetchFirstPage();
         fetchPosts();
-        const intervalId = setInterval(fetchPosts, 1000000000000000000000000);
+        const intervalId = setInterval(fetchPosts, 100000000000);
         return () => clearInterval(intervalId);
     }, [isFollowingView, userId]);
 
