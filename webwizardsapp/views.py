@@ -709,11 +709,13 @@ class InboxView(APIView):
         
         elif request.data.get('type') == 'Unfollow':
             actor_id = request.data.get('actor', {}).get('id', '')
+            actor_id_with_api = actor_id
             actor_id = actor_id.replace("/api/", "/")
             try:
                 follower_list_instance = FollowerList.objects.get(user=friend)
                 # Attempt to remove the follower based on 'actor_id'
                 updated_followers = [follower for follower in follower_list_instance.followers if follower['id'] != actor_id]
+                updated_followers = [follower for follower in follower_list_instance.followers if follower['id'] != actor_id_with_api]
                 follower_list_instance.followers = updated_followers
                 follower_list_instance.save()
                 return Response({"message": "Item updated successfully."}, status=status.HTTP_200_OK)
