@@ -309,7 +309,9 @@ export const TimelinePost = ({ post, detailedView, handleCommentClick, isViewOnl
 
     const handleShareClick = async () => {
         if (post.visibility === 'PUBLIC' || post.visibility === 'PRIVATE') {
-            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}/${post.author.id.split('/').pop()}`;
+            const hostFirstSplit = post.author.host.split('/')[2];
+            const host = hostFirstSplit.split('.')[0];
+            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}/${post.author.id.split('/').pop()}/${host}`;
             try {
                 await navigator.clipboard.writeText(postLink);
                 setSnackbarMessage("Link copied to clipboard"); 
