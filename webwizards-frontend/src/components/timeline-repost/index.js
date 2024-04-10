@@ -318,21 +318,6 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
         }
     };
 
-    const handleShareClick = async () => {
-        if (post.visibility === 'PUBLIC' || post.visibility === 'PRIVATE') {
-            const postLink = `${window.location.origin}/posts/${post.id.split('/').pop()}/${post.author.id.split('/').pop()}`;
-            try {
-                await navigator.clipboard.writeText(postLink);
-                setSnackbarMessage("Link copied to clipboard"); 
-                setShowCopyConfirmation(true); 
-            } catch (error) {
-                console.error("Failed to copy link: ", error);
-            }
-        } else {
-            setSnackbarMessage("Sharing is not allowed for this post");
-            setShowCopyConfirmation(true); 
-        }
-    };
 
     const renderContent = () => {
         switch (post.contentType) {
@@ -421,13 +406,6 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                                             <ChatBubbleOutlineIcon />
                                         </IconButton>
                                     </Badge>
-                                </Tooltip>
-                            </Box>
-                            <Box display="flex" flexDirection="column" alignItems="center">
-                                <Tooltip title="Share">
-                                    <IconButton aria-label="share" onClick={handleShareClick}>
-                                        <Share />
-                                    </IconButton>
                                 </Tooltip>
                             </Box>
                         </Box>
