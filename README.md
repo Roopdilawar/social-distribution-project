@@ -7,10 +7,6 @@ See [the web page](https://uofa-cmput404.github.io/general/project.html) for a d
 
 Make a distributed social network!
 
-Contributing
-============
-
-Send a pull request and be sure to update this file with your name.
 
 Contributors / Licensing
 ========================
