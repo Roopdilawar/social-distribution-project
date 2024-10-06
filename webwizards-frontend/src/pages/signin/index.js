@@ -178,9 +178,6 @@ export default function SignIn() {
                 />
                 {error && <Typography color="error">{error}</Typography>}
                 <Stack direction="column" justifyContent="space-between" spacing={2} sx={{ width: '100%' }}>
-                  <Link href="#" variant="body2" sx={{ alignSelf: 'center', color: 'info.main' }}>
-                    Forgot password?
-                  </Link>
                   <Link href="signup" variant="body2" sx={{ alignSelf: 'center', color: 'info.main' }}>
                     Don't have an account? Sign Up
                   </Link>
