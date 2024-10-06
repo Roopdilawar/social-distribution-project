@@ -34,8 +34,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             github=validated_data.get('github', ''),
-            url=validated_data.get('url', 'http://localhost:8000/'),
-            host=validated_data.get('host', 'http://localhost:8000/' ),
+            url=validated_data.get('url', 'https://social-distribution-95d43f28bb8f.herokuapp.com/'),
+            host=validated_data.get('host', 'https://social-distribution-95d43f28bb8f.herokuapp.com/' ),
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -93,7 +93,7 @@ class PostSerializer(serializers.ModelSerializer):
         representation['id'] = post_id_url
 
         representation['source'] = post_id_url
-        if representation['origin'] == 'http://localhost:8000/':
+        if representation['origin'] == 'https://social-distribution-95d43f28bb8f.herokuapp.com/':
             representation['origin'] = post_id_url
         representation['count'] = instance.comments.all().count()
 

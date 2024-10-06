@@ -57,7 +57,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
             if (!token) return console.log('No token found');
             
             try {
-                const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+                const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/server-credentials/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setServerCredentials(response.data);
@@ -108,7 +108,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -136,7 +136,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                 }
             };
             try {
-                const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+                const authorResponse = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/`, config);
                 const authorData = authorResponse.data;
                 setUserData(authorData);
             } catch (error) {
@@ -151,7 +151,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
         const id = post.author.id.split('/').pop();
         const isCurrentUser = id.toString() === userId.toString();
         const baseUrl = post.id.replace("/api", "").split("/authors/")[0];
-        const same_url = baseUrl === "http://localhost:8000"
+        const same_url = baseUrl === "https://social-distribution-95d43f28bb8f.herokuapp.com"
         const author_info = post.author;
         if (isCurrentUser && same_url) {
             navigate("/profile");
@@ -164,7 +164,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
         const id = originalPost.author.id.split('/').pop();
         const isCurrentUser = id.toString() === userId.toString();
         const baseUrl = post.id.replace("/api", "").split("/authors/")[0];
-        const same_url = baseUrl === "http://localhost:8000"
+        const same_url = baseUrl === "https://social-distribution-95d43f28bb8f.herokuapp.com"
         const author_info = originalPost.author;
         if (isCurrentUser && same_url) {
             navigate("/profile");
@@ -245,7 +245,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
         };
 
         try {
-            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const authorResponse = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/`, config);
             const authorData = authorResponse.data;
             const commentData = {
                 object: post,
@@ -253,9 +253,9 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
                 published: new Date().toISOString(),
                 author: authorData
             };
-            const serverAuth = serverCredentials["http://localhost:8000/"];
+            const serverAuth = serverCredentials["https://social-distribution-95d43f28bb8f.herokuapp.com/"];
            
-            const response = await axios.post(`http://localhost:8000/api/authors/${userId}/addcomment`, commentData, {
+            const response = await axios.post(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/addcomment`, commentData, {
                 auth: {
                     username: serverAuth.outgoing_username,
                     password: serverAuth.outgoing_password
@@ -280,7 +280,7 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
         };
     
         try {
-            await axios.delete(`http://localhost:8000/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}`, config);
+            await axios.delete(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${post.id.split('/authors/')[1].split('/')[0]}/posts/${postId}`, config);
             console.log("Post deleted successfully");
             handleMenuClose();
         } catch (error) {
@@ -303,14 +303,14 @@ export const TimelineRepost = ({ post, detailedView, handleCommentClick, isViewO
         };
     
         try {
-            const authorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const authorResponse = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/`, config);
             const authorData = authorResponse.data;
             const likeData = {
                 "actor": authorData,
                 "object": post
             };
-            await axios.post(`http://localhost:8000/api/authors/${userId}/liked`, { "object_id": post.id }, config);
-            await axios.post(`http://localhost:8000/api/authors/${userId}/like/`, likeData, config);
+            await axios.post(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/liked`, { "object_id": post.id }, config);
+            await axios.post(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/like/`, likeData, config);
             setIsLiked(true);
             setLikesCount(likesCount + 1); 
         } catch (error) {

@@ -36,7 +36,7 @@ function NewPost({ isOpen, handleClose }) {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -64,8 +64,8 @@ function NewPost({ isOpen, handleClose }) {
         console.log(token)
         const postData = {
             title: title,
-            source: "http://localhost:8000/",
-            origin: "http://localhost:8000/", 
+            source: "https://social-distribution-95d43f28bb8f.herokuapp.com/",
+            origin: "https://social-distribution-95d43f28bb8f.herokuapp.com/", 
             description: "Test Post", 
             contentType: base64Image ? "image/jpeg;base64" : (useMarkdown ? "text/markdown" : "text/plain"),
             content: base64Image || postContent,
@@ -81,7 +81,7 @@ function NewPost({ isOpen, handleClose }) {
         };    
 
         try {
-            const response = await axios.post(`http://localhost:8000/api/authors/${userId}/posts/`, postData, config);
+            const response = await axios.post(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/posts/`, postData, config);
             console.log(response.data);
             handleClose(); 
         } catch (error) {

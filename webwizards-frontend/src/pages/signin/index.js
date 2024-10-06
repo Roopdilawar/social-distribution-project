@@ -68,7 +68,7 @@ export default function SignIn() {
     const data = new FormData(event.currentTarget);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', {
+      const response = await axios.post('https://social-distribution-95d43f28bb8f.herokuapp.com/api/login/', {
         username: data.get('username'),
         password: data.get('password'),
       });

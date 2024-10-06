@@ -34,7 +34,7 @@ function NotificationsPage() {
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+        const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
           headers: {
             'Authorization': `Token ${token}`
           }
@@ -49,7 +49,7 @@ function NotificationsPage() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${paginationNumber}`);
+      const response = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/inbox?page=${paginationNumber}`);
       const data = response.data.items.reverse();
       const filteredNotifications = data.filter(notification => notification.type !== "post");
       console.log(response.data.next);
@@ -84,7 +84,7 @@ function NotificationsPage() {
 
   const clearNotifications = async () => {
     try {
-      const response = await axios.delete(`http://localhost:8000/api/authors/${userId}/inbox`);
+      const response = await axios.delete(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/inbox`);
       fetchNotifications();
     } catch (error) {
       console.error("Failed to delete notifications:", error);
@@ -108,7 +108,7 @@ function NotificationsPage() {
 
     try {
       console.log(notification)
-      await axios.post(`http://localhost:8000/api/authors/${userId}/acceptFollowRequest/`, notification, config);
+      await axios.post(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/acceptFollowRequest/`, notification, config);
       console.log("Follow request accepted successfully");
 
       let tempArray = nonPostNotifications.filter((tempNot) => {

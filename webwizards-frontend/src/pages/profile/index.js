@@ -55,7 +55,7 @@ export function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/user-bio/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/user-bio/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -75,7 +75,7 @@ export function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/user-profile-picture/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/user-profile-picture/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -94,7 +94,7 @@ export function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -113,7 +113,7 @@ export function UserProfile() {
     const fetchAuthors = async () => {
         if (!userId) return; 
         try {
-            const response = await axios.get('http://localhost:8000/api/authors/' + userId + '/');
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/' + userId + '/');
             setAuthors(response.data); 
         } catch (error) {
             console.error("Error fetching authors: ", error);
@@ -131,7 +131,7 @@ export function UserProfile() {
             return;
         }
         try {
-            const response = await axios.get(`http://localhost:8000/api/authors/${userId}/followers?size=100`,{
+            const response = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/followers?size=100`,{
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -151,7 +151,7 @@ export function UserProfile() {
     const fetchPosts = async () => {
         try {                
             let allPosts = [];                
-            const postsResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/posts/?all=true`, {
+            const postsResponse = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/posts/?all=true`, {
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('token')}`
                 }
@@ -235,7 +235,7 @@ export function UserProfile() {
         };
 
         try {
-            const response = await axios.put('http://localhost:8000/api/user-bio/', updatedBioData, config);
+            const response = await axios.put('https://social-distribution-95d43f28bb8f.herokuapp.com/api/user-bio/', updatedBioData, config);
             fetchUserBio();
             setEditBioOpen(false);
         } catch (error) {
@@ -261,7 +261,7 @@ export function UserProfile() {
         };
 
         try {
-            const response = await axios.put('http://localhost:8000/api/user-profile-picture/', updatedProfilePicData, config);
+            const response = await axios.put('https://social-distribution-95d43f28bb8f.herokuapp.com/api/user-profile-picture/', updatedProfilePicData, config);
             fetchUserProfilePic();
             setEditProfilePicOpen(false);
         } catch (error) {

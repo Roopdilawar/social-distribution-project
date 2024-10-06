@@ -720,7 +720,7 @@ class InboxView(APIView):
 
         response_data = {
             "type": "inbox",
-            "id": f"http://localhost:8000/api/authors/{author_id}/",
+            "id": f"https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/{author_id}/",
             "next": next_link,
             "prev": prev_link,
             "items": page_obj.object_list

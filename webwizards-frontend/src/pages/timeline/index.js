@@ -21,7 +21,7 @@ const TimelinePage = () => {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/server-credentials/', {
                 headers: {
                     'Authorization': `Token ${token}`
                 }
@@ -40,7 +40,7 @@ const TimelinePage = () => {
                 return;
             }
             try {
-                const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+                const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
                     headers: {
                         'Authorization': `Token ${token}`
                     }
@@ -60,7 +60,7 @@ const TimelinePage = () => {
 
         if (isFollowingView) {
             try {
-                const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=1&size=5`, {
+                const response = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/inbox?page=1&size=5`, {
                     headers: {
                         'Authorization': `Token ${localStorage.getItem('token')}`
                     }
@@ -112,7 +112,7 @@ const TimelinePage = () => {
 
             try {
                 while (morePages) {
-                    const response = await axios.get(`http://localhost:8000/api/authors/${userId}/inbox?page=${tempPaginationNumber}`, {
+                    const response = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/inbox?page=${tempPaginationNumber}`, {
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`
                         }

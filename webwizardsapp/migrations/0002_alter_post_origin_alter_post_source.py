@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='post',
             name='origin',
-            field=models.CharField(default='http://localhost:8000', max_length=200),
+            field=models.CharField(default='https://social-distribution-95d43f28bb8f.herokuapp.com', max_length=200),
         ),
         migrations.AlterField(
             model_name='post',
             name='source',
-            field=models.URLField(default='http://localhost:8000'),
+            field=models.URLField(default='https://social-distribution-95d43f28bb8f.herokuapp.com'),
         ),
     ]

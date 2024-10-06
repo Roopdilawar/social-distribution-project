@@ -33,7 +33,7 @@ export function UserProfileViewOnly() {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -51,7 +51,7 @@ export function UserProfileViewOnly() {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/server-credentials/', {
                 headers: {
                     'Authorization': `Token ${token}`
                 }
@@ -108,8 +108,8 @@ export function UserProfileViewOnly() {
                         }
                     });
                     const isUserFollowing = followersResponse.data.items.some(follower => 
-                        follower.id === `http://localhost:8000/authors/${userId}` ||
-                        follower.id === `http://localhost:8000/api/authors/${userId}`);
+                        follower.id === `https://social-distribution-95d43f28bb8f.herokuapp.com/authors/${userId}` ||
+                        follower.id === `https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}`);
                     setIsFollowing(isUserFollowing);
                 }
             } catch (error) {
@@ -153,7 +153,7 @@ export function UserProfileViewOnly() {
         const serverAuth = serverCredentials[author_info.host];
     
         if (isFollowing) {
-            const actorResponse = await axios.get(`http://localhost:8000/api/authors/${userId}/`, config);
+            const actorResponse = await axios.get(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/`, config);
             const actor_info = actorResponse.data;
             console.log(actor_info)
             const unfollowData = {
@@ -175,7 +175,7 @@ export function UserProfileViewOnly() {
         } else {
             const data = { "to_follow": author_info };
             try {
-                await axios.post(`http://localhost:8000/api/authors/${userId}/sendfollowrequest/`, data, config);
+                await axios.post(`https://social-distribution-95d43f28bb8f.herokuapp.com/api/authors/${userId}/sendfollowrequest/`, data, config);
                 setIsFollowing(true); 
             } catch (error) {
                 console.error("Error sending follow request: ", error.response?.data || error.message);

@@ -13,8 +13,8 @@ class User(AbstractUser):
     github = models.CharField(max_length=39, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
-    url = models.CharField(max_length=500, default='http://localhost:8000/')
-    host = models.CharField(max_length=500, default='http://localhost:8000/')
+    url = models.CharField(max_length=500, default='https://social-distribution-95d43f28bb8f.herokuapp.com/')
+    host = models.CharField(max_length=500, default='https://social-distribution-95d43f28bb8f.herokuapp.com/')
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
@@ -38,8 +38,8 @@ class Post(models.Model):
     ]
     type = models.CharField(default='post', max_length=200)
     title = models.CharField(max_length=200, blank=True)
-    source = models.URLField(max_length=200, default='http://localhost:8000')
-    origin = models.CharField(max_length=200, default='http://localhost:8000')
+    source = models.URLField(max_length=200, default='https://social-distribution-95d43f28bb8f.herokuapp.com')
+    origin = models.CharField(max_length=200, default='https://social-distribution-95d43f28bb8f.herokuapp.com')
     description = models.CharField(max_length=200, default='This is a post')
     contentType = models.CharField(max_length=200, default='text/plain')
     content = models.TextField()

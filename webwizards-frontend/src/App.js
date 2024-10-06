@@ -41,7 +41,7 @@ function App() {
             return;
         }
         try {
-            const response = await axios.get('http://localhost:8000/api/server-credentials/', {
+            const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/server-credentials/', {
                 headers: {
                     'Authorization': `Token ${token}`
                 }

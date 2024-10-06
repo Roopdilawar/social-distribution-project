@@ -27,7 +27,7 @@ export default function Comment({ comment, post }) {
                 return;
             }
             try {
-                const response = await axios.get('http://localhost:8000/api/get-user-id/', {
+                const response = await axios.get('https://social-distribution-95d43f28bb8f.herokuapp.com/api/get-user-id/', {
                     headers: {
                         'Authorization': `Token ${token}`
                     }

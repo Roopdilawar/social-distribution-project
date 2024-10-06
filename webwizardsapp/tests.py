@@ -34,9 +34,9 @@ class RegisterUserTestCase(APITestCase):
         expected_keys = {'type', 'next', 'prev', 'items'}
         self.assertEqual(set(response.data.keys()), expected_keys)
         self.assertEqual(response.data['items'][0]['type'], 'author')
-        # self.assertEqual(response.data['items'][0]['id'], 'http://localhost:8000/authors/e3ea49d1-e356-4592-b33e-2cbd081a5837')
-        # self.assertEqual(response.data['items'][0]['url'], 'http://localhost:8000/authors/e3ea49d1-e356-4592-b33e-2cbd081a5837')
-        self.assertEqual(response.data['items'][0]['host'], 'http://localhost:8000')
+        # self.assertEqual(response.data['items'][0]['id'], 'https://social-distribution-95d43f28bb8f.herokuapp.com/authors/e3ea49d1-e356-4592-b33e-2cbd081a5837')
+        # self.assertEqual(response.data['items'][0]['url'], 'https://social-distribution-95d43f28bb8f.herokuapp.com/authors/e3ea49d1-e356-4592-b33e-2cbd081a5837')
+        self.assertEqual(response.data['items'][0]['host'], 'https://social-distribution-95d43f28bb8f.herokuapp.com')
         self.assertEqual(response.data['items'][0]['displayName'], 'testuser')
         self.assertIsNone(response.data['items'][0]['github'])
         self.assertEqual(response.data['items'][0]['profileImage'], 'https://imgur.com/a/i9xknax')
